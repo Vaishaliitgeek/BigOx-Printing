@@ -1,0 +1,247 @@
+.headerrr {
+    width: 100%;
+    height: 6rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    /* gray-200 */
+}
+
+/* Container (center + max width) */
+.header-container {
+    max-width: 1120px;
+    /* roughly Tailwind's max-w-7xl */
+    margin: 0 auto;
+    padding-inline: 1rem;
+    /* px-4 */
+}
+
+/* Adjust padding for larger breakpoints */
+@media (min-width: 640px) {
+    .header-container {
+        padding-inline: 1.5rem;
+        /* sm:px-6 */
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-container {
+        padding-inline: 2rem;
+        /* lg:px-8 */
+    }
+}
+
+/* Inner flex row */
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4rem;
+    /* h-16 */
+    margin-top: 1rem;
+    /* to visually center in 6rem header */
+}
+
+/* Left: back button */
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    color: #374151;
+    /* gray-700 */
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 150ms ease;
+}
+
+.back-button:hover {
+    color: #111827;
+    /* gray-900 */
+}
+
+/* Icon base */
+.icon {
+    width: 1.25rem;
+    /* 20px, h-5 w-5 */
+    height: 1.25rem;
+}
+
+/* Back text visibility (mobile vs desktop) */
+.back-text-desktop {
+    display: none;
+}
+
+.back-text-mobile {
+    display: inline;
+}
+
+@media (min-width: 640px) {
+    .back-text-desktop {
+        display: inline;
+    }
+
+    .back-text-mobile {
+        display: none;
+    }
+}
+
+/* Center: stepper container */
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+    /* between the step groups */
+}
+
+/* Wrapper around each step + connector */
+.step-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* Single step (circle + label) */
+.step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Step circle base */
+.step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    /* 40px, h-10 w-10 */
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 2px solid #d1d5db;
+    /* gray-300 */
+    background-color: #ffffff;
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 600;
+    color: #9ca3af;
+    /* gray-400 */
+    transition: all 150ms ease;
+}
+
+/* Completed step */
+.step-circle--completed {
+    border-color: #000000;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Current step (with ring effect) */
+.step-circle--current {
+    border-color: #000000;
+    background-color: #ffffff;
+    color: #000000;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+    /* ring-4 ring-black/opacity-10 */
+}
+
+/* Upcoming or default */
+.step-circle--upcoming {
+    border-color: #d1d5db;
+    /* gray-300 */
+    background-color: #ffffff;
+    color: #9ca3af;
+    /* gray-400 */
+}
+
+/* Check icon size */
+.check-icon {
+    width: 1.25rem;
+    /* 20px */
+    height: 1.25rem;
+}
+
+/* Step label under circle */
+.step-label {
+    position: absolute;
+    bottom: -1.5rem;
+    /* -bottom-6 */
+    white-space: nowrap;
+    font-size: 0.75rem;
+    /* text-xs */
+    font-weight: 500;
+    transition: color 150ms ease;
+    display: none;
+    /* hidden by default, shown on sm+ */
+}
+
+.step-label--active {
+    color: #111827;
+    /* gray-900 */
+}
+
+.step-label--inactive {
+    color: #9ca3af;
+    /* gray-400 */
+}
+
+@media (min-width: 640px) {
+    .step-label {
+        display: block;
+    }
+}
+
+/* Connector line between steps */
+.step-connector {
+    height: 2px;
+    /* h-0.5 */
+    width: 3rem;
+    /* w-12 */
+    transition: background-color 150ms ease;
+    margin-inline: 0.5rem;
+}
+
+.step-connector--active {
+    background-color: #000000;
+}
+
+.step-connector--inactive {
+    background-color: #d1d5db;
+    /* gray-300 */
+}
+
+@media (min-width: 640px) {
+    .step-connector {
+        width: 5rem;
+        /* sm:w-20 */
+    }
+}
+
+/* Right: close button */
+.close-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    /* h-10 w-10 */
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.close-button:hover {
+    background-color: #f3f4f6;
+    /* gray-100 */
+}
+
+.icon-close {
+    width: 1.5rem;
+    /* 24px */
+    height: 1.5rem;
+    color: #4b5563;
+    /* gray-600 */
+}

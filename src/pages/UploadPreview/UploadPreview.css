@@ -1,0 +1,274 @@
+.upload-preview-page {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    /* gray-50 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    /* py-12 px-4 */
+}
+
+/* Wrapper */
+.upload-preview-wrapper {
+    width: 100%;
+    max-width: 48rem;
+    /* max-w-3xl */
+}
+
+/* Header / Title */
+.upload-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    /* mb-8 */
+}
+
+.upload-title {
+    font-size: 1.5rem;
+    /* text-2xl */
+    font-weight: 600;
+    color: #111827;
+    /* gray-900 */
+}
+
+.upload-subtitle {
+    font-size: 0.875rem;
+    /* text-sm */
+    margin-top: 0.5rem;
+    color: #4b5563;
+    /* gray-600 */
+}
+
+/* File chip (top card) */
+.file-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    /* p-4 */
+    border-radius: 0.5rem 0.5rem 0 0;
+    /* rounded-t-lg */
+    border: 1px solid #e5e7eb;
+    /* gray-200 */
+    background-color: #ffffff;
+}
+
+.file-chip-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    /* gap-3 */
+}
+
+.file-icon-placeholder {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background-color: #e5e7eb;
+    /* gray-200 */
+}
+
+/* Text in file chip */
+.file-name {
+    /* font-size: 0.875rem; */
+    /* text-sm */
+    /* font-weight: 500; */
+    /* color: #111827; */
+    /* gray-900 */
+    /* max-width: 28rem; */
+    /* white-space: nowrap; */
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
+    /* truncate */
+}
+
+.file-meta {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: #6b7280;
+    /* gray-500 */
+}
+
+/* Close button in file chip */
+.file-chip-close {
+    padding: 0.5rem;
+    border-radius: 9999px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.file-chip-close:hover {
+    background-color: #e5e7eb;
+    /* gray-200 (chip hover) */
+}
+
+.file-chip-close-icon {
+    width: 1.25rem;
+    /* 20px */
+    height: 1.25rem;
+    color: #6b7280;
+    /* gray-500 */
+}
+
+/* Image preview block */
+.image-preview-container {
+    border: 1px solid #e5e7eb;
+    /* gray-200 */
+    padding: 2rem;
+    /* p-8 */
+    background-color: #e5e7eb;
+    /* gray-200 */
+    display: flex;
+    justify-content: center;
+}
+
+.image-preview-inner {
+    max-width: 32rem;
+    /* roughly max-w-lg */
+    width: 100%;
+    height: 24rem;
+    /* h-96 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    /* shadow-md */
+}
+
+/* PPI card (bottom card) */
+.ppi-card {
+    border: 1px solid #e5e7eb;
+    /* gray-200 */
+    border-top: none;
+    /* to visually connect to preview section border if desired */
+    border-radius: 0 0 0.5rem 0.5rem;
+    /* rounded-b-lg */
+    background-color: #ffffff;
+    padding: 1.5rem;
+    /* p-6 */
+}
+
+.ppi-title {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    color: #111827;
+    /* gray-900 */
+    margin-bottom: 1rem;
+    /* mb-4 */
+}
+
+/* PPI grid */
+.ppi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    /* gap-4 */
+}
+
+@media (min-width: 640px) {
+    .ppi-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        /* sm:grid-cols-4 */
+    }
+}
+
+/* Individual PPI items */
+.ppi-item {
+    text-align: center;
+    padding: 1rem;
+    /* p-4 */
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    /* gray-200 default */
+    background-color: #ffffff;
+}
+
+.ppi-item-ok {
+    border-color: #e5e7eb;
+    /* border-gray-200 */
+    background-color: #ffffff;
+}
+
+.ppi-item-low {
+    border-color: #fecaca;
+    /* red-200 */
+    background-color: #fef2f2;
+    /* red-50 */
+}
+
+.ppi-size {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    color: #111827;
+    /* gray-900 */
+}
+
+.ppi-value {
+    font-size: 1.125rem;
+    /* text-lg */
+    font-weight: 700;
+    margin-top: 0.25rem;
+    /* mt-1 */
+}
+
+/* PPI colors */
+.ppi-good {
+    color: #16a34a;
+    /* green-600 */
+}
+
+.ppi-warning {
+    color: #ea580c;
+    /* orange-600 */
+}
+
+.ppi-bad {
+    color: #dc2626;
+    /* red-600 */
+}
+
+.ppi-note {
+    font-size: 0.75rem;
+    /* text-xs */
+    margin-top: 1.25rem;
+    /* mt-5 */
+    color: #6b7280;
+    /* gray-500 */
+}
+
+/* Footer / Continue button */
+.upload-footer {
+    margin-top: 2.5rem;
+    /* mt-10 */
+    text-align: right;
+}
+
+.upload-continue-btn {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    /* py-3 px-6 */
+    border-radius: 0.5rem;
+    /* rounded-lg */
+    font-size: 0.875rem;
+    /* text-sm to sm/md */
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.upload-continue-btn:hover {
+    background-color: #1f2937;
+    /* gray-800 */
+}
