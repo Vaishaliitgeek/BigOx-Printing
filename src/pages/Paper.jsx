@@ -11,6 +11,7 @@ function openDb() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
@@ -93,7 +94,7 @@ const PAPERS = [
 
 // --- Component ---
 
-const Paper = () => {
+const Paper = ({ handleBack, handleNext }) => {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -116,8 +117,8 @@ const Paper = () => {
     (async () => {
       try {
         const saved = await loadImageFromDb();
-        if (saved && saved.dataUrl) {
-          setImageSrc(saved.dataUrl);
+        if (saved && saved.url) {
+          setImageSrc(saved.url);
         }
       } catch (err) {
         console.error('Error loading image from IndexedDB:', err);
@@ -245,12 +246,27 @@ const Paper = () => {
           </div>
         </div>
       </div>
-            <FooterBar
-              // currentStep={currentStep}
-              // handleBack={handleBack}
-              // handleContinue={handleContinue}
-              // canContinue={canContinue}
-            />
+      <div className="footer-bar">
+        <div className="footer-inner">
+          <button
+            className="footer-btn footer-btn-outline"
+            onClick={() => handleBack()}
+          // disabled={currentStep === 1}
+          >
+            Back
+          </button>
+
+          <button
+            className="footer-btn footer-btn-primary"
+            onClick={() => handleNext()}
+          // onClick={handleContinue}
+          // disabled={!canContinue()}
+          >
+            Continue
+            {/* {currentStep === 4 ? "Add to Cart" : "Continue"} */}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -259,27 +275,28 @@ export default Paper;
 
 
 
-const FooterBar = ({ currentStep, handleBack, handleContinue, canContinue }) => {
-  currentStep = 3; // Paper step
-  return (
-    <div className="footer-bar">
-      <div className="footer-inner">
-        <button
-          className="footer-btn footer-btn-outline"
-          // onClick={handleBack}
-          // disabled={currentStep === 1}
-        >
-          Back
-        </button>
+// const FooterBar = ({ currentStep, handleBack, handleContinue, canContinue }) => {
+//   currentStep = 3; // Paper step
+//   return (
+//     <div className="footer-bar">
+//       <div className="footer-inner">
+//         <button
+//           className="footer-btn footer-btn-outline"
+//           onClick={() => handleBack()}
+//         // disabled={currentStep === 1}
+//         >
+//           Back
+//         </button>
 
-        <button
-          className="footer-btn footer-btn-primary"
-          // onClick={handleContinue}
-          // disabled={!canContinue()}
-        >
-          {currentStep === 4 ? "Add to Cart" : "Continue"}
-        </button>
-      </div>
-    </div>
-  );
-};
+//         <button
+//           className="footer-btn footer-btn-primary"
+//           onClick={() => hanndleNext()}
+//         // onClick={handleContinue}
+//         // disabled={!canContinue()}
+//         >
+//           {currentStep === 4 ? "Add to Cart" : "Continue"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };

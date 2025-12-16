@@ -24,7 +24,7 @@
 
 // export default App
 // App.jsx
-import { PRINT_SIZES, calculatePPI, getQualityLevel, getQualityColor,PAPERS } from "./pages/printData";
+import { PRINT_SIZES, calculatePPI, getQualityLevel, getQualityColor, PAPERS } from "./pages/printData";
 
 import { useState } from 'react'
 import './App.css'
@@ -70,6 +70,7 @@ function App() {
   }
 
   const handleNext = () => {
+    console.log("------runn")
     setCurrentStep((prev) => (prev < 4 ? prev + 1 : prev))
   }
 
@@ -85,24 +86,24 @@ function App() {
       {/* Render only the active step */}
       {currentStep === 1 && (
         <>
-          <Upload />
-          <button onClick={handleNext}>Next</button>
+          <Upload handleNext={handleNext} />
+          {/* <button onClick={handleNext}>Next</button> */}
         </>
       )}
 
       {currentStep === 2 && (
         <>
-          <Size />
-          <div>
+          <Size handleBack={handleBack} handleNext={handleNext} />
+          {/* <div>
             <button onClick={handleBack}>Back</button>
             <button onClick={handleNext}>Next</button>
-          </div>
+          </div> */}
         </>
       )}
 
       {currentStep === 3 && (
         <>
-          <Paper />
+          <Paper handleBack={handleBack} handleNext={handleNext} />
           <div>
             {/* <button onClick={handleBack}>Back</button>
             <button onClick={handleNext}>Next</button> */}
@@ -121,7 +122,7 @@ function App() {
             onBorderChange={handleBorderChange}
             onQuantityChange={handleQuantityChange}
           />
-          <button onClick={handleBack}>Back</button>
+          {/* <button onClick={handleBack}>Back</button> */}
         </>
       )}
     </div>
