@@ -29,13 +29,11 @@ import { PRINT_SIZES, calculatePPI, getQualityLevel, getQualityColor, PAPERS } f
 import { useState } from 'react'
 import './App.css'
 
-import Homepage from './pages/Homepage'
-import Upload from './pages/Upload'
-import Size from './pages/Size'
-import Paper from './pages/Paper'
-import Finish from './pages/Finish'
-import Header from './pages/Header/Header'
-import StepFinish from './pages/StepFinish'
+import Upload from './components/costomizer/upload/Upload.jsx'
+import Size from './components/costomizer/CropAndPosition/Size.jsx'
+import Paper from './components/costomizer/Paper/Paper'
+import Header from './components/Header/Header'
+import StepFinish from './components/costomizer/finish/StepFinish.jsx'
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1) // 1 = Upload
@@ -75,7 +73,7 @@ function App() {
   }
 
   return (
-    <div className="container">
+    <div className="Appcontainer">
       <Header
         currentStep={currentStep}
         onBack={handleBack}

@@ -1,0 +1,309 @@
+/* Header.module.css */
+
+/* Header container */
+.header {
+    width: 100%;
+    height: 6rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Container (center + max width) */
+.headerContainer {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding-inline: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .headerContainer {
+        padding-inline: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .headerContainer {
+        padding-inline: 2rem;
+    }
+}
+
+/* Inner flex row */
+.headerInner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 4rem;
+    margin-top: 1rem;
+}
+
+/* Left: back button */
+.backButton {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 150ms ease;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .backButton {
+        padding: 0 !important;
+    }
+
+}
+
+@media (min-width: 640px) {
+    .backButton {
+        gap: 0.5rem;
+    }
+}
+
+.backButton:hover {
+    color: #111827;
+}
+
+/* Icon base */
+.icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Back text visibility (mobile vs desktop) */
+.backTextDesktop {
+    display: none;
+}
+
+.backTextMobile {
+    display: inline;
+}
+
+@media (min-width: 640px) {
+    .backTextDesktop {
+        display: inline;
+    }
+
+    .backTextMobile {
+        display: none;
+    }
+}
+
+/* Center: stepper container */
+.stepper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Wrapper around each step + connector */
+.stepWrapper {
+    display: flex;
+    align-items: center;
+}
+
+/* Single step (circle + label) */
+.step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Step circle base */
+.stepCircle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: 2px solid #d1d5db;
+    background-color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #9ca3af;
+    transition: all 150ms ease;
+}
+
+/* @media (min-width: 640px) {
+    .stepCircle {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 0.875rem;
+    }
+} */
+
+@media (max-width: 768px) {
+    .stepCircle {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.875rem;
+    }
+
+    .backTextDesktop {
+        display: none;
+    }
+}
+
+@media (max-width: 550px) {
+    .stepCircle {
+        width: 1.7rem;
+        height: 1.7rem;
+        font-size: 0.875rem;
+    }
+
+    .stepConnector {
+        width: 2rem !important;
+        margin-inline: 0.5rem;
+    }
+
+}
+
+@media (max-width: 350px) {
+
+    /* .stepCircle {
+        width: 1.3rem;
+        height: 1.3rem;
+        font-size: 0.875rem;
+    } */
+    .stepConnector {
+        width: 15px !important;
+        /* margin-inline: 0.5rem; */
+
+    }
+}
+
+
+
+
+/* Completed step */
+.stepCircleCompleted {
+    border-color: #000000;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Current step (with ring effect) */
+.stepCircleCurrent {
+    border-color: #000000;
+    background-color: #ffffff;
+    color: #000000;
+    /* box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1); */
+}
+
+/* Upcoming or default */
+.stepCircleUpcoming {
+    border-color: #d1d5db;
+    background-color: #ffffff;
+    color: #9ca3af;
+}
+
+/* Check icon size */
+.checkIcon {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (min-width: 640px) {
+    .checkIcon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+}
+
+/* Step label under circle */
+.stepLabel {
+    position: absolute;
+    bottom: -1.5rem;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 150ms ease;
+    display: none;
+}
+
+.stepLabelActive {
+    color: #111827;
+}
+
+.stepLabelInactive {
+    color: #9ca3af;
+}
+
+.stepLabel {
+    display: block;
+}
+
+
+/* Connector line between steps */
+.stepConnector {
+    height: 2px;
+    width: 5rem;
+    transition: background-color 150ms ease;
+    margin-inline: 0.25rem;
+}
+
+.stepConnectorActive {
+    background-color: #000000;
+}
+
+.stepConnectorInactive {
+    background-color: #d1d5db;
+}
+
+/* @media (max-width: 640px) {
+    .stepConnector {
+        width: 5rem;
+        margin-inline: 0.5rem;
+    }
+} */
+
+/* Right: close button */
+.closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+    flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+    .closeButton {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+.closeButton:hover {
+    background-color: #f3f4f6;
+}
+
+.iconClose {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #4b5563;
+}
+
+@media (max-width: 400px) {
+    .stepLabel {
+        display: none;
+    }
+
+    .stepCircle {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.885rem;
+    }
+}

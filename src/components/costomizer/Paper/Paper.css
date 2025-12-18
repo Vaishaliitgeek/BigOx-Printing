@@ -1,0 +1,285 @@
+.editor-crop-area-paper {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  /* overflow: hidden; */
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  touch-action: none;
+  /* stop browser pinch / double-tap zoom / scroll in this box */
+  /* overflow: hidden; */
+  aspect-ratio: 1 / 1;
+}
+
+.editor-image-wrapper-paper {
+  padding: 33px;
+  /* position: absolute; */
+  /* inset: 0; */
+  background: #FDF9EE;
+}
+
+.selected-size {
+  text-align: center;
+}
+
+/* PAPER GRID – right side */
+.paper-grid {
+  display: grid;
+  grid-template-columns: repeat(2 ,minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 500px) {
+  .paper-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+.paper-card {
+  background-color: #ffffff;
+  /* border-radius: 0.75rem; */
+  padding: 18px;
+  border: 2px solid #E5E5E5;
+  /* gray-200 */
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition:
+    box-shadow 150ms ease,
+    transform 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.paper-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Selected state: thick black border, like in screenshot */
+.paper-card-selected {
+  border-color: #000000;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Thumbnail / artwork area */
+.paper-card-thumb {
+  position: relative;
+  overflow: hidden;
+  height: 190px;
+  width: 100%;
+  /* max-width: 250px; */
+  margin: 0 auto;
+
+
+}
+
+.paper-card-thumb img {
+  width: 100%;
+  /* max-width: 250px; */
+  height: 100%;
+  max-height: 190px;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+.paper-card-thumb-art {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f97316, #facc15, #f97316);
+  /* placeholder; replace with real images if you have them */
+}
+
+/* Radio indicator in top-right */
+.paper-card-radio {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+}
+
+.paper-card-radio-outer {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: -8px;
+  right: -9px;
+  border-radius: 9999px;
+  border: 2px solid #e5e7eb;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.checkIcon {
+  color: white;
+  width: 25px;
+  height: 25px;
+}
+
+.paper-card-selected .paper-card-radio-outer {
+  border-color: #000000;
+}
+
+.paper-card-radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #000000;
+}
+
+/* Text area */
+.paper-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.paper-card-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paper-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  /* gray-900 */
+}
+
+/* Finish / weight pills */
+.paper-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.paper-tag {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  /* border-radius: 9999px; */
+  border: 1px solid #e5e7eb;
+
+  /* background-color: #f3f4f6; */
+  /* gray-100 */
+  color: #0A0A0A;
+}
+
+.paper-tag-outline {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #0A0A0A;
+  /* gray-600 */
+}
+
+.paper-card-description {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Price row */
+.paper-card-price-row {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.paper-price-neutral {
+  color: #4b5563;
+  /* gray-600 */
+}
+
+.paper-price-adjust {
+  color: #111827;
+}
+
+.paper-price-adjust-down {
+  color: #16a34a;
+  /* green-600 for discounts */
+}
+
+
+/* Full-width footer strip */
+.footer-bar {
+  border-top: 1px solid #e5e7eb;
+  /* light border */
+  background-color: #fffef8;
+  /* soft off-white like the screenshot */
+  padding: 12px 16px;
+}
+
+/* Centered inner container */
+.footer-inner {
+  max-width: 1120px;
+  /* similar to container mx-auto */
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Base button style */
+.footer-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 999px;
+  /* pill shape */
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Outline (Back) */
+.footer-btn-outline {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  color: #111111;
+}
+
+.footer-btn-outline:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+/* Primary (Continue) */
+.footer-btn-primary {
+  background-color: #d51c1c;
+  /* red like screenshot */
+  color: #ffffff;
+}
+
+.footer-btn-primary:hover:not(:disabled) {
+  background-color: #b81414;
+}
+
+/* Disabled state */
+.footer-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive: stack buttons on small screens */
+@media (max-width: 640px) {
+  .footer-inner {
+    flex-direction: column;
+  }
+
+  .footer-btn {
+    width: 100%;
+    padding: 10px 15px;
+  }
+}
