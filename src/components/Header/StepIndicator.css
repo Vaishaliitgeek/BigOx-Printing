@@ -1,0 +1,131 @@
+.progress-bar {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.step-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.step-content-flex {
+  flex: 1;
+}
+
+.circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.step-label {
+  font-size: 14px;
+  color: #777;
+  text-align:center;
+}
+
+.completed {
+  background-color: #28a745; /* Green for completed */
+}
+
+.active {
+  background-color: #007bff; /* Blue for active */
+}
+
+.inactive {
+  background-color: #ccc; /* Gray for inactive */
+}
+
+.active-label {
+  color: #007bff;
+}
+
+.inactive-label {
+  color: #ccc;
+}
+
+.step-line {
+  height: 2px;
+  flex: 1;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.completed-line {
+  background-color: #007bff;
+}
+
+.inactive-line {
+  background-color: #ccc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .step-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .step {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .step-line {
+    display: none;
+  }
+
+  .circle {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-content {
+    gap: 5px;
+  }
+
+  .circle {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+  }
+
+  .step-label {
+    font-size: 12px;
+  }
+}

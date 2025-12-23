@@ -1,130 +1,189 @@
-// import { useState } from 'react'
-// // import reactLogo from './assets/react.svg'
-// // import viteLogo from '/vite.svg'
-// import './App.css'
-// import Homepage from './pages/Homepage'
-// import Upload from './pages/Upload'
-// import Header from './pages/Header/Header'
-// import Size from './pages/Size'
-// import Paper from './pages/Paper'
-// import Finish from './pages/Finish'
-// function App() {
+/**
+ * App.jsx
+ *
+ * High-level flow container for the 4-step print customizer:
+ * 1) Upload
+ * 2) Size / Crop & Position
+ * 3) Paper selection
+ * 4) Finish / Summary
+ */
 
-//   return (
-//     <div className="container bg-black" >
-//       {/* <Homepage /> */}
-//       <Header />
-//       <Upload />
-//       <Size />
-//       <Paper />
-//       <Finish />
-//     </div>
-//   )
-// }
+import { useEffect, useState, useCallback } from "react";
+import "./App.css";
 
-// export default App
-// App.jsx
-import { PRINT_SIZES, calculatePPI, getQualityLevel, getQualityColor, PAPERS } from "./pages/printData";
+// Data (defaults)
+import { PRINT_SIZES, PAPERS } from "./pages/printData";
 
-import { useState } from 'react'
-import './App.css'
+// API / services
+import { getValidationRules } from "./services/services.js";
 
-import Upload from './components/costomizer/upload/Upload.jsx'
-import Size from './components/costomizer/CropAndPosition/Size.jsx'
-import Paper from './components/costomizer/Paper/Paper'
-import Header from './components/Header/Header'
-import StepFinish from './components/costomizer/finish/StepFinish.jsx'
+// UI components
+import Header from "./components/Header/Header";
+import Upload from "./components/costomizer/upload/Upload.jsx";
+import Size from "./components/costomizer/CropAndPosition/Size.jsx";
+import Paper from "./components/costomizer/Paper/Paper";
+import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
+import Lamination from "./components/costomizer/Lamination/lamination.jsx"
+/**
+ * Step constants make the code more readable than using raw numbers everywhere.
+ */
+const STEPS = Object.freeze({
+  UPLOAD: 1,
+  SIZE: 2,
+  PAPER: 3,
+  Lamination: 4,
+  Mounting: 5,
+  FINISH: 6,
+});
+
+const MIN_STEP = STEPS.UPLOAD;
+const MAX_STEP = STEPS.FINISH;
 
 function App() {
-  const [currentStep, setCurrentStep] = useState(1) // 1 = Upload
-  const [selectedSizeId, setSelectedSizeId] = useState(PRINT_SIZES[0].id);
-  const [selectedPaperId, setSelectedPaperId] = useState(PAPERS[0].id);
-  const [imageUrl, setImageUrl] = useState("https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1600&q=80");
+  // -----------------------------
+  // Stepper / navigation state
+  // -----------------------------
+  const [currentStep, setCurrentStep] = useState(STEPS.UPLOAD);
+
+  // -----------------------------
+  // Product configuration state
+  // -----------------------------
+  const [selectedSizeId, setSelectedSizeId] = useState(PRINT_SIZES?.[0]?.id);
+  const [selectedPaperId, setSelectedPaperId] = useState(PAPERS?.[0]?.id);
+
+  // Finish-step options
   const [borderSize, setBorderSize] = useState("none");
   const [quantity, setQuantity] = useState(1);
 
-  const handleBorderChange = (newBorderSize) => {
+  // -----------------------------
+  // Validation rules (from API)
+  // -----------------------------
+  const [rules, setRules] = useState(null);
+
+  // If you plan to use sizeOptions later, keep it.
+  // Otherwise, remove it to reduce unused state.
+  const [sizeOptions, setSizeOptions] = useState([]);
+
+  /**
+   * Loads validation rules from the backend once on mount.
+   * Wrapped in useCallback so it has stable identity and keeps lint happy.
+   */
+  const loadRules = useCallback(async () => {
+    try {
+      const fetchedRules = await getValidationRules();
+      setRules(fetchedRules);
+      console.log("Validation rules:", fetchedRules);
+    } catch (error) {
+      console.error("Failed to load validation rules:", error);
+      setRules(null); // safe fallback
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRules();
+  }, [loadRules]);
+
+  // -----------------------------
+  // Handlers for finish-step inputs
+  // -----------------------------
+  const handleBorderChange = useCallback((newBorderSize) => {
     setBorderSize(newBorderSize);
-  };
+  }, []);
 
-  const handleQuantityChange = (newQuantity) => {
+  const handleQuantityChange = useCallback((newQuantity) => {
     setQuantity(newQuantity);
-  };
+  }, []);
 
-  const goToStep = (step) => {
-    if (step < 1 || step > 4) return
-    setCurrentStep(step)
-  }
+  // -----------------------------
+  // Navigation helpers
+  // -----------------------------
+  /**
+   * Jump to a specific step safely.
+   * Prevents going out of range.
+   */
+  const goToStep = useCallback((step) => {
+    if (step < MIN_STEP || step > MAX_STEP) return;
+    setCurrentStep(step);
+  }, []);
 
-  const handleBack = () => {
-    // Go back one step (or do something like "Back to Product" here)
-    setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev))
-  }
+  /**
+   * Go to previous step (clamped).
+   */
+  const handleBack = useCallback(() => {
+    setCurrentStep((prev) => Math.max(MIN_STEP, prev - 1));
+  }, []);
 
-  const handleClose = () => {
-    // Example: reset to first step or navigate to Homepage
-    setCurrentStep(1)
-    // or if you want Homepage: render <Homepage /> conditionally instead
-  }
+  /**
+   * Close/reset flow.
+   * You can swap this to navigate to a route if needed.
+   */
+  const handleClose = useCallback(() => {
+    setCurrentStep(STEPS.UPLOAD);
+  }, []);
 
-  const handleNext = () => {
-    console.log("------runn")
-    setCurrentStep((prev) => (prev < 4 ? prev + 1 : prev))
-  }
+  /**
+   * Go to next step (clamped).
+   */
+  const handleNext = useCallback(() => {
+    setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
+  }, []);
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
     <div className="Appcontainer">
       <Header
         currentStep={currentStep}
         onBack={handleBack}
         onClose={handleClose}
-        onStepClick={goToStep} // optional if you want clicking circles to jump
+        onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />
 
       {/* Render only the active step */}
-      {currentStep === 1 && (
-        <>
-          <Upload handleNext={handleNext} />
-          {/* <button onClick={handleNext}>Next</button> */}
-        </>
+      {currentStep === STEPS.UPLOAD && (
+        <Upload
+          handleNext={handleNext}
+          rules={rules}
+        />
       )}
 
-      {currentStep === 2 && (
-        <>
-          <Size handleBack={handleBack} handleNext={handleNext} />
-          {/* <div>
-            <button onClick={handleBack}>Back</button>
-            <button onClick={handleNext}>Next</button>
-          </div> */}
-        </>
+      {currentStep === STEPS.SIZE && (
+        <Size
+          handleBack={handleBack}
+          handleNext={handleNext}
+          rules={rules}
+        />
       )}
 
-      {currentStep === 3 && (
-        <>
-          <Paper handleBack={handleBack} handleNext={handleNext} />
-          <div>
-            {/* <button onClick={handleBack}>Back</button>
-            <button onClick={handleNext}>Next</button> */}
-          </div>
-        </>
+      {currentStep === STEPS.PAPER && (
+        <Paper
+          handleBack={handleBack}
+          handleNext={handleNext}
+          rules={rules}
+        />
+      )}
+      {currentStep === STEPS.Lamination && (
+        <Lamination
+          handleBack={handleBack}
+          handleNext={handleNext}
+          rules={rules}
+        />
       )}
 
-      {currentStep === 4 && (
-        <>
-          <StepFinish
-            imageUrl={imageUrl}
-            selectedSizeId={selectedSizeId}
-            selectedPaperId={selectedPaperId}
-            borderSize={borderSize}
-            quantity={quantity}
-            onBorderChange={handleBorderChange}
-            onQuantityChange={handleQuantityChange}
-          />
-          {/* <button onClick={handleBack}>Back</button> */}
-        </>
+      {currentStep === STEPS.FINISH && (
+        <StepFinish
+          selectedSizeId={selectedSizeId}
+          selectedPaperId={selectedPaperId}
+          borderSize={borderSize}
+          quantity={quantity}
+          onBorderChange={handleBorderChange}
+          onQuantityChange={handleQuantityChange}
+          rules={rules}
+        />
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

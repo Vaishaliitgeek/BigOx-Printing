@@ -75,22 +75,22 @@ const PAPERS = [
     description: 'Pearlescent surface with vibrant colors.',
     priceAdjustment: 3,
   },
-  {
-    id: 'p5',
-    name: 'Metallic Gloss',
-    finish: 'Gloss',
-    weight: '255gsm',
-    description: 'Pearlescent finish with extra depth and luminosity.',
-    priceAdjustment: 8,
-  },
-  {
-    id: 'p6',
-    name: 'Fine Art Matte',
-    finish: 'Matte',
-    weight: '220gsm',
-    description: 'Smooth, non-reflective surface ideal for detailed work.',
-    priceAdjustment: 2,
-  },
+  // {
+  //   id: 'p5',
+  //   name: 'Metallic Gloss',
+  //   finish: 'Gloss',
+  //   weight: '255gsm',
+  //   description: 'Pearlescent finish with extra depth and luminosity.',
+  //   priceAdjustment: 8,
+  // },
+  // {
+  //   id: 'p6',
+  //   name: 'Fine Art Matte',
+  //   finish: 'Matte',
+  //   weight: '220gsm',
+  //   description: 'Smooth, non-reflective surface ideal for detailed work.',
+  //   priceAdjustment: 2,
+  // },
 ];
 
 // --- Component ---
@@ -200,7 +200,7 @@ const Paper = ({ handleBack, handleNext }) => {
                   <div className="paper-card-thumb">
                     {/* you can swap this gradient for real sample images later */}
                     {/* <div className="paper-card-thumb-art" /> */}
-                    <img src='https://i.pinimg.com/736x/8d/7f/01/8d7f01d0130cb534c101b3ce4a14a385.jpg'></img>
+                    <img src='https://damassets.autodesk.net/content/dam/autodesk/www/industry/3d-animation/create-beautiful-3d-animations-thumb-1204x677.jpg'></img>
                     <div className="paper-card-radio">
                       {selectedPaperId === paper.id && (
                         <div className="paper-card-radio-outer">
@@ -269,13 +269,7 @@ const Paper = ({ handleBack, handleNext }) => {
                 </button>
               ))}
             </div>
-
-            {/* Action Buttons */}
-          </div>
-        </div>
-      </div>
-      <div className="footer-bar">
-        <div className="footer-inner">
+  <div className="footer-inner">
           <button
             className="footer-btn footer-btn-outline"
             onClick={() => handleBack()}
@@ -294,7 +288,11 @@ const Paper = ({ handleBack, handleNext }) => {
             {/* {currentStep === 4 ? "Add to Cart" : "Continue"} */}
           </button>
         </div>
+            {/* Action Buttons */}
+          </div>
+        </div>
       </div>
+  
     </div>
   );
 };

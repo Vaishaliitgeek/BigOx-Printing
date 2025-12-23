@@ -6,57 +6,11 @@ import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 // import "./App.css";
 import "./size.css";
-// --- IndexedDB helpers (same DB as in Upload) ---
-const DB_NAME = "image-db";
-const DB_VERSION = 1;
-const STORE_NAME = "images";
-const CURRENT_IMAGE_KEY = "current-image";
-const CROP_IMAGE_KEY = "crop-image";
+import { apiConnecter } from "../../../utils/ApiConnector";
+import { getSizeOptions } from "../../../services/services";
+import { loadImageFromDb, saveCurrentImage } from "../../../services/indexDb";
+import { clamp, cropToBlob, getQualityClass, getQualityFromPpi, makeCenteredCropPx, parseSizeInches } from "./helper";
 
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = (event) => {
-      resolve(event.target.result);
-    };
-
-    request.onerror = (event) => {
-      reject(event.target.error);
-    };
-  });
-}
-
-async function loadImageFromDb() {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(CURRENT_IMAGE_KEY);
-    console.log("IndexedDB request:", request);
-
-    request.onsuccess = () => resolve(request.result || null);
-    request.onerror = (event) => reject(event.target.error);
-  });
-}
-
-async function saveCurrentImage(imageData) {
-  const db = await openDb();
-  const tx = db.transaction(STORE_NAME, "readwrite");
-  const store = tx.objectStore(STORE_NAME);
-  store.put(imageData, CROP_IMAGE_KEY);
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
 
 const handleUrlSelect = (imageUrl, handleNext) => {
   if (!imageUrl) return;
@@ -105,43 +59,11 @@ const computePpiForSize = (sizeStr, imageDimensions) => {
   return ppi;
 };
 
-const getQualityFromPpi = (ppi) => {
-  if (ppi == null) return "gray";
-  if (ppi >= 180) return "green";
-  if (ppi >= 150) return "orange";
-  return "red";
-};
-
-const getQualityClass = (quality) => {
-  switch (quality) {
-    case "green":
-      return "quality-green";
-    case "orange":
-      return "quality-orange";
-    case "red":
-      return "quality-red";
-    default:
-      return "quality-gray";
-  }
-};
-
-const parseSizeInches = (sizeStr) => {
-  if (!sizeStr) return { widthIn: null, heightIn: null };
-  const cleaned = sizeStr.replace(/"/g, "").trim(); // remove "
-  const [wStr, hStr] = cleaned.split(/[×x]/i); // × or x
-  const widthIn = parseFloat(wStr);
-  const heightIn = parseFloat(hStr);
-  if (isNaN(widthIn) || isNaN(heightIn)) {
-    return { widthIn: null, heightIn: null };
-  }
-  return { widthIn, heightIn };
-};
-
 const SIZES = [
-  { id: "4×4", label: '4×4"', w: 4, h: 4, price: 799.0, minPPIThreshold: 180 },
+  { id: "4 × 4", label: 'test"', w: 4, h: 4, price: 799.0, minPPIThreshold: 180 },
   {
-    id: "4x5",
-    label: '4x5"',
+    id: "4 x 5",
+    label: '4 x 5"',
     w: 4,
     h: 5,
     price: 1199.95,
@@ -166,83 +88,46 @@ const SIZES = [
   { id: "5x7", label: "5x7", w: 5, h: 7, price: 1707.62, minPPIThreshold: 150 },
   { id: "6x6", label: '6x6"', w: 6, h: 6, price: 2299.0, minPPIThreshold: 150 },
   { id: "6x8", label: '6x8"', w: 6, h: 8, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "7x10", label: '7x10"', w: 7, h: 10, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "8x8", label: '8x8"', w: 8, h: 8, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "8x10", label: '8x10"', w: 8, h: 10, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "8x12", label: '8x12"', w: 8, h: 12, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "9x12", label: '9x12"', w: 9, h: 12, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "10x10", label: '10x10"', w: 10, h: 10, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "10x13", label: '10x13"', w: 10, h: 13, price: 2899.0, minPPIThreshold: 150 },
-  // { id: "10x15", label: '10x15"', w: 10, h: 15, price: 2899.0, minPPIThreshold: 150 }
 ];
 
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
+
+
+const getAllSize = async (setSizeOptions) => {
+  console.log("Fetching size options from API...");
+  try {
+    const data = await getSizeOptions();
+    const filterdData = data.map((obj) => ({...obj,w:obj.width,h:obj.height,id:obj.dimensionText}));
+    console.log('filterdData',filterdData)
+    setSizeOptions(filterdData);
+  } catch (err) {
+    console.error("Error while getting size options:", err.message);
+  }
 }
 
-function makeCenteredCropPx(displayW, displayH, aspect, heightPx) {
-  const maxH = Math.min(displayH, displayW / aspect);
-  const h = clamp(heightPx, 40, maxH);
-  const w = h * aspect;
-
-  return {
-    unit: "px",
-    width: w,
-    height: h,
-    x: (displayW - w) / 2,
-    y: (displayH - h) / 2,
-  };
-}
-
-async function cropToBlob(
-  imageEl,
-  cropPx,
-  mimeType = "image/png",
-  quality = 0.92
-) {
-  if (!cropPx?.width || !cropPx?.height)
-    throw new Error("No crop area selected");
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("No 2D context");
-
-  const scaleX = imageEl.naturalWidth / imageEl.width;
-  const scaleY = imageEl.naturalHeight / imageEl.height;
-
-  const sx = Math.round(cropPx.x * scaleX);
-  const sy = Math.round(cropPx.y * scaleY);
-  const sw = Math.round(cropPx.width * scaleX);
-  const sh = Math.round(cropPx.height * scaleY);
-
-  canvas.width = sw;
-  canvas.height = sh;
-
-  ctx.drawImage(imageEl, sx, sy, sw, sh, 0, 0, sw, sh);
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) =>
-        blob ? resolve(blob) : reject(new Error("Canvas export failed")),
-      mimeType,
-      quality
-    );
-  });
-}
+// const getValidationRules = async () => {
+//   console.log("Fetching Validation Rules from API...");
+//   try {
+//     // const data = await getValidationRules();
+//     // setSizeOptions(data);
+//   } catch (err) {
+//     console.error("Error while getting size options:", err.message);
+//   }
+// }
 
 export default function App({ handleBack, handleNext }) {
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
 
   const [imageSrc, setImageSrc] = useState("/sample.jpg"); // optional default
-  const [selectedSizeId, setSelectedSizeId] = useState("10x12");
+  const [selectedSizeId, setSelectedSizeId] = useState(SIZES[0].id);
   const [rotation, setRotation] = useState(false);
+  const [sizeOptions, setSizeOptions] = useState([]);
   const handleRotate = () => {
     setRotation((prev) => !prev);
   };
 
   const selectedSize = useMemo(
-    () => SIZES.find((s) => s.id === selectedSizeId) ?? SIZES[0],
+    () => sizeOptions.find((s) => s.id === selectedSizeId) ?? SIZES[0],
     [selectedSizeId]
   );
 
@@ -260,6 +145,8 @@ export default function App({ handleBack, handleNext }) {
     if (!displayDims.w || !displayDims.h) return 600;
     return Math.min(displayDims.h, displayDims.w / aspect);
   }, [displayDims, aspect]);
+
+
 
   // When image loads, set initial crop.
   function onImageLoad(e) {
@@ -282,18 +169,7 @@ export default function App({ handleBack, handleNext }) {
     setCrop(_);
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const saved = await loadImageFromDb();
-        if (saved && saved.url) {
-          setImageSrc(saved.url);
-        }
-      } catch (err) {
-        console.error("Error loading image from IndexedDB:", err);
-      }
-    })();
-  }, []);
+
 
   // If aspect changes (size selected), rebuild crop centered, keep similar height.
   useEffect(() => {
@@ -303,6 +179,8 @@ export default function App({ handleBack, handleNext }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aspect, heightMax]);
 
+
+
   // Slider changes crop rect size (height) while keeping aspect.
   function onCropHeightSlider(val) {
     const h = clamp(Number(val), 40, heightMax);
@@ -310,13 +188,7 @@ export default function App({ handleBack, handleNext }) {
     setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
   }
 
-  function onPickFile(file) {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setImageSrc(url);
-    setCrop(undefined);
-    setCompletedCrop(null);
-  }
+
 
   async function onDownload() {
     try {
@@ -333,9 +205,26 @@ export default function App({ handleBack, handleNext }) {
     }
   }
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await loadImageFromDb();
+        if (saved && saved.url) {
+          setImageSrc(saved.url);
+        }
+      } catch (err) {
+        console.error("Error loading image from IndexedDB:", err);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    getAllSize(setSizeOptions);
+  }, []);
+
   return (
     <div className="page">
-     
+
 
       <main className="content">
         <section className="left">
@@ -404,7 +293,7 @@ export default function App({ handleBack, handleNext }) {
                     style={{ accentColor: "#CE1312" }}
                   />
                 </div>
-                <button onClick={() => {}} className="editorResetBtn">
+                <button onClick={() => { }} className="editorResetBtn">
                   Reset
                 </button>
               </div>
@@ -454,12 +343,12 @@ export default function App({ handleBack, handleNext }) {
 
           {/* Size Grid */}
           <div className="editorSizeGrid">
-            {SIZES.map((item) => {
+            {sizeOptions?.map((item) => {
               const ppi = computePpiForSize(item.id, displayDims);
               const quality = getQualityFromPpi(ppi);
               return (
                 <button
-                  key={item.size}
+                  key={item.id}
                   onClick={() => setSelectedSizeId(item.id)}
                   className={
                     "editorSizeCard " +
@@ -467,7 +356,7 @@ export default function App({ handleBack, handleNext }) {
                   }
                 >
                   <div className="editor-size-card-size">{item.id}</div>
-                  <div className="editor-size-card-price">{item.price}</div>
+                  <div className="editor-size-card-price">{item.price ?? "N/A"}</div>
                   <div
                     className={
                       "editor-size-card-ppi " + getQualityClass(quality)
