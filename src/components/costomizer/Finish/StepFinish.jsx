@@ -188,6 +188,70 @@ const STORE_NAME = 'images';
 const CURRENT_IMAGE_KEY = 'current-image';
 const CROP_IMAGE_KEY = "crop-image";
 
+const Mats = [
+  {
+    "_id": "694936889ed118756432e192",
+    "optionName": "No Mat",
+    "shortDescription": "Print only, no matting",
+    "__v": 0
+  },
+  {
+    "_id": "69494ddc522251b1eb2eac99",
+    "optionName": "Single White Mat",
+    "priceDeltaMinor": 23,
+    "matWidth": 23,
+    "shortDescription": "Classic white beveled mat",
+    "color": "black",
+    "status": true,
+    "thumbnailUrl": "https://www.dropbox.com/scl/fi/bi8rj1j3jbwbc0ljlqfal/1766499797787.jpg?rlkey=ajhd4y8z1f4ag2sqfpcff7wz2&raw=1",
+    "__v": 0
+  },
+  {
+    "_id": "69494f0a522251b1ewb2eacd2",
+    "optionName": "Single Black Mat",
+    "priceDeltaMinor": 53,
+    "shortDescription": "Modern black beveled mat",
+    "matWidth": 45,
+    "color": "black",
+    "status": false,
+    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+    "__v": 0
+  },
+  {
+    "_id": "69494f02a522251wb1eb2eacd2",
+    "optionName": "Single Black Mat",
+    "priceDeltaMinor": 53,
+    "shortDescription": "Modern black beveled mat",
+    "matWidth": 45,
+    "color": "black",
+    "status": false,
+    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+    "__v": 0
+  },
+  {
+    "_id": "69494f02a522251b1ewb2eacd2",
+    "optionName": "Single Black Mat",
+    "priceDeltaMinor": 53,
+    "shortDescription": "Modern black beveled mat",
+    "matWidth": 45,
+    "color": "black",
+    "status": false,
+    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+    "__v": 0
+  },
+  {
+    "_id": "69494f0a5222512b1eb2eacd2",
+    "optionName": "Single Black Mat",
+    "priceDeltaMinor": 53,
+    "shortDescription": "Modern black beveled mat",
+    "matWidth": 45,
+    "color": "black",
+    "status": false,
+    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+    "__v": 0
+  }
+]
+
 function openDb() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -225,6 +289,8 @@ const StepFinish = () => {
   const [borderSize, setBorderSize] = useState('0');
   const [quantity, setQuantity] = useState(1);
   const [imageSrc, setImageSrc] = useState(null);
+  const [activeTab, setActiveTab] = useState("Mat");
+  const [activeMat, setActiveMat] = useState();
   const basePrice = 68;
 
   const handleQuantityChange = (value) => {
@@ -279,6 +345,18 @@ const StepFinish = () => {
             <span className="summary-value">None</span>
           </div>
           <div className="summary-row">
+            <span className="summary-label">Lamination</span>
+            <span className="summary-value">None</span>
+          </div>
+          <div className="summary-row">
+            <span className="summary-label">Mounting</span>
+            <span className="summary-value">None</span>
+          </div>
+          <div className="summary-row">
+            <span className="summary-label">Mat</span>
+            <span className="summary-value">None</span>
+          </div>
+          <div className="summary-row">
             <span className="summary-label">Quantity</span>
             <span className="summary-value">{quantity}</span>
           </div>
@@ -289,97 +367,156 @@ const StepFinish = () => {
         </div>
       </div>
 
-      <div className="config-section">
-        <h2 className="section-title">Border & Quantity</h2>
-
-        <div className="border-section">
-          <h3 className="subsection-title">Border Size</h3>
-          <div className="border-grid">
-            <button
-              className={`border-button ${borderSize === '0' ? 'active' : ''}`}
-              onClick={() => setBorderSize('0')}
-            >
-              No Border
-            </button>
-            <button
-              className={`border-button ${borderSize === '0.25' ? 'active' : ''}`}
-              onClick={() => setBorderSize('0.25')}
-            >
-              ¼"
-            </button>
-            <button
-              className={`border-button ${borderSize === '0.5' ? 'active' : ''}`}
-              onClick={() => setBorderSize('0.5')}
-            >
-              ½"
-            </button>
-            <button
-              className={`border-button ${borderSize === '1' ? 'active' : ''}`}
-              onClick={() => setBorderSize('1')}
-            >
-              1"
-            </button>
-            <button
-              className={`border-button ${borderSize === '2' ? 'active' : ''}`}
-              onClick={() => setBorderSize('2')}
-            >
-              2"
-            </button>
-          </div>
-          <p className="border-note">Borders are blank space added around your image, not a mat or frame.</p>
+      <div className='right-section'>
+        <div className='tab'>
+          <div className={`tab-option ${activeTab == "Mat" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Mat") }}>Mat</div>
+          <div className={`tab-option ${activeTab == "Border" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Border") }}>Border</div>
         </div>
 
-        <div className="quantity-section">
-          <h3 className="subsection-title">Quantity</h3>
-          <div className="quantity-control">
-            <button
-              className="quantity-button"
-              onClick={() => handleQuantityChange(quantity - 1)}
-            >
-              −
+
+        {
+          activeTab == "Mat" ?
+            <div className='mat-wrapper'>
+              <h3 className="subsection-title">Mat Style </h3>
+
+              {Mats.map((mat) => {
+                const isNotOption = mat.optionName == "No Mat";
+                return <div className={`mat-container ${activeMat?._id == mat._id ? "active-mat" : ""} `} onClick={() => setActiveMat(mat)}>
+                  <div className='mat-left'>
+                    {
+                      !isNotOption &&
+                      <div className='mat-left-image-container'>
+                        <img src={mat.thumbnailUrl} height={50} width={50}></img>
+                      </div>
+                    }
+                    <div className='mat-left-text-container'>
+                      <div className='mat-left-text'>{mat.optionName}</div>
+                      <div className='mat-left-text'>{mat.shortDescription}</div>
+                    </div>
+                  </div>
+                  {
+                    !isNotOption &&
+                    <div className='mat-right'>
+                      +${mat.priceDeltaMinor}
+                    </div>
+                  }
+                </div>
+              })}
+            </div> : <div className="border-section">
+              <h3 className="subsection-title">Border Size</h3>
+              <div className="border-grid">
+                <button
+                  className={`border-button ${borderSize === '0' ? 'active' : ''}`}
+                  onClick={() => setBorderSize('0')}
+                >
+                  No Border
+                </button>
+                <button
+                  className={`border-button ${borderSize === '0.25' ? 'active' : ''}`}
+                  onClick={() => setBorderSize('0.25')}
+                >
+                  ¼"
+                </button>
+                <button
+                  className={`border-button ${borderSize === '0.5' ? 'active' : ''}`}
+                  onClick={() => setBorderSize('0.5')}
+                >
+                  ½"
+                </button>
+                <button
+                  className={`border-button ${borderSize === '1' ? 'active' : ''}`}
+                  onClick={() => setBorderSize('1')}
+                >
+                  1"
+                </button>
+                <button
+                  className={`border-button ${borderSize === '2' ? 'active' : ''}`}
+                  onClick={() => setBorderSize('2')}
+                >
+                  2"
+                </button>
+              </div>
+              <p className="border-note">Borders are blank space added around your image, not a mat or frame.</p>
+            </div>
+        }
+        <div className="config-section">
+
+
+          <div className="quantity-section">
+            <h3 className="subsection-title">Quantity</h3>
+            <div className="quantity-control">
+              <button
+                className="quantity-button"
+                onClick={() => handleQuantityChange(quantity - 1)}
+              >
+                -
+              </button>
+              <input
+                type="number"
+                className="quantity-input"
+                value={quantity}
+                onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                min="1"
+                max="20"
+              />
+              <button
+                className="quantity-button"
+                onClick={() => handleQuantityChange(quantity + 1)}
+              >
+                +
+              </button>
+              <span className="quantity-limit">(Max 20 per order)</span>
+            </div>
+          </div>
+
+          <div className="price-breakdown">
+            <h3 className="breakdown-title">Price Breakdown</h3>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Base price (16×20")</span>
+              <span className="breakdown-value">${basePrice}</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Quantity</span>
+              <span className="breakdown-value">×{quantity}</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Border</span>
+              <span className="breakdown-value">+{quantity}%</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Mat</span>
+              <span className="breakdown-value">+{quantity}%</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Lamination</span>
+              <span className="breakdown-value">+{quantity}%</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Paper upgrade (Metallic Gloss)</span>
+              <span className="breakdown-value">+{5}$</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Mounting (Acrylic Face Mount)</span>
+              <span className="breakdown-value">×{quantity}</span>
+            </div>
+            <div className="breakdown-row breakdown-total">
+              <span className="breakdown-label">Total</span>
+              <span className="breakdown-value-total">${total}</span>
+            </div>
+          </div>
+
+          <div className="action-buttons">
+            <button className="back-button">BACK</button>
+            <button className="add-to-cart-button">
+              🛒 ADD TO CART
             </button>
-            <input
-              type="number"
-              className="quantity-input"
-              value={quantity}
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-              min="1"
-              max="20"
-            />
-            <button
-              className="quantity-button"
-              onClick={() => handleQuantityChange(quantity + 1)}
-            >
-              +
-            </button>
-            <span className="quantity-limit">(Max 20 per order)</span>
           </div>
+
+          <p className="shipping-note">Free shipping on orders over $100</p>
         </div>
 
-        <div className="price-breakdown">
-          <h3 className="breakdown-title">Price Breakdown</h3>
-          <div className="breakdown-row">
-            <span className="breakdown-label">Base price (16×20")</span>
-            <span className="breakdown-value">${basePrice}</span>
-          </div>
-          <div className="breakdown-row">
-            <span className="breakdown-label">Quantity</span>
-            <span className="breakdown-value">×{quantity}</span>
-          </div>
-          <div className="breakdown-row breakdown-total">
-            <span className="breakdown-label">Total</span>
-            <span className="breakdown-value">${total}</span>
-          </div>
-        </div>
 
-        <div className="action-buttons">
-          <button className="back-button">BACK</button>
-          <button className="add-to-cart-button">
-            🛒 ADD TO CART
-          </button>
-        </div>
 
-        <p className="shipping-note">Free shipping on orders over $100</p>
       </div>
     </div>
   );

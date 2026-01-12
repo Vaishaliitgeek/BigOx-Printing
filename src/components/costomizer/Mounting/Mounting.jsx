@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './lamination.css';
-import { getLaminationOptions } from '../../../services/services';
+import './Mounting.css';
+import { getMountingOptions } from '../../../services/services';
 
 
 // --- IndexedDB helpers (same DB as in Upload) ---
@@ -45,122 +45,75 @@ async function loadImageFromDb() {
 }
 
 
-const PAPERS = [
-    {
-        id: 'p1',
-        name: 'Photo Rag',
-        finish: 'Matte',
-        weight: '308gsm',
-        description: 'Museum-quality 100% cotton rag with a smooth, matte surface.',
-        priceAdjustment: 5,
-    },
-    {
-        id: 'p2',
-        name: 'Baryta',
-        finish: 'Semi-Gloss',
-        weight: '315gsm',
-        description: 'Classic darkroom feel with a subtle sheen.',
-        priceAdjustment: 5,
-    },
-    {
-        id: 'p3',
-        name: 'Smooth Cotton Rag',
-        finish: 'Matte',
-        weight: '320gsm',
-        description: 'Soft, velvety texture with excellent color reproduction.',
-        priceAdjustment: 4,
-    },
-    {
-        id: 'p4',
-        name: 'Premium Luster',
-        finish: 'Luster',
-        weight: '260gsm',
-        description: 'Pearlescent surface with vibrant colors.',
-        priceAdjustment: 3,
-    },
-    // {
-    //   id: 'p5',
-    //   name: 'Metallic Gloss',
-    //   finish: 'Gloss',
-    //   weight: '255gsm',
-    //   description: 'Pearlescent finish with extra depth and luminosity.',
-    //   priceAdjustment: 8,
-    // },
-    // {
-    //   id: 'p6',
-    //   name: 'Fine Art Matte',
-    //   finish: 'Matte',
-    //   weight: '220gsm',
-    //   description: 'Smooth, non-reflective surface ideal for detailed work.',
-    //   priceAdjustment: 2,
-    // },
-];
-// const Laminations = [
+// const Mountings = [
 //     {
 //         "_id": "694936889ed118756432e192",
-//         "optionName": "No Lamination",
-//         "durabilityAndCleaningNotes": "Print without lamination. Suitable for framing behind glass or museum-grade display.",
+//         "optionName": "No mounting",
+//         "shortDescription": "Print only, ready for your own mounting or framing solution.",
+//         "BestFor": "Custom framing, portfolio work",
 //         "__v": 0
 //     },
 //     {
-//         "_id": "694936889ed1187564w32e192",
-//         "optionName": "TEst",
+//         "maxSize": {
+//             "width": 3,
+//             "height": 16,
+//             "unit": "in"
+//         },
+//         "_id": "69495104522251b1eb2ead1b",
+//         "optionName": "Foam Board",
+//         "substrateType": "Foam Core",
+//         "thickness": 34,
+//         "priceDeltaMinor": 29,
 //         "status": true,
-//         "thumbnailUrl": "https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg",
-//         "finish": "gloss",
-//         "durabilityAndCleaningNotes": "Lightweight, rigid backing perfect for presentations and temporary displays",
+//         "thumbnailUrl": "https://www.dropbox.com/scl/fi/0v4z87gi8ttqukxj80gyq/1766493894278.jpg?rlkey=lnqqpd27bf547emnwjkpdpnnd&raw=1",
+//         "shortDescription": "Lightweight, rigid backing perfect for presentations and temporary displays.",
 //         "__v": 0
 //     },
 //     {
-//         "_id": "694a8295eaddc59b63e11d84",
-//         "optionName": "Gator Board",
-//         "priceDeltaMinor": 22,
+//         "maxSize": {
+//             "width": 34,
+//             "height": 34,
+//             "unit": "in"
+//         },
+//         "_id": "694a93598935970ab2f6c586",
+//         "optionName": "option 3",
+//         "substrateType": "matte",
+//         "thickness": 45,
+//         "priceDeltaMinor": 4,
 //         "status": true,
-//         "thumbnailUrl": "https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg",
-//         "finish": "luster",
-//         "durabilityAndCleaningNotes": "Lightweight, rigid backing perfect for presentations and temporary displays.",
+//         "thumbnailUrl": "https://www.dropbox.com/scl/fi/ppo11ll05co60bn1cscqb/1766495080991.png?rlkey=ouo8bge3g2nley9jzghv7bb5g&raw=1",
+//         "shortDescription": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
 //         "__v": 0
-//     }
-// ]
+//     }]
 
 // --- Component ---
 
-const Lamination = ({ handleBack, handleNext }) => {
-    const [zoom, setZoom] = useState(1);
-    const [rotation, setRotation] = useState(0);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
+const Mounting = ({ handleBack, handleNext }) => {
 
     const [imageSrc, setImageSrc] = useState(null);
 
     const [selectedPaperId, setSelectedPaperId] = useState(null);
 
-    const minZoom = 0.5;
-    const maxZoom = 3;
+    const [mountingData, setMountingData] = useState([]);
 
-    const pointerMap = useRef(new Map());
-    const lastPanPosRef = useRef({ x: 0, y: 0 });
-    const isPanningRef = useRef(false);
-    const pinchStartZoomRef = useRef(1);
-    const pinchStartDistanceRef = useRef(null);
-
-    const [laminationData, setLaminationData] = useState([]);
-
-    // Fetch lamination data properly in useEffect
+    // fetching mounting data from api
     useEffect(() => {
-        const fetchLaminations = async () => {
+        const getMountingData = async () => {
             try {
-                const res = await getLaminationOptions();
-                if(!res){
-                    console.log("Failed to fetch lamination data")
-                }
+                const res = await getMountingOptions();
 
-                setLaminationData(res);
+                if (!res) {
+                    console.log("Failed to fetch mounting data")
+                }
+                setMountingData(res)
+                console.log(res)
             } catch (error) {
-                console.log("Error fetching lamination data:", error.message);
+                console.log(error.message);
             }
         };
-        fetchLaminations();
-    }, []);
+
+        getMountingData();
+    }, [])
 
 
     // Load image from IndexedDB
@@ -177,9 +130,6 @@ const Lamination = ({ handleBack, handleNext }) => {
         })();
     }, []);
 
-    const selectedPaper = PAPERS.find((p) => p.id === selectedPaperId);
-
-
     return (
         <div className="editor-page">
             <div className="editor-container">
@@ -188,12 +138,12 @@ const Lamination = ({ handleBack, handleNext }) => {
                     <div className="editor-left">
                         <h2>Preview</h2>
                         <div className="editor-crop-area-paper">
-                            <div className="lamination-editor-image-wrapper-paper" >
+                            <div className="mounting-editor-image-wrapper-paper" >
                                 {imageSrc ? (
                                     <img
                                         src={imageSrc}
                                         alt="Preview"
-                                        className="lamination-editor-image"
+                                        className="mounting-editor-image"
                                     />
                                 ) : (
                                     <div
@@ -215,10 +165,19 @@ const Lamination = ({ handleBack, handleNext }) => {
                                 <p className='selected-size'>10x12" print</p>
                             </div>
                         </div>
-                        <div className='laminate-wrappper-text'>
-                            <p className='laminate-text-heading'>Why laminate?</p>
-                            <p> Lamination adds a protective layer to your print, making it more durable and resistant to scratches, moisture, and UV damage. Perfect for high-traffic areas or prints that won't be framed behind glass.
-                            </p>
+                        <div className='mounting-wrappper-text'>
+                            <div className='mounting-text-heading'>Mounting Guide</div>
+                            {/* <p> Lamination adds a protective layer to your print, making it more durable and resistant to scratches, moisture, and UV damage. Perfect for high-traffic areas or prints that won't be framed behind glass.
+                            </p> */}
+                            {
+                                mountingData.map((mounting) => {
+                                    return <div className='mounting-guide-sub-wrapper'>
+                                        <div className='mounting-text-option'>{mounting.optionName}:</div>
+                                        <div className='mounting-text-desc'>{mounting.shortDescription.slice(0, 19)}</div>
+                                    </div>
+
+                                })
+                            }
                         </div>
 
                     </div>
@@ -227,35 +186,32 @@ const Lamination = ({ handleBack, handleNext }) => {
                     <div className="editor-right">
 
                         <h2 className="editor-title-right">
-                            Select Lamination
+                            Select Mounting
                         </h2>
-                        <p>
-                            Choose from our collection of museum-grade fine art papers
-                        </p>
-
-                        <div className="lamination-grid">
-                            {laminationData.map((Lamination) => {
-                                const isNoLamination = Lamination.optionName == "No Lamination";
+                        <div className="mounting-grid">
+                            {mountingData.map((mounting) => {
+                                const isNomounting = mounting.optionName == "No mounting";
                                 return <div
-                                    key={Lamination._id}
-                                    onClick={() => setSelectedPaperId(Lamination._id)}
+                                    key={mounting._id}
+                                    onClick={() => setSelectedPaperId(mounting._id)}
                                     className={
-                                        'lamination-card ' +
-                                        (selectedPaperId == Lamination._id ? 'lamination-card-selected' : '')
+                                        'mounting-card ' +
+                                        (selectedPaperId == mounting._id ? 'mounting-card-selected' : '')
                                     }
                                 >
                                     {/* Thumbnail area */}
-                                    <div className="lamination-card-thumb">
+                                    <div className="mounting-card-thumb">
                                         {/* you can swap this gradient for real sample images later */}
                                         {/* <div className="paper-card-thumb-art" /> */}
 
                                         {
-                                            !isNoLamination &&
-                                            <img src='https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg' alt='lamination-img' height={80} width={80}></img>
+                                            !isNomounting &&
+                                            // <img src={mounting?.thumbnailUrl} alt='mounting-img' height={80} width={80}></img>
+                                            <img src={mounting?.thumbnailUrl || "https://viviaprint.com/products/mounted-matte-on-black-foamcore/main-mounted-matte-black-foamcore-vivia-print.jpg"} alt='mounting-img' height={80} width={80}></img>
                                         }
-                                        <div className="lamination-card-radio">
-                                            {selectedPaperId === Lamination._id && (
-                                                <div className="lamination-card-radio-outer">
+                                        <div className="mounting-card-radio">
+                                            {selectedPaperId === mounting._id && (
+                                                <div className="mounting-card-radio-outer">
 
                                                     <svg
                                                         className="checkIcon"
@@ -276,29 +232,44 @@ const Lamination = ({ handleBack, handleNext }) => {
                                     </div>
 
                                     {/* Text area */}
-                                    <div className="lamination-card-body">
+                                    <div className="mounting-card-body">
 
-                                        <span className="lamination-card-name">{Lamination.optionName}</span>
+                                        <span className="mounting-card-name">{mounting.optionName}</span>
                                         {
-                                            !isNoLamination && <div className="paper-card-tags">
-                                                <span className="lamination-tag">{Lamination.finish}</span>
+                                            !isNomounting && <div className="paper-card-tags">
+                                                <span className="mounting-tag">{mounting.substrateType}</span>
+                                                {/* <span className="mounting-tag">{mounting.maxSize.width}/{mounting.maxSize.height}"</span> */}
+                                                <span className="mounting-tag">{mounting.thickness}"</span>
+
                                             </div>}
 
-                                        <span className="lamination-card-description">{Lamination.durabilityAndCleaningNotes}</span>
+                                        <span className="mounting-card-description">{mounting.shortDescription}</span>
+                                        <span>
+                                            <span className='mounting-card-description'> Best For : </span>
+                                            <span className="mounting-card-description-bestfor mounting-card-description">{mounting.AdditionalNotes}</span>
+                                        </span>
+                                        {
+                                            isNomounting &&
+                                            <span>
+                                                <span className='mounting-card-description'> Best For : </span>
+                                                <span className="mounting-card-description-bestfor mounting-card-description">{mounting.AdditionalNotes}</span>
+                                            </span>
+
+                                        }
 
                                         {
-                                            !isNoLamination &&
+                                            !isNomounting &&
                                             <div className="paper-card-price-row">
                                                 <span
                                                     className={
                                                         'paper-price-adjust ' +
-                                                        (Lamination.priceDeltaMinor < 0
+                                                        (mounting.priceDeltaMinor < 0
                                                             ? 'paper-price-adjust-down'
                                                             : '')
                                                     }
                                                 >
-                                                    {Lamination.priceDeltaMinor > 0 ? '+ $' : '- $'}
-                                                    {Math.abs(Lamination.priceDeltaMinor)}
+                                                    {mounting.priceDeltaMinor > 0 ? '+ $' : '- $'}
+                                                    {Math.abs(mounting.priceDeltaMinor)}
                                                 </span>
                                             </div>
                                         }
@@ -321,9 +292,6 @@ const Lamination = ({ handleBack, handleNext }) => {
                                 Continue
                             </button>
                         </div>
-
-
-
                     </div>
                 </div>
             </div>
@@ -332,5 +300,5 @@ const Lamination = ({ handleBack, handleNext }) => {
     );
 };
 
-export default Lamination;
+export default Mounting;
 

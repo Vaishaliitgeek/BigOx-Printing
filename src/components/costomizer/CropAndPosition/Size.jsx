@@ -96,8 +96,8 @@ const getAllSize = async (setSizeOptions) => {
   console.log("Fetching size options from API...");
   try {
     const data = await getSizeOptions();
-    const filterdData = data.map((obj) => ({...obj,w:obj.width,h:obj.height,id:obj.dimensionText}));
-    console.log('filterdData',filterdData)
+    const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor}));
+    console.log('filterdData', filterdData)
     setSizeOptions(filterdData);
   } catch (err) {
     console.error("Error while getting size options:", err.message);
@@ -339,7 +339,7 @@ export default function App({ handleBack, handleNext }) {
           </div>
         </aside> */}
         <div className="editor-right">
-          <h2 className="editor-title-right">Select Size</h2>
+          <h2 className="editor-title-right">Select Image Size</h2>
 
           {/* Size Grid */}
           <div className="editorSizeGrid">
@@ -355,8 +355,8 @@ export default function App({ handleBack, handleNext }) {
                     (selectedSizeId === item.id ? "editorSizeCardSelected" : "")
                   }
                 >
-                  <div className="editor-size-card-size">{item.id}</div>
-                  <div className="editor-size-card-price">{item.price ?? "N/A"}</div>
+                  <div className="editor-size-card-size">{item.id}"</div>
+                  <div className="editor-size-card-price">{`$${item.price.toFixed(2)}` ?? "N/A"}</div>
                   <div
                     className={
                       "editor-size-card-ppi " + getQualityClass(quality)

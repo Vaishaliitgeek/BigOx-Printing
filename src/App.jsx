@@ -15,7 +15,7 @@ import "./App.css";
 import { PRINT_SIZES, PAPERS } from "./pages/printData";
 
 // API / services
-import { getValidationRules } from "./services/services.js";
+import { getTemplateFromDb, getValidationRules } from "./services/services.js";
 
 // UI components
 import Header from "./components/Header/Header";
@@ -24,22 +24,28 @@ import Size from "./components/costomizer/CropAndPosition/Size.jsx";
 import Paper from "./components/costomizer/Paper/Paper";
 import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
+import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
-const STEPS = Object.freeze({
+const STEPS = {
   UPLOAD: 1,
-  SIZE: 2,
-  PAPER: 3,
-  Lamination: 4,
-  Mounting: 5,
+  sizeOptions: 2,
+  paperOptions: 3,
+  laminationOptions: 4,
+  mountingOptions: 5,
   FINISH: 6,
-});
+};
+
+const ALLSTEPS = ["UPLOAD", "sizeOptions", "paperOptions", "laminationOptions", "mountingOptions", "FINISH",];
+
 
 const MIN_STEP = STEPS.UPLOAD;
 const MAX_STEP = STEPS.FINISH;
 
 function App() {
+
+  const [appSteps, setAppSteps] = useState(STEPS);
   // -----------------------------
   // Stepper / navigation state
   // -----------------------------
@@ -59,10 +65,44 @@ function App() {
   // Validation rules (from API)
   // -----------------------------
   const [rules, setRules] = useState(null);
+  const [template, setTemplate] = useState(null);
 
   // If you plan to use sizeOptions later, keep it.
   // Otherwise, remove it to reduce unused state.
   const [sizeOptions, setSizeOptions] = useState([]);
+  const [isValideOptions, setIsValideOption] = useState({ "borderOption": true, "metaOptions": true });
+
+
+  function updateStepsWithValideData(template) {
+    console.log("template",template)
+    if(!template) return;
+    let currentStep = 1;
+    const stepMapping = {};
+
+    ALLSTEPS.forEach((step) => {
+      // Assign step count for UPLOAD and FINISH steps
+      if (step === "UPLOAD" || step === "FINISH") {
+        stepMapping[step] = currentStep;
+        currentStep++;
+        return;
+      }
+
+      // Assign step count for valid steps with non-empty arrays in the template
+      if (Array.isArray(template[step]) && template[step].length > 0) {
+        stepMapping[step] = currentStep;
+        currentStep++;
+      }
+    });
+    
+    if(template["borderOptions"]){
+      setIsValideOption((prev) => ({...prev,"borderOption":true}));
+    }
+    if(template["metaOptions"]){
+      setIsValideOption((prev) => ({...prev,"metaOptions":true}));
+    }
+    setAppSteps(stepMapping);
+  }
+
 
   /**
    * Loads validation rules from the backend once on mount.
@@ -79,9 +119,23 @@ function App() {
     }
   }, []);
 
+  const loadTemplates = useCallback(async () => {
+    try {
+      const fetchTemplate = await getTemplateFromDb();
+      // const currentTemplate = fetchTemplate[2];
+      setTemplate(fetchTemplate);
+      updateStepsWithValideData(fetchTemplate);
+      // console.log("fetchTemplate :", fetchTemplate);
+    } catch (error) {
+      console.error("Failed to load Template:", error);
+      setRules(null); // safe fallback
+    }
+  }, [])
+
   useEffect(() => {
     loadRules();
-  }, [loadRules]);
+    loadTemplates();
+  }, [loadRules, loadTemplates]);
 
   // -----------------------------
   // Handlers for finish-step inputs
@@ -137,18 +191,19 @@ function App() {
         currentStep={currentStep}
         onBack={handleBack}
         onClose={handleClose}
+        appSteps={appSteps}
         onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />
 
       {/* Render only the active step */}
-      {currentStep === STEPS.UPLOAD && (
+      {currentStep === appSteps.UPLOAD && (
         <Upload
           handleNext={handleNext}
           rules={rules}
         />
       )}
 
-      {currentStep === STEPS.SIZE && (
+      {currentStep === appSteps.sizeOptions && (
         <Size
           handleBack={handleBack}
           handleNext={handleNext}
@@ -156,22 +211,29 @@ function App() {
         />
       )}
 
-      {currentStep === STEPS.PAPER && (
+      {currentStep === appSteps.paperOptions && (
         <Paper
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
         />
       )}
-      {currentStep === STEPS.Lamination && (
+      {currentStep === appSteps.laminationOptions && (
         <Lamination
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
         />
       )}
+      {currentStep === appSteps.mountingOptions && (
+        <Mounting
+          handleBack={handleBack}
+          handleNext={handleNext}
+          rules={rules}
+        />
+      )}
 
-      {currentStep === STEPS.FINISH && (
+      {currentStep === appSteps.FINISH && (
         <StepFinish
           selectedSizeId={selectedSizeId}
           selectedPaperId={selectedPaperId}

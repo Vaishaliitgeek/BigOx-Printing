@@ -113,6 +113,7 @@ const Paper = ({ handleBack, handleNext }) => {
   const pinchStartZoomRef = useRef(1);
   const pinchStartDistanceRef = useRef(null);
 
+
   // Load image from IndexedDB
   useEffect(() => {
     (async () => {
@@ -141,13 +142,13 @@ const Paper = ({ handleBack, handleNext }) => {
               className="editor-crop-area-paper"
             >
               <div
-                className="editor-image-wrapper-paper"
+                className="papar-editor-image-wrapper-paper"
               >
                 {imageSrc ? (
                   <img
                     src={imageSrc}
                     alt="Preview"
-                    className="editor-image"
+                    className="papar-editor-image"
                   />
                 ) : (
                   <div
@@ -166,7 +167,7 @@ const Paper = ({ handleBack, handleNext }) => {
                     No image found. Please upload an image first.
                   </div>
                 )}
-              <p className='selected-size'>10x12" print</p>
+                <p className='selected-size'>10x12" print</p>
               </div>
 
               {/* <div className="editor-size-label">
@@ -227,7 +228,7 @@ const Paper = ({ handleBack, handleNext }) => {
                   <div className="paper-card-body">
                     <div className="paper-card-name-row">
                       <span className="paper-card-name">{paper.name}</span>
-                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <g clip-path="url(#clip0_329_982)">
                           <path d="M8.00016 14.6666C11.6821 14.6666 14.6668 11.6818 14.6668 7.99992C14.6668 4.31802 11.6821 1.33325 8.00016 1.33325C4.31826 1.33325 1.3335 4.31802 1.3335 7.99992C1.3335 11.6818 4.31826 14.6666 8.00016 14.6666Z" stroke="#A1A1A1" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
                           <path d="M8 10.6667V8" stroke="#A1A1A1" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
@@ -247,7 +248,7 @@ const Paper = ({ handleBack, handleNext }) => {
                       <span className="paper-tag paper-tag-outline">
                         {paper.weight}
                       </span>
-                     
+
                     </div>
 
                     <p className="paper-card-description">{paper.description}</p>
@@ -269,30 +270,30 @@ const Paper = ({ handleBack, handleNext }) => {
                 </button>
               ))}
             </div>
-  <div className="footer-inner">
-          <button
-            className="footer-btn footer-btn-outline"
-            onClick={() => handleBack()}
-          // disabled={currentStep === 1}
-          >
-            Back
-          </button>
+            <div className="footer-inner">
+              <button
+                className="footer-btn footer-btn-outline"
+                onClick={() => handleBack()}
+              // disabled={currentStep === 1}
+              >
+                Back
+              </button>
 
-          <button
-            className="footer-btn footer-btn-primary"
-            onClick={() => handleNext()}
-          // onClick={handleContinue}
-          // disabled={!canContinue()}
-          >
-            Continue
-            {/* {currentStep === 4 ? "Add to Cart" : "Continue"} */}
-          </button>
-        </div>
+              <button
+                className="footer-btn footer-btn-primary"
+                onClick={() => handleNext()}
+              // onClick={handleContinue}
+              // disabled={!canContinue()}
+              >
+                Continue
+                {/* {currentStep === 4 ? "Add to Cart" : "Continue"} */}
+              </button>
+            </div>
             {/* Action Buttons */}
           </div>
         </div>
       </div>
-  
+
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { apiConnecter } from "../utils/ApiConnector";
-const BASE_URL = "http://localhost:59481";
+const BASE_URL = "https://ozone-airplane-handle-portfolio.trycloudflare.com";
 const shop = "amjad-itgeeks.myshopify.com";
 
 // ***********************************************************************************************************************************************
@@ -52,6 +52,7 @@ export async function getPaperOptions() {
       null,
       { shop }
     );
+    console.log("Date ////////////////", res);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting Paper options:", err.message);
@@ -100,7 +101,25 @@ export async function getLaminationOptions() {
       null,
       { shop }
     );
+    console.log(res.data.result);
     return res.data.result;
+  } catch (err) {
+    console.error("Error while getting Lamination options:", err.message);
+  }
+}
+
+// Fetch Mounting Lamination from the API
+export async function getTemplateFromDb() {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/tamplates/getTamplatesByProductId`,
+      null,
+      null,
+      { shop, productId: "gid://shopify/Product/8715146461382" }
+    );
+    console.log(res.data.result);
+    return res.data.result[0];
   } catch (err) {
     console.error("Error while getting Lamination options:", err.message);
   }

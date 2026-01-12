@@ -1,21 +1,41 @@
+.papar-editor-image {
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 500px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.papar-editor-image-wrapper-paper {
+  padding: 33px;
+  /* position: absolute; */
+  /* inset: 0; */
+  background: #fdf9ee;
+  padding: 33px;
+  /* position: absolute; */
+  /* inset: 0; */
+  background: #fdf9ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
 .editor-crop-area-paper {
   background-color: #ffffff;
-  border-radius: 0.5rem;
-  /* overflow: hidden; */
+  /* border-radius: 0.5rem;
   position: relative;
   touch-action: none;
   user-select: none;
   touch-action: none;
-  /* stop browser pinch / double-tap zoom / scroll in this box */
-  /* overflow: hidden; */
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1 / 1; */
 }
 
 .editor-image-wrapper-paper {
   padding: 33px;
   /* position: absolute; */
   /* inset: 0; */
-  background: #FDF9EE;
+  background: #fdf9ee;
 }
 
 .selected-size {
@@ -25,7 +45,7 @@
 /* PAPER GRID – right side */
 .paper-grid {
   display: grid;
-  grid-template-columns: repeat(1 ,minmax(0, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -40,18 +60,15 @@
   background-color: #ffffff;
   /* border-radius: 0.75rem; */
   padding: 18px;
-  border: 2px solid #E5E5E5;
+  border: 2px solid #e5e5e5;
   /* gray-200 */
   text-align: left;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition:
-    box-shadow 150ms ease,
-    transform 150ms ease,
-    border-color 150ms ease,
-    background-color 150ms ease;
+  transition: box-shadow 150ms ease, transform 150ms ease,
+    border-color 150ms ease, background-color 150ms ease;
 }
 
 .paper-card:hover {
@@ -73,8 +90,6 @@
   width: 100%;
   /* max-width: 250px; */
   margin: 0 auto;
-
-
 }
 
 .paper-card-thumb img {
@@ -167,13 +182,13 @@
 
   /* background-color: #f3f4f6; */
   /* gray-100 */
-  color: #0A0A0A;
+  color: #0a0a0a;
 }
 
 .paper-tag-outline {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
-  color: #0A0A0A;
+  color: #0a0a0a;
   /* gray-600 */
 }
 
@@ -203,7 +218,6 @@
   color: #16a34a;
   /* green-600 for discounts */
 }
-
 
 /* Full-width footer strip */
 .footer-bar {
@@ -237,11 +251,8 @@
   text-transform: uppercase;
   cursor: pointer;
   border: none;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* Outline (Back) */

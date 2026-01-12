@@ -75,7 +75,7 @@ async function clearCurrentImage() {
 const StepUpload = ({ onImageUpload, handleNext, rules }) => {
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
-  const [allowedTypes, setAllowedTypes] = useState('jpeg,png,tiff');
+  const [allowedTypes, setAllowedTypes] = useState('JPG ,PNG, TIFF');
 
   // Load image from IndexedDB on mount
   useEffect(() => {
@@ -124,7 +124,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
           console.error("Error saving image to IndexedDB:", err);
         }
 
-        onImageUpload?.(url, img.width, img.height);
+        // onImageUpload?.(url, img.width, img.height);
       };
       img.src = event.target.result;
     };
@@ -146,7 +146,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
     const typesResult = rules.fileConstraints.allowedTypes.reduce((combineRules, currentType) => {
       if (currentType.status) {
         const type = currentType.imageType.split("/")[1];
-        return combineRules + "." +  String(type).toUpperCase() + "," + " " ;
+        return combineRules + "." + String(type).toUpperCase() + "," + " ";
       }
       else return combineRules;
     }, "");
@@ -163,7 +163,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
       <div className="step-upload-header">
         <h2 className="step-upload-title">Upload Your Image</h2>
         <p className="">
-          {allowedTypes} up to 1 GB. We'll check the resolution for your
+          {allowedTypes} up to {rules?.fileConstraints?.maxFileSizeMB} MB. We'll check the resolution for your
           chosen size.
         </p>
       </div>
@@ -213,7 +213,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
                 <p className="upload-text">
                   Drag and drop your image here <span>or browse</span>
                 </p>
-                <p className="upload-subtext">{allowedTypes} · Max 1 GB</p>
+                <p className="upload-subtext">{allowedTypes} · Max {rules?.fileConstraints?.maxFileSizeMB} MB</p>
               </div>
             </div>
 

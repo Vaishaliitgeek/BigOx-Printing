@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      "c2246809bc32.ngrok-free.app",
+      "3403df679be2.ngrok-free.app",
     ],
     // optional but often needed with tunnels:
     host: true,     // or '0.0.0.0'

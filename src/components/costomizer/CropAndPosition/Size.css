@@ -241,7 +241,7 @@
   text-align: left;
   border: none;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   border: 2px solid #E5E5E5;
 
   cursor: pointer;

@@ -1,10 +1,5 @@
 /* Header.module.css */
 
-/* global css revert */
-div:empty{
-    display: revert;
-}
-
 /* Header container */
 .header {
     width: 100%;
@@ -60,7 +55,6 @@ div:empty{
     .backButton {
         padding: 0 !important;
     }
-
 }
 
 @media (min-width: 640px) {
@@ -136,56 +130,13 @@ div:empty{
     transition: all 150ms ease;
 }
 
-/* @media (min-width: 640px) {
+@media (min-width: 640px) {
     .stepCircle {
         width: 2.5rem;
         height: 2.5rem;
         font-size: 0.875rem;
     }
-} */
-
-@media (max-width: 768px) {
-    .stepCircle {
-        width: 2rem;
-        height: 2rem;
-        font-size: 0.875rem;
-    }
-
-    .backTextDesktop {
-        display: none;
-    }
 }
-
-@media (max-width: 550px) {
-    .stepCircle {
-        width: 1.7rem;
-        height: 1.7rem;
-        font-size: 0.875rem;
-    }
-
-    .stepConnector {
-        width: 2rem !important;
-        margin-inline: 0.5rem;
-    }
-
-}
-
-@media (max-width: 350px) {
-
-    /* .stepCircle {
-        width: 1.3rem;
-        height: 1.3rem;
-        font-size: 0.875rem;
-    } */
-    .stepConnector {
-        width: 15px !important;
-        /* margin-inline: 0.5rem; */
-
-    }
-}
-
-
-
 
 /* Completed step */
 .stepCircleCompleted {
@@ -199,7 +150,7 @@ div:empty{
     border-color: #000000;
     background-color: #ffffff;
     color: #000000;
-    /* box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Upcoming or default */
@@ -241,15 +192,16 @@ div:empty{
     color: #9ca3af;
 }
 
-.stepLabel {
-    display: block;
+@media (min-width: 640px) {
+    .stepLabel {
+        display: block;
+    }
 }
-
 
 /* Connector line between steps */
 .stepConnector {
     height: 2px;
-    width: 5rem;
+    width: 1.5rem;
     transition: background-color 150ms ease;
     margin-inline: 0.25rem;
 }
@@ -262,12 +214,12 @@ div:empty{
     background-color: #d1d5db;
 }
 
-/* @media (max-width: 640px) {
+@media (min-width: 640px) {
     .stepConnector {
         width: 5rem;
         margin-inline: 0.5rem;
     }
-} */
+}
 
 /* Right: close button */
 .closeButton {
@@ -299,16 +251,4 @@ div:empty{
     width: 1.5rem;
     height: 1.5rem;
     color: #4b5563;
-}
-
-@media (max-width: 400px) {
-    .stepLabel {
-        display: none;
-    }
-
-    .stepCircle {
-        width: 1.5rem;
-        height: 1.5rem;
-        font-size: 0.885rem;
-    }
 }

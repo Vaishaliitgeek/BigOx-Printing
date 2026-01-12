@@ -1,4 +1,4 @@
-.lamination-card {
+.mounting-card {
   background-color: #ffffff;
   /* border-radius: 0.75rem; */
   padding: 18px;
@@ -12,34 +12,34 @@
     border-color 150ms ease, background-color 150ms ease;
 }
 
-.lamination-card:hover {
+.mounting-card:hover {
   /* box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06); */
   transform: translateY(-1px);
 }
 
 /* Selected state: thick black border, like in screenshot */
-.lamination-card-selected {
+.mounting-card-selected {
   border-color: #000000;
   /* box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12); */
   transform: translateY(-1px);
   background-color: rgba(253, 249, 238, 1);
 }
 
-.lamination-card-thumb {
+.mounting-card-thumb {
   display: flex;
 }
 
-.lamination-card-thumb img {
-  /* width: 100%;
+.mounting-card-thumb img {
+  width: 100%;
   max-width: 250px;
   height: 100%;
-  max-height: 80px;
-  max-width: 80px; */
+  max-height: 48px;
+  max-width: 48px;
   object-fit: cover;
   margin: 0 auto;
 }
 
-.lamination-grid {
+.mounting-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1rem;
@@ -47,20 +47,20 @@
   text-wrap: inherit;
 }
 
-.lamination-card-body {
+.mounting-card-body {
   display: flex;
   flex-direction: column;
   width: 80%;
   gap: 5px;
 }
 
-.lamination-card-radio {
+.mounting-card-radio {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
 }
 
-.lamination-card-radio-outer {
+.mounting-card-radio-outer {
   position: absolute;
   width: 20px;
   height: 20px;
@@ -81,46 +81,79 @@
   height: 25px;
 }
 
-.lamination-card-selected .lamination-card-radio-outer {
+.mounting-card-selected .mounting-card-radio-outer {
   border-color: #000000;
 }
 
-.lamination-card-radio-inner {
+.mounting-card-radio-inner {
   width: 10px;
   height: 10px;
   border-radius: 9999px;
   background-color: #000000;
 }
 
-.lamination-card-name {
+.mounting-card-name {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0px;
 }
 
-.lamination-tag {
+.mounting-tag {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 10px;
+  padding: 2px 8px;
+  border-radius: 7px;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
-.lamination-card-description {
+.mounting-card-description {
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0px;
+  color: rgba(82, 82, 82, 1);
+}
+.mounting-card-description-bestfor {
+  color: #000000;
+}
+.mounting-wrappper-text {
+  border: 1px solid rgba(229, 229, 229, 1);
+  padding: 10px 20px 20px 20px;
+  margin-top: 20px;
+  background: rgba(250, 250, 250, 1);
+}
+.mounting-text-heading {
+  line-height: 20px;
+  font-size: 14px;
+  font-family: "Lato";
+  font-weight: 400;
+  font-style: Regular;
+  line-height: 20px;
+  letter-spacing: 0px;
+  color: rgba(10, 10, 10, 1);
+  margin-bottom: 5px;
+
+}
+.mounting-text-option {
+  font-family: Lato;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+  color: rgba(23, 23, 23, 1);
 }
 
-.laminate-wrappper-text{
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 20px ;
-    margin-top: 20px;
-}
-.laminate-text-heading{
-    color: rgba(10, 10, 10, 1);
+.mounting-text-desc {
+  font-family: Lato;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+  color: rgba(82, 82, 82, 1);
+  margin-bottom: 5px;
 }
 
-.lamination-editor-image-wrapper-paper {
+.mounting-editor-image-wrapper-paper {
   padding: 33px;
   /* position: absolute; */
   /* inset: 0; */
@@ -134,11 +167,22 @@
   justify-content: center;
   flex-direction: column;
 }
-.lamination-editor-image{
+.mounting-editor-image {
   width: 100%;
   height: 100%;
   max-width: 300px;
   max-height: 300px;
   object-fit: contain;
   pointer-events: none;
+}
+
+.mounting-guide-sub-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* margin-bottom: 5px; */
+}
+
+.mounting-guide-sub-wrapper p {
+  line-height: 5px;
 }
