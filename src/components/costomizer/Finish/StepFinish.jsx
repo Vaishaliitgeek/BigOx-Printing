@@ -180,6 +180,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './stepFinish.css'
+import { getCommerceRulesQuantityAndLimits } from '../../../services/services';
 // import './styles.css';
 
 const DB_NAME = 'image-db';
@@ -188,69 +189,69 @@ const STORE_NAME = 'images';
 const CURRENT_IMAGE_KEY = 'current-image';
 const CROP_IMAGE_KEY = "crop-image";
 
-const Mats = [
-  {
-    "_id": "694936889ed118756432e192",
-    "optionName": "No Mat",
-    "shortDescription": "Print only, no matting",
-    "__v": 0
-  },
-  {
-    "_id": "69494ddc522251b1eb2eac99",
-    "optionName": "Single White Mat",
-    "priceDeltaMinor": 23,
-    "matWidth": 23,
-    "shortDescription": "Classic white beveled mat",
-    "color": "black",
-    "status": true,
-    "thumbnailUrl": "https://www.dropbox.com/scl/fi/bi8rj1j3jbwbc0ljlqfal/1766499797787.jpg?rlkey=ajhd4y8z1f4ag2sqfpcff7wz2&raw=1",
-    "__v": 0
-  },
-  {
-    "_id": "69494f0a522251b1ewb2eacd2",
-    "optionName": "Single Black Mat",
-    "priceDeltaMinor": 53,
-    "shortDescription": "Modern black beveled mat",
-    "matWidth": 45,
-    "color": "black",
-    "status": false,
-    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
-    "__v": 0
-  },
-  {
-    "_id": "69494f02a522251wb1eb2eacd2",
-    "optionName": "Single Black Mat",
-    "priceDeltaMinor": 53,
-    "shortDescription": "Modern black beveled mat",
-    "matWidth": 45,
-    "color": "black",
-    "status": false,
-    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
-    "__v": 0
-  },
-  {
-    "_id": "69494f02a522251b1ewb2eacd2",
-    "optionName": "Single Black Mat",
-    "priceDeltaMinor": 53,
-    "shortDescription": "Modern black beveled mat",
-    "matWidth": 45,
-    "color": "black",
-    "status": false,
-    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
-    "__v": 0
-  },
-  {
-    "_id": "69494f0a5222512b1eb2eacd2",
-    "optionName": "Single Black Mat",
-    "priceDeltaMinor": 53,
-    "shortDescription": "Modern black beveled mat",
-    "matWidth": 45,
-    "color": "black",
-    "status": false,
-    "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
-    "__v": 0
-  }
-]
+// const Mats = [
+//   {
+//     "_id": "694936889ed118756432e192",
+//     "optionName": "No Mat",
+//     "shortDescription": "Print only, no matting",
+//     "__v": 0
+//   },
+//   {
+//     "_id": "69494ddc522251b1eb2eac99",
+//     "optionName": "Single White Mat",
+//     "priceDeltaMinor": 23,
+//     "matWidth": 23,
+//     "shortDescription": "Classic white beveled mat",
+//     "color": "black",
+//     "status": true,
+//     "thumbnailUrl": "https://www.dropbox.com/scl/fi/bi8rj1j3jbwbc0ljlqfal/1766499797787.jpg?rlkey=ajhd4y8z1f4ag2sqfpcff7wz2&raw=1",
+//     "__v": 0
+//   },
+//   {
+//     "_id": "69494f0a522251b1ewb2eacd2",
+//     "optionName": "Single Black Mat",
+//     "priceDeltaMinor": 53,
+//     "shortDescription": "Modern black beveled mat",
+//     "matWidth": 45,
+//     "color": "black",
+//     "status": false,
+//     "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+//     "__v": 0
+//   },
+//   {
+//     "_id": "69494f02a522251wb1eb2eacd2",
+//     "optionName": "Single Black Mat",
+//     "priceDeltaMinor": 53,
+//     "shortDescription": "Modern black beveled mat",
+//     "matWidth": 45,
+//     "color": "black",
+//     "status": false,
+//     "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+//     "__v": 0
+//   },
+//   {
+//     "_id": "69494f02a522251b1ewb2eacd2",
+//     "optionName": "Single Black Mat",
+//     "priceDeltaMinor": 53,
+//     "shortDescription": "Modern black beveled mat",
+//     "matWidth": 45,
+//     "color": "black",
+//     "status": false,
+//     "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+//     "__v": 0
+//   },
+//   {
+//     "_id": "69494f0a5222512b1eb2eacd2",
+//     "optionName": "Single Black Mat",
+//     "priceDeltaMinor": 53,
+//     "shortDescription": "Modern black beveled mat",
+//     "matWidth": 45,
+//     "color": "black",
+//     "status": false,
+//     "thumbnailUrl": "https://www.dropbox.com/scl/fi/l7nrt32vicpdtivd1w26s/1766493779446.jpg?rlkey=8fq736c9bh5jutnhfhav8epnm&raw=1",
+//     "__v": 0
+//   }
+// ]
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -285,20 +286,100 @@ async function loadImageFromDb() {
     request.onerror = (event) => reject(event.target.error);
   });
 }
-const StepFinish = () => {
+
+
+// No border and mat data
+const NO_BORDER_OPTION = {
+  _id: "no-border",
+  thickness: 0,
+  color: null,
+  priceDeltaMinor: 0,
+  label: "No Border",
+};
+
+const NO_Mat_OPTION = {
+  _id: "no-mat",
+  optionName: "No Mat",
+  priceDeltaMinor: 0,
+  label: "No Mat",
+};
+
+
+const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
+  console.log("------orderConfig", orderConfig)
+  // Mat data set
+  // const Mats = template?.metaOptions;
+  const rawMats = template?.metaOptions || [];
+
+  const Mats = [
+    NO_Mat_OPTION,
+    ...rawMats.filter(l => l.status !== false),
+  ];
+
+  // Borders data set
+  const rawBorders = template?.borderOptions || [];
+  const borderOptions = [
+    NO_BORDER_OPTION,
+    ...rawBorders.filter(b => b.status),
+  ];
+
+
+  // get mat or border option available
+  const hasMatOptions =
+    Array.isArray(Mats) &&
+    Mats.length > 1; // more than "No Mat"
+
+  const hasBorderOptions =
+    Array.isArray(borderOptions) &&
+    borderOptions.length > 1; // more than "No Border"
+
+
   const [borderSize, setBorderSize] = useState('0');
-  const [quantity, setQuantity] = useState(1);
+  const [selectedBorder, setSelectedBorder] = useState(NO_BORDER_OPTION);
   const [imageSrc, setImageSrc] = useState(null);
   const [activeTab, setActiveTab] = useState("Mat");
-  const [activeMat, setActiveMat] = useState();
+  const [activeMat, setActiveMat] = useState(NO_Mat_OPTION);
+  const [quantityAndLimits, setquantityAndLimits] = useState([])
   const basePrice = 68;
+  // Default for quantity integration
+  const quantityRule = quantityAndLimits?.[0];
+  const minQty = quantityRule?.minQuantity ?? 1;
+  const maxQty = quantityRule?.maxQuantity ?? 20;
+  const stepQty = quantityRule?.stepSize ?? 1;
+  const defaultQty = quantityRule?.defaultQuantity ?? 1;
+  const validationMsg =
+    quantityRule?.previewValidationMessage ??
+    `Please select a quantity between ${minQty} and ${maxQty}.`;
+  const [quantity, setQuantity] = useState(defaultQty);
 
+  // function to call api
+  const fetchData = async () => {
+    const data = await getCommerceRulesQuantityAndLimits();
+    setquantityAndLimits(data);
+  };
+  console.log("----------quantityAndLimits", quantityAndLimits)
+
+  // const handleQuantityChange = (value) => {
+  //   const newQuantity = Math.max(1, Math.min(20, value));
+  //   setQuantity(newQuantity);
+  // };
   const handleQuantityChange = (value) => {
-    const newQuantity = Math.max(1, Math.min(20, value));
-    setQuantity(newQuantity);
+    if (isNaN(value)) return;
+
+    let newValue = Math.round(value / stepQty) * stepQty;
+
+    if (newValue < minQty) newValue = minQty;
+    if (newValue > maxQty) newValue = maxQty;
+
+    setQuantity(newValue);
   };
 
+
   const total = basePrice * quantity;
+
+
+
+
 
   useEffect(() => {
     (async () => {
@@ -312,6 +393,49 @@ const StepFinish = () => {
       }
     })();
   }, []);
+
+
+  useEffect(() => {
+
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (quantityRule?.defaultQuantity) {
+      setQuantity(quantityRule.defaultQuantity);
+    }
+  }, [quantityRule]);
+
+
+
+  // load initial data
+
+  useEffect(() => {
+    if (!selectedBorder && borderOptions.length) {
+      setSelectedBorder(NO_BORDER_OPTION);
+    }
+  }, [borderOptions, selectedBorder]);
+
+
+  useEffect(() => {
+    if (!setActiveMat && rawMats.length) {
+      setActiveMat(NO_Mat_OPTION);
+    }
+  }, [rawMats, setActiveMat]);
+
+
+  // tab handle
+  useEffect(() => {
+    if (activeTab === "Mat" && !hasMatOptions && hasBorderOptions) {
+      setActiveTab("Border");
+    }
+
+    if (activeTab === "Border" && !hasBorderOptions && hasMatOptions) {
+      setActiveTab("Mat");
+    }
+  }, [hasMatOptions, hasBorderOptions, activeTab]);
+
 
   return (
     <div className="containerr">
@@ -334,27 +458,27 @@ const StepFinish = () => {
           <h3 className="summary-title">Order Summary</h3>
           <div className="summary-row">
             <span className="summary-label">Size</span>
-            <span className="summary-value">16×20"</span>
+            <span className="summary-value">{orderConfig?.size?.label || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Paper</span>
-            <span className="summary-value">Photo Rag</span>
+            <span className="summary-value">{orderConfig?.paper?.name || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Border</span>
-            <span className="summary-value">None</span>
+            <span className="summary-value">{orderConfig?.border?.thickness || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Lamination</span>
-            <span className="summary-value">None</span>
+            <span className="summary-value">{orderConfig?.lamination?.name || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Mounting</span>
-            <span className="summary-value">None</span>
+            <span className="summary-value">{orderConfig?.mounting?.name || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Mat</span>
-            <span className="summary-value">None</span>
+            <span className="summary-value">{orderConfig?.mat?.name || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Quantity</span>
@@ -369,8 +493,10 @@ const StepFinish = () => {
 
       <div className='right-section'>
         <div className='tab'>
-          <div className={`tab-option ${activeTab == "Mat" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Mat") }}>Mat</div>
-          <div className={`tab-option ${activeTab == "Border" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Border") }}>Border</div>
+          {hasMatOptions && (<div className={`tab-option ${activeTab == "Mat" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Mat") }}>Mat</div>)}
+          {hasBorderOptions && (<div className={`tab-option ${activeTab == "Border" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Border") }}>Border</div>)}
+
+
         </div>
 
 
@@ -381,7 +507,22 @@ const StepFinish = () => {
 
               {Mats.map((mat) => {
                 const isNotOption = mat.optionName == "No Mat";
-                return <div className={`mat-container ${activeMat?._id == mat._id ? "active-mat" : ""} `} onClick={() => setActiveMat(mat)}>
+                return <div className={`mat-container ${activeMat?._id == mat._id ? "active-mat" : ""} `} onClick={() => {
+                  setActiveMat(mat);
+
+                  setOrderConfig((prev) => ({
+                    ...prev,
+                    mat:
+                      mat._id === "no-mat"
+                        ? null
+                        : {
+                          id: mat._id,
+                          name: mat.optionName,
+                          price: mat.priceDeltaMinor,
+                        },
+                  }));
+                }}
+                >
                   <div className='mat-left'>
                     {
                       !isNotOption &&
@@ -402,40 +543,43 @@ const StepFinish = () => {
                   }
                 </div>
               })}
-            </div> : <div className="border-section">
+            </div> :
+            // Border tab
+            <div className="border-section">
               <h3 className="subsection-title">Border Size</h3>
               <div className="border-grid">
-                <button
-                  className={`border-button ${borderSize === '0' ? 'active' : ''}`}
-                  onClick={() => setBorderSize('0')}
-                >
-                  No Border
-                </button>
-                <button
-                  className={`border-button ${borderSize === '0.25' ? 'active' : ''}`}
-                  onClick={() => setBorderSize('0.25')}
-                >
-                  ¼"
-                </button>
-                <button
-                  className={`border-button ${borderSize === '0.5' ? 'active' : ''}`}
-                  onClick={() => setBorderSize('0.5')}
-                >
-                  ½"
-                </button>
-                <button
-                  className={`border-button ${borderSize === '1' ? 'active' : ''}`}
-                  onClick={() => setBorderSize('1')}
-                >
-                  1"
-                </button>
-                <button
-                  className={`border-button ${borderSize === '2' ? 'active' : ''}`}
-                  onClick={() => setBorderSize('2')}
-                >
-                  2"
-                </button>
+                {borderOptions.map((border) => {
+                  const isActive = selectedBorder?._id === border._id;
+
+                  return (
+                    <button
+                      key={border._id}
+                      className={`border-button ${isActive ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedBorder(border);
+
+                        setOrderConfig((prev) => ({
+                          ...prev,
+                          border:
+                            border.thickness === 0
+                              ? null
+                              : {
+                                id: border._id,
+                                thickness: border.thickness,
+                                price: border.priceDeltaMinor,
+                              },
+                        }));
+                      }}
+
+                    >
+                      {border.thickness === 0
+                        ? "No Border"
+                        : `${border.thickness}"`}
+                    </button>
+                  );
+                })}
               </div>
+
               <p className="border-note">Borders are blank space added around your image, not a mat or frame.</p>
             </div>
         }
@@ -446,8 +590,10 @@ const StepFinish = () => {
             <h3 className="subsection-title">Quantity</h3>
             <div className="quantity-control">
               <button
-                className="quantity-button"
-                onClick={() => handleQuantityChange(quantity - 1)}
+                className={`quantity-button ${quantity <= minQty ? "quantity-button-disabled" : ""
+                  }`}
+                onClick={() => handleQuantityChange(quantity - stepQty)}
+                disabled={quantity <= minQty}
               >
                 -
               </button>
@@ -455,19 +601,30 @@ const StepFinish = () => {
                 type="number"
                 className="quantity-input"
                 value={quantity}
-                onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                min="1"
-                max="20"
+                min={minQty}
+                max={maxQty}
+                step={stepQty}
+                onChange={(e) => handleQuantityChange(Number(e.target.value))}
               />
               <button
-                className="quantity-button"
-                onClick={() => handleQuantityChange(quantity + 1)}
+                className={`quantity-button ${quantity >= maxQty ? "quantity-button-disabled" : ""
+                  }`}
+                onClick={() => handleQuantityChange(quantity + stepQty)}
+                disabled={quantity >= maxQty}
               >
                 +
               </button>
-              <span className="quantity-limit">(Max 20 per order)</span>
+              {/* <span className="quantity-limit">(Max 20 per order)</span>
+               */}
+              <span className="quantity-limit">
+                (Min {minQty}, Max {maxQty})
+              </span>
+
             </div>
           </div>
+          {validationMsg ? (
+            <p className="quantity-warning">{validationMsg}</p>
+          ) : null}
 
           <div className="price-breakdown">
             <h3 className="breakdown-title">Price Breakdown</h3>

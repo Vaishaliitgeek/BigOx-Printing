@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './lamination.css';
 import { getLaminationOptions } from '../../../services/services';
+import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 
 
 // --- IndexedDB helpers (same DB as in Upload) ---
@@ -78,61 +79,31 @@ const PAPERS = [
         description: 'Pearlescent surface with vibrant colors.',
         priceAdjustment: 3,
     },
-    // {
-    //   id: 'p5',
-    //   name: 'Metallic Gloss',
-    //   finish: 'Gloss',
-    //   weight: '255gsm',
-    //   description: 'Pearlescent finish with extra depth and luminosity.',
-    //   priceAdjustment: 8,
-    // },
-    // {
-    //   id: 'p6',
-    //   name: 'Fine Art Matte',
-    //   finish: 'Matte',
-    //   weight: '220gsm',
-    //   description: 'Smooth, non-reflective surface ideal for detailed work.',
-    //   priceAdjustment: 2,
-    // },
+
 ];
-// const Laminations = [
-//     {
-//         "_id": "694936889ed118756432e192",
-//         "optionName": "No Lamination",
-//         "durabilityAndCleaningNotes": "Print without lamination. Suitable for framing behind glass or museum-grade display.",
-//         "__v": 0
-//     },
-//     {
-//         "_id": "694936889ed1187564w32e192",
-//         "optionName": "TEst",
-//         "status": true,
-//         "thumbnailUrl": "https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg",
-//         "finish": "gloss",
-//         "durabilityAndCleaningNotes": "Lightweight, rigid backing perfect for presentations and temporary displays",
-//         "__v": 0
-//     },
-//     {
-//         "_id": "694a8295eaddc59b63e11d84",
-//         "optionName": "Gator Board",
-//         "priceDeltaMinor": 22,
-//         "status": true,
-//         "thumbnailUrl": "https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg",
-//         "finish": "luster",
-//         "durabilityAndCleaningNotes": "Lightweight, rigid backing perfect for presentations and temporary displays.",
-//         "__v": 0
-//     }
-// ]
 
 // --- Component ---
+const NO_LAMINATION_OPTION = {
+    _id: "no-lamination",
+    optionName: "No Lamination",
+    finish: null,
+    durabilityAndCleaningNotes:
+        "Print without lamination. Suitable for framing behind glass or museum-grade display.",
+    priceDeltaMinor: 0,
+    isFrontendOnly: true,
+};
 
-const Lamination = ({ handleBack, handleNext }) => {
+
+const Lamination = ({ handleBack, handleNext, template }) => {
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [laminationData, setLaminationData] = useState([]);
 
     const [imageSrc, setImageSrc] = useState(null);
 
-    const [selectedPaperId, setSelectedPaperId] = useState(null);
+    // const [selectedLaminationId, setselectedLaminationId] = useState(null);
+
 
     const minZoom = 0.5;
     const maxZoom = 3;
@@ -143,18 +114,20 @@ const Lamination = ({ handleBack, handleNext }) => {
     const pinchStartZoomRef = useRef(1);
     const pinchStartDistanceRef = useRef(null);
 
-    const [laminationData, setLaminationData] = useState([]);
+    const [selectedLaminationId, setselectedLaminationId] =
+        useState(NO_LAMINATION_OPTION._id);
+
 
     // Fetch lamination data properly in useEffect
     useEffect(() => {
         const fetchLaminations = async () => {
             try {
-                const res = await getLaminationOptions();
-                if(!res){
-                    console.log("Failed to fetch lamination data")
-                }
+                // const res = await getLaminationOptions();
+                // if (!res) {
+                //     console.log("Failed to fetch lamination data")
+                // }
 
-                setLaminationData(res);
+                setLaminationData(template?.laminationOptions);
             } catch (error) {
                 console.log("Error fetching lamination data:", error.message);
             }
@@ -177,7 +150,22 @@ const Lamination = ({ handleBack, handleNext }) => {
         })();
     }, []);
 
-    const selectedPaper = PAPERS.find((p) => p.id === selectedPaperId);
+
+
+    useEffect(() => {
+        if (template?.laminationOptions?.length) {
+            setLaminationData([
+                NO_LAMINATION_OPTION,
+                ...template.laminationOptions,
+            ]);
+        }
+    }, [template]);
+    // const isNoLamination = lam._id === "no-lamination";
+
+    // const selectedPaper = PAPERS.find((p) => p.id === selectedLaminationId);
+    const selectedLamination = laminationData.find(
+        (l) => l._id === selectedLaminationId
+    );
 
 
     return (
@@ -229,19 +217,19 @@ const Lamination = ({ handleBack, handleNext }) => {
                         <h2 className="editor-title-right">
                             Select Lamination
                         </h2>
-                        <p>
+                        {/* <p>
                             Choose from our collection of museum-grade fine art papers
-                        </p>
+                        </p> */}
 
                         <div className="lamination-grid">
-                            {laminationData.map((Lamination) => {
+                            {laminationData?.map((Lamination) => {
                                 const isNoLamination = Lamination.optionName == "No Lamination";
                                 return <div
                                     key={Lamination._id}
-                                    onClick={() => setSelectedPaperId(Lamination._id)}
+                                    onClick={() => setselectedLaminationId(Lamination._id)}
                                     className={
                                         'lamination-card ' +
-                                        (selectedPaperId == Lamination._id ? 'lamination-card-selected' : '')
+                                        (selectedLaminationId == Lamination._id ? 'lamination-card-selected' : '')
                                     }
                                 >
                                     {/* Thumbnail area */}
@@ -251,10 +239,10 @@ const Lamination = ({ handleBack, handleNext }) => {
 
                                         {
                                             !isNoLamination &&
-                                            <img src='https://www.shutterstock.com/image-photo/sunny-day-on-taiga-river-260nw-2450111973.jpg' alt='lamination-img' height={80} width={80}></img>
+                                            <img src={Lamination?.thumbnailUrl} alt='lamination-img' height={80} width={80}></img>
                                         }
                                         <div className="lamination-card-radio">
-                                            {selectedPaperId === Lamination._id && (
+                                            {selectedLaminationId === Lamination._id && (
                                                 <div className="lamination-card-radio-outer">
 
                                                     <svg
@@ -300,9 +288,13 @@ const Lamination = ({ handleBack, handleNext }) => {
                                                     {Lamination.priceDeltaMinor > 0 ? '+ $' : '- $'}
                                                     {Math.abs(Lamination.priceDeltaMinor)}
                                                 </span>
+
                                             </div>
+
                                         }
                                     </div>
+
+
                                 </div>
                             })}
                         </div>
@@ -316,7 +308,24 @@ const Lamination = ({ handleBack, handleNext }) => {
 
                             <button
                                 className="footer-btn footer-btn-primary"
-                                onClick={() => handleNext()}
+                                disabled={!selectedLamination}
+                                onClick={() => {
+                                    if (!selectedLamination) return;
+                                    handleNext({
+                                        lamination: {
+                                            id: selectedLamination.isFrontendOnly
+                                                ? null
+                                                : selectedLamination._id,
+                                            name: selectedLamination.optionName,
+                                            finish: selectedLamination.finish || null,
+                                            priceDeltaMinor: selectedLamination.priceDeltaMinor || 0,
+                                            notes: selectedLamination.durabilityAndCleaningNotes,
+                                            isNone: selectedLamination.isFrontendOnly === true,
+                                        },
+                                    })
+                                }
+                                }
+
                             >
                                 Continue
                             </button>
@@ -328,7 +337,7 @@ const Lamination = ({ handleBack, handleNext }) => {
                 </div>
             </div>
 
-        </div>
+        </div >
     );
 };
 

@@ -21,6 +21,7 @@
   justify-content: center;
   flex-direction: column;
 }
+
 .editor-crop-area-paper {
   background-color: #ffffff;
   /* border-radius: 0.5rem;
@@ -74,6 +75,7 @@
 .paper-card:hover {
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
+  border-color: #000000;
 }
 
 /* Selected state: thick black border, like in screenshot */
@@ -129,6 +131,7 @@
   justify-content: center;
   text-align: center;
 }
+
 
 .checkIcon {
   color: white;
@@ -294,3 +297,5 @@
     padding: 10px 15px;
   }
 }
+
+

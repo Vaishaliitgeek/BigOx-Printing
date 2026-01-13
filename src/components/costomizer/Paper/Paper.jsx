@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Paper.css';
+import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 
 // --- IndexedDB helpers (same DB as in Upload) ---
 const DB_NAME = 'image-db';
@@ -42,67 +43,70 @@ async function loadImageFromDb() {
   });
 }
 
-const PAPERS = [
-  {
-    id: 'p1',
-    name: 'Photo Rag',
-    finish: 'Matte',
-    weight: '308gsm',
-    description: 'Museum-quality 100% cotton rag with a smooth, matte surface.',
-    priceAdjustment: 5,
-  },
-  {
-    id: 'p2',
-    name: 'Baryta',
-    finish: 'Semi-Gloss',
-    weight: '315gsm',
-    description: 'Classic darkroom feel with a subtle sheen.',
-    priceAdjustment: 5,
-  },
-  {
-    id: 'p3',
-    name: 'Smooth Cotton Rag',
-    finish: 'Matte',
-    weight: '320gsm',
-    description: 'Soft, velvety texture with excellent color reproduction.',
-    priceAdjustment: 4,
-  },
-  {
-    id: 'p4',
-    name: 'Premium Luster',
-    finish: 'Luster',
-    weight: '260gsm',
-    description: 'Pearlescent surface with vibrant colors.',
-    priceAdjustment: 3,
-  },
-  // {
-  //   id: 'p5',
-  //   name: 'Metallic Gloss',
-  //   finish: 'Gloss',
-  //   weight: '255gsm',
-  //   description: 'Pearlescent finish with extra depth and luminosity.',
-  //   priceAdjustment: 8,
-  // },
-  // {
-  //   id: 'p6',
-  //   name: 'Fine Art Matte',
-  //   finish: 'Matte',
-  //   weight: '220gsm',
-  //   description: 'Smooth, non-reflective surface ideal for detailed work.',
-  //   priceAdjustment: 2,
-  // },
-];
+
+// const PAPERS = [
+//   {
+//     id: 'p1',
+//     name: 'Photo Rag',
+//     finish: 'Matte',
+//     weight: '308gsm',
+//     description: 'Museum-quality 100% cotton rag with a smooth, matte surface.',
+//     priceAdjustment: 5,
+//   },
+//   {
+//     id: 'p2',
+//     name: 'Baryta',
+//     finish: 'Semi-Gloss',
+//     weight: '315gsm',
+//     description: 'Classic darkroom feel with a subtle sheen.',
+//     priceAdjustment: 5,
+//   },
+//   {
+//     id: 'p3',
+//     name: 'Smooth Cotton Rag',
+//     finish: 'Matte',
+//     weight: '320gsm',
+//     description: 'Soft, velvety texture with excellent color reproduction.',
+//     priceAdjustment: 4,
+//   },
+//   {
+//     id: 'p4',
+//     name: 'Premium Luster',
+//     finish: 'Luster',
+//     weight: '260gsm',
+//     description: 'Pearlescent surface with vibrant colors.',
+//     priceAdjustment: 3,
+//   },
+//   // {
+//   //   id: 'p5',
+//   //   name: 'Metallic Gloss',
+//   //   finish: 'Gloss',
+//   //   weight: '255gsm',
+//   //   description: 'Pearlescent finish with extra depth and luminosity.',
+//   //   priceAdjustment: 8,
+//   // },
+//   // {
+//   //   id: 'p6',
+//   //   name: 'Fine Art Matte',
+//   //   finish: 'Matte',
+//   //   weight: '220gsm',
+//   //   description: 'Smooth, non-reflective surface ideal for detailed work.',
+//   //   priceAdjustment: 2,
+//   // },
+// ];
 
 // --- Component ---
 
-const Paper = ({ handleBack, handleNext }) => {
+const Paper = ({ handleBack, handleNext, template }) => {
+  const PAPERS = template?.paperOptions;
+  console.log("--paper", PAPERS)
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const [imageSrc, setImageSrc] = useState(null);
 
-  const [selectedPaperId, setSelectedPaperId] = useState(PAPERS[0].id);
+  const [selectedPaperId, setSelectedPaperId] = useState(0);
 
   const minZoom = 0.5;
   const maxZoom = 3;
@@ -128,7 +132,19 @@ const Paper = ({ handleBack, handleNext }) => {
     })();
   }, []);
 
-  const selectedPaper = PAPERS.find((p) => p.id === selectedPaperId);
+
+  // Auto-select first paper when data loads
+  useEffect(() => {
+    if (PAPERS?.length && !selectedPaperId) {
+      setSelectedPaperId(PAPERS[0]._id);
+    }
+  }, [PAPERS, selectedPaperId]);
+
+  const selectedPaper = PAPERS?.find(
+    (paper) => paper._id === selectedPaperId
+  );
+
+
 
   return (
     <div className="editor-page">
@@ -184,28 +200,25 @@ const Paper = ({ handleBack, handleNext }) => {
               Select Paper
             </h2>
             <p>
-              Choose from our collection of museum-grade fine art papers
+              Choose from our collection of museum-grade fine art papersthumbnailUrl
             </p>
 
             <div className="paper-grid">
               {PAPERS.map((paper) => (
                 <button
-                  key={paper.id}
-                  onClick={() => setSelectedPaperId(paper.id)}
-                  className={
-                    'paper-card ' +
-                    (selectedPaperId === paper.id ? 'paper-card-selected' : '')
-                  }
+                  key={paper._id}
+                  onClick={() => setSelectedPaperId(paper._id)}
+                  className={`paper-card ${selectedPaperId === paper._id ? "paper-card-selected" : ""
+                    }`}
                 >
                   {/* Thumbnail area */}
                   <div className="paper-card-thumb">
                     {/* you can swap this gradient for real sample images later */}
                     {/* <div className="paper-card-thumb-art" /> */}
-                    <img src='https://damassets.autodesk.net/content/dam/autodesk/www/industry/3d-animation/create-beautiful-3d-animations-thumb-1204x677.jpg'></img>
+                    <img src={paper?.thumbnailUrl}></img>
                     <div className="paper-card-radio">
-                      {selectedPaperId === paper.id && (
+                      {selectedPaperId === paper._id && (
                         <div className="paper-card-radio-outer">
-
                           <svg
                             className="checkIcon"
                             fill="none"
@@ -227,46 +240,47 @@ const Paper = ({ handleBack, handleNext }) => {
                   {/* Text area */}
                   <div className="paper-card-body">
                     <div className="paper-card-name-row">
-                      <span className="paper-card-name">{paper.name}</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <g clip-path="url(#clip0_329_982)">
-                          <path d="M8.00016 14.6666C11.6821 14.6666 14.6668 11.6818 14.6668 7.99992C14.6668 4.31802 11.6821 1.33325 8.00016 1.33325C4.31826 1.33325 1.3335 4.31802 1.3335 7.99992C1.3335 11.6818 4.31826 14.6666 8.00016 14.6666Z" stroke="#A1A1A1" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M8 10.6667V8" stroke="#A1A1A1" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
-                          <path d="M8 5.33325H8.00667" stroke="#A1A1A1" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
-                        </g>
-                        <defs>
-                          <clipPath id="clip0_329_982">
-                            <rect width="16" height="16" fill="white" />
-                          </clipPath>
-                        </defs>
-                      </svg>
+                      <span className="paper-card-name">{paper.paperName}</span>
 
+
+                      <div className="tooltip-wrapper">
+
+                        <TooltipHoverIcon />
+
+                        {/* Tooltip */}
+                        <div className="tooltip-content">
+                          {paper.AdditionalNotes || "No Info"}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="paper-card-tags">
-                      <span className="paper-tag">{paper.finish}</span>
-                      <span className="paper-tag paper-tag-outline">
-                        {paper.weight}
-                      </span>
 
-                    </div>
-
-                    <p className="paper-card-description">{paper.description}</p>
-
-                    <div className="paper-card-price-row">
-                      <span
-                        className={
-                          'paper-price-adjust ' +
-                          (paper.priceAdjustment < 0
-                            ? 'paper-price-adjust-down'
-                            : '')
-                        }
-                      >
-                        {paper.priceAdjustment > 0 ? '+ $' : '- $'}
-                        {Math.abs(paper.priceAdjustment)}
-                      </span>
-                    </div>
                   </div>
+
+                  <div className="paper-card-tags">
+                    <span className="paper-tag"> {paper.finish?.charAt(0).toUpperCase() + paper.finish?.slice(1)}</span>
+                    <span className="paper-tag paper-tag-outline">
+                      {paper.weight || "22gsm"}
+                    </span>
+
+                  </div>
+
+                  <p className="paper-card-description">{paper.shortDescription}</p>
+
+                  <div className="paper-card-price-row">
+                    <span
+                      className={
+                        'paper-price-adjust ' +
+                        (paper.priceAdjustment < 0
+                          ? 'paper-price-adjust-down'
+                          : '')
+                      }
+                    >
+                      {paper.priceDeltaMinor > 0 ? '+ $' : '- $'}
+                      {Math.abs(paper.priceDeltaMinor)}
+                    </span>
+                  </div>
+
                 </button>
               ))}
             </div>
@@ -281,7 +295,18 @@ const Paper = ({ handleBack, handleNext }) => {
 
               <button
                 className="footer-btn footer-btn-primary"
-                onClick={() => handleNext()}
+                onClick={() =>
+                  handleNext({
+                    paper: {
+                      id: selectedPaper._id,
+                      name: selectedPaper.paperName,
+                      finish: selectedPaper.finish,
+                      weight: selectedPaper.weight,
+                      priceDeltaMinor: selectedPaper.priceDeltaMinor,
+                      thumbnailUrl: selectedPaper.thumbnailUrl,
+                      additionalNotes: selectedPaper.AdditionalNotes,
+                    },
+                  })}
               // onClick={handleContinue}
               // disabled={!canContinue()}
               >
@@ -294,7 +319,7 @@ const Paper = ({ handleBack, handleNext }) => {
         </div>
       </div>
 
-    </div>
+    </div >
   );
 };
 

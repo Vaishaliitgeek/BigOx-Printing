@@ -1,5 +1,5 @@
 import { apiConnecter } from "../utils/ApiConnector";
-const BASE_URL = "https://ozone-airplane-handle-portfolio.trycloudflare.com";
+const BASE_URL = "https://ali-ones-pursuit-javascript.trycloudflare.com";
 const shop = "amjad-itgeeks.myshopify.com";
 
 // ***********************************************************************************************************************************************
@@ -116,11 +116,28 @@ export async function getTemplateFromDb() {
       `${BASE_URL}/api/tamplates/getTamplatesByProductId`,
       null,
       null,
-      { shop, productId: "gid://shopify/Product/8715146461382" }
+      { shop, productId: "gid://shopify/Product/7197032874064" }
     );
     console.log(res.data.result);
     return res.data.result[0];
   } catch (err) {
     console.error("Error while getting Lamination options:", err.message);
+  }
+}
+
+
+export async function getCommerceRulesQuantityAndLimits() {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/commerceRules/getCommerceRulesQuantityAndLimits`,
+      null,
+      null,
+      { shop }
+    );
+    console.log(res.data.result);
+    return res.data.result;
+  } catch (err) {
+    console.error("Error while getting  quantity and discounts:", err.message);
   }
 }

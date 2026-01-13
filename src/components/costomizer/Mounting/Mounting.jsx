@@ -10,6 +10,7 @@ const STORE_NAME = 'images';
 const CURRENT_IMAGE_KEY = 'current-image';
 const CROP_IMAGE_KEY = "crop-image";
 
+
 function openDb() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -87,12 +88,22 @@ async function loadImageFromDb() {
 //     }]
 
 // --- Component ---
+const NO_MOUNTING_OPTION = {
+    _id: "no-mounting",
+    optionName: "No Mounting",
+    shortDescription:
+        "Print only, ready for your own mounting or framing solution.",
+    AdditionalNotes: "Custom framing, portfolio work",
+    priceDeltaMinor: 0,
+    isFrontendOnly: true,
+};
 
-const Mounting = ({ handleBack, handleNext }) => {
+
+const Mounting = ({ handleBack, handleNext, template }) => {
 
     const [imageSrc, setImageSrc] = useState(null);
 
-    const [selectedPaperId, setSelectedPaperId] = useState(null);
+    const [selectedMountingId, setselectedMountingId] = useState("no-mounting");
 
     const [mountingData, setMountingData] = useState([]);
 
@@ -100,12 +111,12 @@ const Mounting = ({ handleBack, handleNext }) => {
     useEffect(() => {
         const getMountingData = async () => {
             try {
-                const res = await getMountingOptions();
+                // const res = await getMountingOptions();
 
-                if (!res) {
-                    console.log("Failed to fetch mounting data")
-                }
-                setMountingData(res)
+                // if (!res) {
+                //     console.log("Failed to fetch mounting data")
+                // }
+                setMountingData(template?.mountingOptions)
                 console.log(res)
             } catch (error) {
                 console.log(error.message);
@@ -129,6 +140,21 @@ const Mounting = ({ handleBack, handleNext }) => {
             }
         })();
     }, []);
+    // initial load
+
+    useEffect(() => {
+        if (template?.mountingOptions?.length) {
+            setMountingData([
+                NO_MOUNTING_OPTION,
+                ...template.mountingOptions,
+            ]);
+        }
+    }, [template]);
+
+    // selected data to send
+    const selectedMounting = mountingData.find(
+        (m) => m._id === selectedMountingId
+    );
 
     return (
         <div className="editor-page">
@@ -170,7 +196,7 @@ const Mounting = ({ handleBack, handleNext }) => {
                             {/* <p> Lamination adds a protective layer to your print, making it more durable and resistant to scratches, moisture, and UV damage. Perfect for high-traffic areas or prints that won't be framed behind glass.
                             </p> */}
                             {
-                                mountingData.map((mounting) => {
+                                mountingData?.map((mounting) => {
                                     return <div className='mounting-guide-sub-wrapper'>
                                         <div className='mounting-text-option'>{mounting.optionName}:</div>
                                         <div className='mounting-text-desc'>{mounting.shortDescription.slice(0, 19)}</div>
@@ -190,13 +216,15 @@ const Mounting = ({ handleBack, handleNext }) => {
                         </h2>
                         <div className="mounting-grid">
                             {mountingData.map((mounting) => {
-                                const isNomounting = mounting.optionName == "No mounting";
+                                const isNomounting = mounting._id === "no-mounting";
+                                const isSelected = selectedMountingId === mounting._id;
+
                                 return <div
                                     key={mounting._id}
-                                    onClick={() => setSelectedPaperId(mounting._id)}
+                                    onClick={() => setselectedMountingId(mounting._id)}
                                     className={
                                         'mounting-card ' +
-                                        (selectedPaperId == mounting._id ? 'mounting-card-selected' : '')
+                                        (selectedMountingId == mounting._id ? 'mounting-card-selected' : '')
                                     }
                                 >
                                     {/* Thumbnail area */}
@@ -210,7 +238,7 @@ const Mounting = ({ handleBack, handleNext }) => {
                                             <img src={mounting?.thumbnailUrl || "https://viviaprint.com/products/mounted-matte-on-black-foamcore/main-mounted-matte-black-foamcore-vivia-print.jpg"} alt='mounting-img' height={80} width={80}></img>
                                         }
                                         <div className="mounting-card-radio">
-                                            {selectedPaperId === mounting._id && (
+                                            {isSelected && (
                                                 <div className="mounting-card-radio-outer">
 
                                                     <svg
@@ -286,17 +314,36 @@ const Mounting = ({ handleBack, handleNext }) => {
                             </button>
 
                             <button
-                                className="footer-btn footer-btn-primary"
-                                onClick={() => handleNext()}
+                                className={`footer-btn footer-btn-primary ${!selectedMounting ? "footer-btn-disabled" : ""
+                                    }`}
+                                disabled={!selectedMounting}
+                                onClick={() => {
+                                    if (!selectedMounting) return;
+
+                                    handleNext({
+                                        mounting: {
+                                            id: selectedMounting.isFrontendOnly
+                                                ? null
+                                                : selectedMounting._id,
+                                            name: selectedMounting.optionName,
+                                            substrateType: selectedMounting.substrateType || null,
+                                            thickness: selectedMounting.thickness || null,
+                                            priceDeltaMinor: selectedMounting.priceDeltaMinor || 0,
+                                            notes: selectedMounting.AdditionalNotes,
+                                            isNone: selectedMounting.isFrontendOnly === true,
+                                        },
+                                    });
+                                }}
                             >
                                 Continue
                             </button>
+
                         </div>
                     </div>
                 </div>
             </div>
 
-        </div>
+        </div >
     );
 };
 

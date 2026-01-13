@@ -141,7 +141,7 @@
 }
 
 .quantity-section {
-  margin-bottom: 30px;
+  margin-bottom: 15px;
   margin-top: 20px;
 }
 
@@ -403,4 +403,18 @@
   .config-section {
     max-width: 100%;
   }
+}
+
+.quantity-warning {
+  color: #666;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.quantity-button-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #f1f1f1;
+  border-color: #ddd;
 }

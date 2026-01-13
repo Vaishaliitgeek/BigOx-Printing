@@ -60,7 +60,7 @@
     font-style: italic;
 }
 
-body{
+body {
     font-family: "Lato", sans-serif;
     margin: 0;
     padding: 0;
@@ -84,13 +84,73 @@ h2 {
     letter-spacing: 0px;
 }
 
-p{
+p {
     font-family: "Lato", sans-serif;
     font-weight: 400;
     font-style: normal;
     color: #525252;
     font-weight: 400;
     font-size: 14px;
-    line-height: 20px   ;
+    line-height: 20px;
     letter-spacing: 0px;
+}
+
+
+.upload-error-text {
+    color: #EF4444;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+
+/* tooltip css */
+.tooltip-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.info-icon {
+    margin-left: 6px;
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+
+    color: #111;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    min-width: 180px;
+    max-width: 240px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 20;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
+}
+
+/* Tooltip arrow */
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #111 transparent transparent transparent;
+}
+
+.tooltip-wrapper:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
 }

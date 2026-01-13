@@ -17,6 +17,8 @@ import { PRINT_SIZES, PAPERS } from "./pages/printData";
 // API / services
 import { getTemplateFromDb, getValidationRules } from "./services/services.js";
 
+import "react-toastify/dist/ReactToastify.css";
+
 // UI components
 import Header from "./components/Header/Header";
 import Upload from "./components/costomizer/upload/Upload.jsx";
@@ -25,6 +27,7 @@ import Paper from "./components/costomizer/Paper/Paper";
 import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
 import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
+import { ToastContainer } from "react-toastify";
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
@@ -73,9 +76,22 @@ function App() {
   const [isValideOptions, setIsValideOption] = useState({ "borderOption": true, "metaOptions": true });
 
 
+  // Handle Order data
+  const [orderConfig, setOrderConfig] = useState({
+    size: null,
+    paper: null,
+    lamination: null,
+    mounting: null,
+    mat: null,
+    border: null,
+    quantity: 1,
+  });
+
+
+
   function updateStepsWithValideData(template) {
-    console.log("template",template)
-    if(!template) return;
+    console.log("------------template", template)
+    if (!template) return;
     let currentStep = 1;
     const stepMapping = {};
 
@@ -93,12 +109,12 @@ function App() {
         currentStep++;
       }
     });
-    
-    if(template["borderOptions"]){
-      setIsValideOption((prev) => ({...prev,"borderOption":true}));
+
+    if (template["borderOptions"]) {
+      setIsValideOption((prev) => ({ ...prev, "borderOption": true }));
     }
-    if(template["metaOptions"]){
-      setIsValideOption((prev) => ({...prev,"metaOptions":true}));
+    if (template["metaOptions"]) {
+      setIsValideOption((prev) => ({ ...prev, "metaOptions": true }));
     }
     setAppSteps(stepMapping);
   }
@@ -178,9 +194,18 @@ function App() {
   /**
    * Go to next step (clamped).
    */
-  const handleNext = useCallback(() => {
+  // const handleNext = useCallback(() => {
+  //   setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
+  // }, []);
+  const handleNext = useCallback((payload = {}) => {
+    setOrderConfig((prev) => ({
+      ...prev,
+      ...payload,
+    }));
+
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
+
 
   // -----------------------------
   // Render
@@ -200,6 +225,7 @@ function App() {
         <Upload
           handleNext={handleNext}
           rules={rules}
+          template={template}
         />
       )}
 
@@ -208,6 +234,8 @@ function App() {
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
+          template={template}
+
         />
       )}
 
@@ -216,6 +244,8 @@ function App() {
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
+          template={template}
+
         />
       )}
       {currentStep === appSteps.laminationOptions && (
@@ -223,6 +253,8 @@ function App() {
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
+          template={template}
+
         />
       )}
       {currentStep === appSteps.mountingOptions && (
@@ -230,6 +262,8 @@ function App() {
           handleBack={handleBack}
           handleNext={handleNext}
           rules={rules}
+          template={template}
+
         />
       )}
 
@@ -242,8 +276,21 @@ function App() {
           onBorderChange={handleBorderChange}
           onQuantityChange={handleQuantityChange}
           rules={rules}
+          template={template}
+          orderConfig={orderConfig}
+          setOrderConfig={setOrderConfig}
         />
       )}
+
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+      />
     </div>
   );
 }

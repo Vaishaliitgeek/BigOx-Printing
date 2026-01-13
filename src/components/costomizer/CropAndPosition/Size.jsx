@@ -92,11 +92,11 @@ const SIZES = [
 
 
 
-const getAllSize = async (setSizeOptions) => {
-  console.log("Fetching size options from API...");
+const getAllSize = async (setSizeOptions, template) => {
+  console.log("Fetching size options from API...", template.sizeOptions);
   try {
-    const data = await getSizeOptions();
-    const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor}));
+    const data = template?.sizeOptions;
+    const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor }));
     console.log('filterdData', filterdData)
     setSizeOptions(filterdData);
   } catch (err) {
@@ -114,7 +114,7 @@ const getAllSize = async (setSizeOptions) => {
 //   }
 // }
 
-export default function App({ handleBack, handleNext }) {
+export default function App({ handleBack, handleNext, template }) {
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
 
@@ -188,22 +188,64 @@ export default function App({ handleBack, handleNext }) {
     setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
   }
 
-
-
   async function onDownload() {
     try {
       const img = imgRef.current;
       if (!img) return alert("Upload an image first.");
       if (!completedCrop) return alert("Select a crop area first.");
 
+      // 1️⃣ Export cropped image
       const blob = await cropToBlob(img, completedCrop, "image/png");
-      const url = URL.createObjectURL(blob);
-      handleUrlSelect(url, handleNext);
+      const finalImageUrl = URL.createObjectURL(blob);
+
+      // 2️⃣ Compute PPI for selected size
+      const ppi = computePpiForSize(selectedSizeId, displayDims);
+
+      // 3️⃣ Build payload
+      const payload = {
+        size: {
+          id: selectedSize.id,
+          label: selectedSize.id,
+          width: selectedSize.w,
+          height: selectedSize.h,
+          price: selectedSize.price,
+        },
+        crop: completedCrop,
+        ppi,
+        finalImageUrl,
+      };
+
+      // 4️⃣ Save to IndexedDB (optional but good)
+      await saveCurrentImage({
+        url: finalImageUrl,
+        width: img.width,
+        height: img.height,
+      });
+
+      // 5️⃣ Move to next step WITH DATA
+      handleNext(payload);
+
     } catch (err) {
       console.error(err);
       alert(err?.message ?? "Failed to export crop");
     }
   }
+
+
+  // async function onDownload() {
+  //   try {
+  //     const img = imgRef.current;
+  //     if (!img) return alert("Upload an image first.");
+  //     if (!completedCrop) return alert("Select a crop area first.");
+
+  //     const blob = await cropToBlob(img, completedCrop, "image/png");
+  //     const url = URL.createObjectURL(blob);
+  //     handleUrlSelect(url, handleNext);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert(err?.message ?? "Failed to export crop");
+  //   }
+  // }
 
   useEffect(() => {
     (async () => {
@@ -219,7 +261,7 @@ export default function App({ handleBack, handleNext }) {
   }, []);
 
   useEffect(() => {
-    getAllSize(setSizeOptions);
+    getAllSize(setSizeOptions, template);
   }, []);
 
   return (

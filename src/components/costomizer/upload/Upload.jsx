@@ -6,8 +6,11 @@ import {
   calculatePPI,
   getQualityLevel,
   getQualityColor,
+  getQualityInfoByPPI,
 } from "../../../pages/printData.js";
 import { FiUpload, FiX } from "react-icons/fi";
+import { toast } from "react-toastify";
+
 
 const DB_NAME = "image-db";
 const DB_VERSION = 1;
@@ -72,10 +75,15 @@ async function clearCurrentImage() {
 
 // --- Component ---
 
-const StepUpload = ({ onImageUpload, handleNext, rules }) => {
+const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
+  // console.log("---rules", template)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,PNG, TIFF');
+  const [uploadError, setUploadError] = useState("");
+
+  const Sizes = template?.sizeOptions;
+  console.log("-------Sizes", Sizes)
 
   // Load image from IndexedDB on mount
   useEffect(() => {
@@ -102,6 +110,28 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = async () => {
+
+
+        const validation = validateImageFile(
+          file,
+          img.width,
+          img.height,
+          rules
+        );
+
+        if (!validation.valid) {
+          toast.warning(validation.message, {
+            toastId: "image-upload-warning", // prevents duplicate toasts
+          });
+          // setUploadError(validation?.message);
+          console.log("-----uplll", uploadError)
+          // alert(validation.message); // or Polaris Toast
+          e.target.value = ""; // reset file input
+          return;
+        }
+
+
+
         const url = event.target.result;
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
 
@@ -152,6 +182,51 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
     }, "");
     console.log("typesResult", typesResult)
     return typesResult;
+  }
+
+
+  // Image validate from rules admin api
+  function validateImageFile(file, imgWidth, imgHeight, rules) {
+    if (!rules?.fileConstraints) {
+      return { valid: true };
+    }
+
+    const { maxFileSizeMB, minPixelDimension, allowedTypes } =
+      rules.fileConstraints;
+
+    // 1️⃣ File size validation
+    const fileSizeMB = file.size / (1024 * 1024);
+    if (fileSizeMB > maxFileSizeMB) {
+      return {
+        valid: false,
+        message: `File size exceeds ${maxFileSizeMB} MB`,
+      };
+    }
+
+    // // 2️⃣ File type validation
+    // const isTypeAllowed = allowedTypes.some(
+    //   (type) => type.status && type.imageType === file.type
+    // );
+
+    // if (!isTypeAllowed) {
+    //   return {
+    //     valid: false,
+    //     message: "Unsupported file type",
+    //   };
+    // }
+
+    // 3️⃣ Minimum pixel dimension validation
+    if (
+      imgWidth < minPixelDimension.width ||
+      imgHeight < minPixelDimension.height
+    ) {
+      return {
+        valid: false,
+        message: `Image resolution too low. Minimum required: ${minPixelDimension.width} × ${minPixelDimension.height}px`,
+      };
+    }
+
+    return { valid: true };
   }
 
   useEffect(() => {
@@ -268,6 +343,10 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
                 className="upload-success-img"
               />
             </div>
+            {uploadError && (
+              <p className="upload-error-text">{uploadError}</p>
+            )}
+
 
             {/* Resolution estimate */}
             <div className="resolution-section">
@@ -276,22 +355,29 @@ const StepUpload = ({ onImageUpload, handleNext, rules }) => {
               </h3>
 
               <div className="resolution-grid">
-                {PRINT_SIZES.slice(0, 4).map((size) => {
+                {Sizes?.slice(0, 4).map((size) => {
                   const ppi = calculatePPI(
                     imageData.width,
                     imageData.height,
                     size.width,
                     size.height
                   );
-                  const quality = getQualityLevel(ppi);
-                  const colorKey = getQualityColor(quality); // "green" | "orange" | "red" | "gray"
+                  // const quality = getQualityLevel(ppi);
+                  const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
+                  console.log("-quality", quality)
+                  // const colorKey = getQualityColor(quality);
+                  //  // "green" | "orange" | "red" | "gray"
+                  const color = quality?.color;
+                  // console.log("--------colorKey", colorKey)
 
-                  const textClass = `quality-text quality-text-${colorKey}`;
+                  // const textClass = `quality-text quality-text-${colorKey}`;
+                  const textClass = `quality-text `;
+
 
                   return (
                     <div key={size.id} className="resolution-card">
                       <p className="resolution-card-size">{size.label}</p>
-                      <p className={textClass}>{Math.round(ppi)} PPI</p>
+                      <p className={textClass} style={{ color }} >{Math.round(ppi)}PPI</p>
                     </div>
                   );
                 })}

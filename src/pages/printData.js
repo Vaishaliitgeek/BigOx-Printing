@@ -98,3 +98,32 @@ export function getQualityColor(quality) {
       return 'muted';
   }
 }
+
+export function getQualityInfoByPPI(ppi, ppiBandColors = []) {
+  if (!ppi || !Array.isArray(ppiBandColors)) {
+    return {
+      label: 'Unknown',
+      color: 'muted',
+      badgeLabel: '',
+    };
+  }
+
+  const sortedBands = [...ppiBandColors].sort(
+    (a, b) => b.minPPI - a.minPPI
+  );
+
+  const band = sortedBands.find(b => ppi >= b.minPPI);
+
+  return band
+    ? {
+      label: band.qualityLabel,
+      color: band.color,
+      badgeLabel: band.badgeLabel,
+    }
+    : {
+      label: 'Low',
+      color: '#EF4444',
+      badgeLabel: 'Warning',
+    };
+}
+
