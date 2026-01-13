@@ -433,7 +433,9 @@ quality-gray {
 
 .content {
   display: grid;
-  grid-template-columns: 1.2fr 0.9fr;
+  /* grid-template-columns: 1.2fr 0.9fr; */
+  grid-template-columns: 1.2fr 1.5fr;
+
   gap: 20px;
   padding: 18px 22px;
   align-items: start;

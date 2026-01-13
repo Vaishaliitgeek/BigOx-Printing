@@ -136,6 +136,7 @@ p {
     transition: opacity 0.2s ease;
     z-index: 20;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e5e5;
 }
 
 /* Tooltip arrow */

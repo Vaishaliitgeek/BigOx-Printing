@@ -270,13 +270,42 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                                     {/* Text area */}
                                     <div className="lamination-card-body">
 
-                                        <span className="lamination-card-name">{Lamination.optionName}</span>
+                                        <div className="lamination-title-row">
+                                            <span className="lamination-card-name">
+                                                {Lamination.optionName}
+                                            </span>
+
+                                            {!isNoLamination &&
+                                                <div className="tooltip-wrapper">
+                                                    <TooltipHoverIcon />
+                                                    <div className="tooltip-content">
+                                                        {Lamination.durabilityAndCleaningNotes}
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
                                         {
                                             !isNoLamination && <div className="paper-card-tags">
                                                 <span className="lamination-tag">{Lamination.finish}</span>
                                             </div>}
 
                                         <span className="lamination-card-description">{Lamination.durabilityAndCleaningNotes}</span>
+
+                                        {/* Feature pills */}
+                                        {Lamination.shortDescription && (
+                                            <div className="lamination-features">
+                                                {Lamination.shortDescription
+                                                    .split(",")                // split by comma
+                                                    .map(item => item.trim())  // remove extra spaces
+                                                    .filter(Boolean)           // remove empty strings
+                                                    .map((feature, idx) => (
+                                                        <span key={idx} className="lamination-pill">
+                                                            {feature}
+                                                        </span>
+                                                    ))}
+                                            </div>
+                                        )}
+
 
                                         {
                                             !isNoLamination &&

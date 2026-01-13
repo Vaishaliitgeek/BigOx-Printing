@@ -50,7 +50,7 @@
 .mounting-card-body {
   display: flex;
   flex-direction: column;
-  width: 80%;
+  width: 90%;
   gap: 5px;
 }
 
@@ -105,21 +105,25 @@
   border-radius: 7px;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
+
 .mounting-card-description {
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0px;
   color: rgba(82, 82, 82, 1);
 }
+
 .mounting-card-description-bestfor {
   color: #000000;
 }
+
 .mounting-wrappper-text {
   border: 1px solid rgba(229, 229, 229, 1);
   padding: 10px 20px 20px 20px;
   margin-top: 20px;
   background: rgba(250, 250, 250, 1);
 }
+
 .mounting-text-heading {
   line-height: 20px;
   font-size: 14px;
@@ -132,6 +136,7 @@
   margin-bottom: 5px;
 
 }
+
 .mounting-text-option {
   font-family: Lato;
   font-weight: 400;
@@ -167,6 +172,7 @@
   justify-content: center;
   flex-direction: column;
 }
+
 .mounting-editor-image {
   width: 100%;
   height: 100%;
@@ -185,4 +191,12 @@
 
 .mounting-guide-sub-wrapper p {
   line-height: 5px;
+}
+
+
+.mounting-card-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }

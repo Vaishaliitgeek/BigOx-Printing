@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Mounting.css';
 import { getMountingOptions } from '../../../services/services';
+import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 
 
 // --- IndexedDB helpers (same DB as in Upload) ---
@@ -267,8 +268,22 @@ const Mounting = ({ handleBack, handleNext, template }) => {
 
                                     {/* Text area */}
                                     <div className="mounting-card-body">
+                                        <div className="mounting-card-name-row">
+                                            <span className="mounting-card-name">
+                                                {mounting.optionName}
+                                            </span>
 
-                                        <span className="mounting-card-name">{mounting.optionName}</span>
+                                            {(mounting.AdditionalNotes || mounting.shortDescription) && (
+                                                <div className="tooltip-wrapper">
+                                                    <TooltipHoverIcon />
+
+                                                    <div className="tooltip-content">
+                                                        {mounting.AdditionalNotes}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         {
                                             !isNomounting && <div className="paper-card-tags">
                                                 <span className="mounting-tag">{mounting.substrateType}</span>

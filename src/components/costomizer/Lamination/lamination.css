@@ -105,19 +105,21 @@
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
+
 .lamination-card-description {
   font-size: 12px;
   line-height: 16px;
   letter-spacing: 0px;
 }
 
-.laminate-wrappper-text{
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 20px ;
-    margin-top: 20px;
+.laminate-wrappper-text {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-top: 20px;
 }
-.laminate-text-heading{
-    color: rgba(10, 10, 10, 1);
+
+.laminate-text-heading {
+  color: rgba(10, 10, 10, 1);
 }
 
 .lamination-editor-image-wrapper-paper {
@@ -134,11 +136,37 @@
   justify-content: center;
   flex-direction: column;
 }
-.lamination-editor-image{
+
+.lamination-editor-image {
   width: 100%;
   height: 100%;
   max-width: 300px;
   max-height: 300px;
   object-fit: contain;
   pointer-events: none;
+}
+
+/* neww */
+
+.lamination-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lamination-features {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.lamination-pill {
+  background-color: #f1f3f5;
+  color: #111;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-weight: 500;
 }
