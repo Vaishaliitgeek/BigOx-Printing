@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Mounting.css';
 import { getMountingOptions } from '../../../services/services';
 
@@ -152,9 +152,15 @@ const Mounting = ({ handleBack, handleNext, template }) => {
     }, [template]);
 
     // selected data to send
-    const selectedMounting = mountingData.find(
-        (m) => m._id === selectedMountingId
+    // const selectedMounting = mountingData.find(
+    //     (m) => m._id === selectedMountingId
+    // );
+
+    const selectedMounting = useMemo(
+        () => mountingData?.find((m) => m._id === selectedMountingId) ?? mountingData[0],
+        [selectedMountingId]
     );
+
 
     return (
         <div className="editor-page">

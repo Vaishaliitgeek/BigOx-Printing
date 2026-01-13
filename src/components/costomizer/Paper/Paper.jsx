@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Paper.css';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 
@@ -140,9 +140,14 @@ const Paper = ({ handleBack, handleNext, template }) => {
     }
   }, [PAPERS, selectedPaperId]);
 
-  const selectedPaper = PAPERS?.find(
-    (paper) => paper._id === selectedPaperId
+
+  const selectedPaper = useMemo(
+    () => PAPERS?.find((paper) => paper._id === selectedPaperId) ?? PAPERS[0],
+    [selectedPaperId]
   );
+  // const selectedPaper = PAPERS?.find(
+  //   (paper) => paper._id === selectedPaperId
+  // );
 
 
 

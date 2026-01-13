@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './lamination.css';
 import { getLaminationOptions } from '../../../services/services';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
@@ -163,8 +163,12 @@ const Lamination = ({ handleBack, handleNext, template }) => {
     // const isNoLamination = lam._id === "no-lamination";
 
     // const selectedPaper = PAPERS.find((p) => p.id === selectedLaminationId);
-    const selectedLamination = laminationData.find(
-        (l) => l._id === selectedLaminationId
+    // const selectedLamination = laminationData.find(
+    //     (l) => l._id === selectedLaminationId
+    // );
+    const selectedLamination = useMemo(
+        () => laminationData?.find((l) => l._id === selectedLaminationId) ?? laminationData[0],
+        [selectedLaminationId]
     );
 
 

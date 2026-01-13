@@ -466,7 +466,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
           </div>
           <div className="summary-row">
             <span className="summary-label">Border</span>
-            <span className="summary-value">{orderConfig?.border?.thickness || "None"}</span>
+            <span className="summary-value">{orderConfig?.border?.thickness + '"' || "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Lamination</span>
@@ -632,28 +632,29 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
               <span className="breakdown-label">Base price (16×20")</span>
               <span className="breakdown-value">${basePrice}</span>
             </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Quantity</span>
-              <span className="breakdown-value">×{quantity}</span>
-            </div>
+
             <div className="breakdown-row">
               <span className="breakdown-label">Border</span>
-              <span className="breakdown-value">+{quantity}%</span>
+              <span className="breakdown-value">+{orderConfig?.border?.price}%</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Mat</span>
-              <span className="breakdown-value">+{quantity}%</span>
+              <span className="breakdown-value">+{orderConfig?.border?.price}$</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Lamination</span>
-              <span className="breakdown-value">+{quantity}%</span>
+              <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor}%</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Paper upgrade (Metallic Gloss)</span>
-              <span className="breakdown-value">+{5}$</span>
+              <span className="breakdown-value">+{orderConfig?.paper?.priceDeltaMinor}%</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Mounting (Acrylic Face Mount)</span>
+              <span className="breakdown-value">+{orderConfig?.mounting?.priceDeltaMinor}$</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Quantity</span>
               <span className="breakdown-value">×{quantity}</span>
             </div>
             <div className="breakdown-row breakdown-total">
