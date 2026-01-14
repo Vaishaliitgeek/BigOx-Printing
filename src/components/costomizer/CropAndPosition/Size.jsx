@@ -220,6 +220,8 @@ export default function App({ handleBack, handleNext, template }) {
         url: finalImageUrl,
         width: img.width,
         height: img.height,
+        blob,
+        type:"image/png"
       });
 
       // 5️⃣ Move to next step WITH DATA

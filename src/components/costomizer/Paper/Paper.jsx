@@ -1,128 +1,25 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Paper.css';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
+import { loadCropImageFromDb } from '../../../services/indexDb';
 
-// --- IndexedDB helpers (same DB as in Upload) ---
-const DB_NAME = 'image-db';
-const DB_VERSION = 1;
-const STORE_NAME = 'images';
-const CURRENT_IMAGE_KEY = 'current-image';
-const CROP_IMAGE_KEY = "crop-image";
-
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = (event) => {
-      resolve(event.target.result);
-    };
-
-    request.onerror = (event) => {
-      reject(event.target.error);
-    };
-  });
-}
-
-async function loadImageFromDb() {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(CROP_IMAGE_KEY);
-
-    request.onsuccess = () => resolve(request.result || null);
-    request.onerror = (event) => reject(event.target.error);
-  });
-}
-
-
-// const PAPERS = [
-//   {
-//     id: 'p1',
-//     name: 'Photo Rag',
-//     finish: 'Matte',
-//     weight: '308gsm',
-//     description: 'Museum-quality 100% cotton rag with a smooth, matte surface.',
-//     priceAdjustment: 5,
-//   },
-//   {
-//     id: 'p2',
-//     name: 'Baryta',
-//     finish: 'Semi-Gloss',
-//     weight: '315gsm',
-//     description: 'Classic darkroom feel with a subtle sheen.',
-//     priceAdjustment: 5,
-//   },
-//   {
-//     id: 'p3',
-//     name: 'Smooth Cotton Rag',
-//     finish: 'Matte',
-//     weight: '320gsm',
-//     description: 'Soft, velvety texture with excellent color reproduction.',
-//     priceAdjustment: 4,
-//   },
-//   {
-//     id: 'p4',
-//     name: 'Premium Luster',
-//     finish: 'Luster',
-//     weight: '260gsm',
-//     description: 'Pearlescent surface with vibrant colors.',
-//     priceAdjustment: 3,
-//   },
-//   // {
-//   //   id: 'p5',
-//   //   name: 'Metallic Gloss',
-//   //   finish: 'Gloss',
-//   //   weight: '255gsm',
-//   //   description: 'Pearlescent finish with extra depth and luminosity.',
-//   //   priceAdjustment: 8,
-//   // },
-//   // {
-//   //   id: 'p6',
-//   //   name: 'Fine Art Matte',
-//   //   finish: 'Matte',
-//   //   weight: '220gsm',
-//   //   description: 'Smooth, non-reflective surface ideal for detailed work.',
-//   //   priceAdjustment: 2,
-//   // },
-// ];
 
 // --- Component ---
 
 const Paper = ({ handleBack, handleNext, template }) => {
   const PAPERS = template?.paperOptions;
   console.log("--paper", PAPERS)
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const [imageSrc, setImageSrc] = useState(null);
-
   const [selectedPaperId, setSelectedPaperId] = useState(0);
 
-  const minZoom = 0.5;
-  const maxZoom = 3;
-
-  const pointerMap = useRef(new Map());
-  const lastPanPosRef = useRef({ x: 0, y: 0 });
-  const isPanningRef = useRef(false);
-  const pinchStartZoomRef = useRef(1);
-  const pinchStartDistanceRef = useRef(null);
 
 
   // Load image from IndexedDB
   useEffect(() => {
     (async () => {
       try {
-        const saved = await loadImageFromDb();
+        const saved = await loadCropImageFromDb();
         if (saved && saved.url) {
           setImageSrc(saved.url);
         }

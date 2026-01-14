@@ -39,6 +39,20 @@ export async function loadImageFromDb() {
   });
 }
 
+export async function loadCropImageFromDb() {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(CROP_IMAGE_KEY);
+    console.log("IndexedDB request:", request);
+
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = (event) => reject(event.target.error);
+  });
+}
+
+
 
 export async function saveCurrentImage(imageData) {
   const db = await openDb();

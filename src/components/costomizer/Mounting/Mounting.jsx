@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Mounting.css';
 import { getMountingOptions } from '../../../services/services';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
+import { loadCropImageFromDb } from '../../../services/indexDb';
 
 
 // --- IndexedDB helpers (same DB as in Upload) ---
@@ -12,81 +13,6 @@ const CURRENT_IMAGE_KEY = 'current-image';
 const CROP_IMAGE_KEY = "crop-image";
 
 
-function openDb() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME);
-            }
-        };
-
-        request.onsuccess = (event) => {
-            resolve(event.target.result);
-        };
-
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
-}
-
-async function loadImageFromDb() {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, 'readonly');
-        const store = tx.objectStore(STORE_NAME);
-        const request = store.get(CROP_IMAGE_KEY);
-
-        request.onsuccess = () => resolve(request.result || null);
-        request.onerror = (event) => reject(event.target.error);
-    });
-}
-
-
-// const Mountings = [
-//     {
-//         "_id": "694936889ed118756432e192",
-//         "optionName": "No mounting",
-//         "shortDescription": "Print only, ready for your own mounting or framing solution.",
-//         "BestFor": "Custom framing, portfolio work",
-//         "__v": 0
-//     },
-//     {
-//         "maxSize": {
-//             "width": 3,
-//             "height": 16,
-//             "unit": "in"
-//         },
-//         "_id": "69495104522251b1eb2ead1b",
-//         "optionName": "Foam Board",
-//         "substrateType": "Foam Core",
-//         "thickness": 34,
-//         "priceDeltaMinor": 29,
-//         "status": true,
-//         "thumbnailUrl": "https://www.dropbox.com/scl/fi/0v4z87gi8ttqukxj80gyq/1766493894278.jpg?rlkey=lnqqpd27bf547emnwjkpdpnnd&raw=1",
-//         "shortDescription": "Lightweight, rigid backing perfect for presentations and temporary displays.",
-//         "__v": 0
-//     },
-//     {
-//         "maxSize": {
-//             "width": 34,
-//             "height": 34,
-//             "unit": "in"
-//         },
-//         "_id": "694a93598935970ab2f6c586",
-//         "optionName": "option 3",
-//         "substrateType": "matte",
-//         "thickness": 45,
-//         "priceDeltaMinor": 4,
-//         "status": true,
-//         "thumbnailUrl": "https://www.dropbox.com/scl/fi/ppo11ll05co60bn1cscqb/1766495080991.png?rlkey=ouo8bge3g2nley9jzghv7bb5g&raw=1",
-//         "shortDescription": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-//         "__v": 0
-//     }]
 
 // --- Component ---
 const NO_MOUNTING_OPTION = {
@@ -132,7 +58,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
     useEffect(() => {
         (async () => {
             try {
-                const saved = await loadImageFromDb();
+                const saved = await loadCropImageFromDb();
                 if (saved && saved.url) {
                     setImageSrc(saved.url);
                 }

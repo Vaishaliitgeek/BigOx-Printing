@@ -1,6 +1,30 @@
 import { apiConnecter } from "../utils/ApiConnector";
-const BASE_URL = "https://ali-ones-pursuit-javascript.trycloudflare.com";
+const BASE_URL = "https://departure-qui-deborah-inches.trycloudflare.com";
 const shop = "amjad-itgeeks.myshopify.com";
+
+// ***********************************************************************************************************************************************
+// *                                   Functions to add itms in cart                                                                                           *
+// ************************************************************************************************************************************************
+// Fetch Validation Rules from the API
+
+export async function addToCartWithMetadata({
+  variantId,
+  quantity = 1,
+  properties,
+}) {
+  try {
+    const response = await apiConnecter("POST", `/cart/add.js`, null, null, {
+      id: variantId,
+      quantity,
+      properties,
+    });
+    console.log("Added with metadata:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error while adding itme in cart ", error.message);
+    throw error;
+  }
+}
 
 // ***********************************************************************************************************************************************
 // *                                   Functions to get validation rules                                                                                           *
@@ -125,7 +149,6 @@ export async function getTemplateFromDb() {
   }
 }
 
-
 export async function getCommerceRulesQuantityAndLimits() {
   try {
     const res = await apiConnecter(
@@ -139,5 +162,49 @@ export async function getCommerceRulesQuantityAndLimits() {
     return res.data.result;
   } catch (err) {
     console.error("Error while getting  quantity and discounts:", err.message);
+  }
+}
+
+export async function getCommerseRule() {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/catalogOptions/getLaminationOptions`,
+      null,
+      null,
+      { shop }
+    );
+    console.log(res.data.result);
+    return res.data.result;
+  } catch (err) {
+    console.error("Error while getting Lamination options:", err.message);
+  }
+}
+
+// ************************************* POST APIS***************************************************
+export async function uploadImageOnDropBox(data) {
+  try {
+    const res = await apiConnecter(
+      "post",
+      `${BASE_URL}/api/dropboxConfig/uploadFilesToDropBox_2`,
+      data,
+    );
+    console.log(res.data.result);
+    return res.data.result.dropboxUrl;
+  } catch (err) {
+    console.error("Error while uploading image on dropbox:", err.message);
+  }
+}
+export async function getDropboxFileNamingConfig(data) {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/dropboxConfig/getDropboxConfigAndConnectedCheck`,
+      data,
+    );
+    console.log(res.data.result);
+    return res.data.result;
+  } catch (err) {
+    console.error("Error while uploading image on dropbox:", err.message);
   }
 }
