@@ -19,7 +19,7 @@ const NO_LAMINATION_OPTION = {
 
 
 const Lamination = ({ handleBack, handleNext, template }) => {
-    
+
     const [laminationData, setLaminationData] = useState([]);
 
     const [imageSrc, setImageSrc] = useState(null);
@@ -29,6 +29,13 @@ const Lamination = ({ handleBack, handleNext, template }) => {
     const [selectedLaminationId, setselectedLaminationId] =
         useState(NO_LAMINATION_OPTION._id);
 
+    const Laminations = useMemo(() => {
+        const active = (template?.laminationOptions || []).filter(
+            (lamination) => lamination.status === true
+        );
+
+        return [NO_LAMINATION_OPTION, ...active];
+    }, [template?.laminationOptions]);
 
     // Fetch lamination data properly in useEffect
     useEffect(() => {
@@ -38,7 +45,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                 // if (!res) {
                 //     console.log("Failed to fetch lamination data")
                 // }
-                setLaminationData(template?.laminationOptions);
+                setLaminationData(Laminations);
             } catch (error) {
                 console.log("Error fetching lamination data:", error.message);
             }
@@ -63,14 +70,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
 
 
 
-    useEffect(() => {
-        if (template?.laminationOptions?.length) {
-            setLaminationData([
-                NO_LAMINATION_OPTION,
-                ...template.laminationOptions,
-            ]);
-        }
-    }, [template]);
+
     // const isNoLamination = lam._id === "no-lamination";
 
     // const selectedPaper = PAPERS.find((p) => p.id === selectedLaminationId);
@@ -81,7 +81,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
         () => laminationData?.find((l) => l._id === selectedLaminationId) ?? laminationData[0],
         [selectedLaminationId]
     );
-
+    console.log("----slectedlamination", selectedLamination)
 
     return (
         <div className="editor-page">
@@ -190,7 +190,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                                                 <div className="tooltip-wrapper">
                                                     <TooltipHoverIcon />
                                                     <div className="tooltip-content">
-                                                        {Lamination.durabilityAndCleaningNotes}
+                                                        {Lamination.durabilityAndCleaningNotes || "No Info"}
                                                     </div>
                                                 </div>
                                             }
@@ -252,7 +252,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
 
                             <button
                                 className="footer-btn footer-btn-primary"
-                                disabled={!selectedLamination}
+                                disabled={!laminationData.length}
                                 onClick={() => {
                                     if (!selectedLamination) return;
                                     handleNext({

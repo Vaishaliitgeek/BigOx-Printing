@@ -659,3 +659,16 @@ quality-gray {
     top: auto;
   }
 }
+
+.editorSizeCardDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  /* optional, but disabled already blocks click */
+}
+
+.editor-size-card-warning {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+}

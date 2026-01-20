@@ -6,7 +6,7 @@ import StepIndicator from './StepIndicator';
 
 
 const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => {
-    
+
     const allSteps = [
         { key: "UPLOAD", number: 1, label: 'Upload', completed: currentStep > 1 },
         { key: "sizeOptions", number: 2, label: 'Size & Crop', completed: currentStep > 2 },
@@ -16,6 +16,8 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
         { key: "FINISH", number: 6, label: 'Finish', completed: currentStep >= 6 },
     ];
 
+    const isMobile = window.innerWidth <= 1024;
+
     const [steps, setSteps] = useState(allSteps)
 
 
@@ -24,7 +26,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
         const filteredSteps = [];
 
         // Log the current app steps for debugging purposes
-        console.log("appSteps", appSteps);
+        // console.log("appSteps", appSteps);
 
         // Loop through all steps to process each step
         allSteps.forEach((step) => {
@@ -49,13 +51,34 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
         setSteps(filteredSteps);
 
         // Log the filtered steps for debugging purposes
-        console.log("filteredSteps", filteredSteps);
+        // console.log("filteredSteps", filteredSteps);
+    }
+
+
+    function getVisibleSteps(allSteps, currentStep, isMobile) {
+        if (!isMobile) return allSteps; // Desktop → show all
+
+        const currentIndex = allSteps.findIndex(
+            (step) => step.number === currentStep
+        );
+
+        let start = Math.max(0, currentIndex - 1);
+        let end = start + 4;
+
+        // Adjust if overflow
+        if (end > allSteps.length) {
+            end = allSteps.length;
+            start = Math.max(0, end - 4);
+        }
+
+        return allSteps.slice(start, end);
     }
 
 
     useEffect(() => {
         getFilteredSteps();
     }, [appSteps, currentStep])
+    const visibleSteps = getVisibleSteps(steps, currentStep, isMobile);
 
     return (
         <div className={styles.header}>
@@ -73,7 +96,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
 
                     {/* Center: Stepper */}
                     <div className={styles.stepper}>
-                        {steps.map((step, index) => (
+                        {visibleSteps.map((step, index) => (
                             <React.Fragment key={step.number}>
                                 <div className={styles.stepWrapper}>
                                     <div className={styles.step}>
@@ -117,7 +140,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
                                             {step.label}
                                         </span>
                                     </div>
-                                    {index < steps.length - 1 && (
+                                    {index < visibleSteps.length - 1 && (
                                         <div
                                             className={[
                                                 styles.stepConnector,

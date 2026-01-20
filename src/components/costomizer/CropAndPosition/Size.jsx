@@ -10,6 +10,7 @@ import { apiConnecter } from "../../../utils/ApiConnector";
 import { getSizeOptions } from "../../../services/services";
 import { loadImageFromDb, saveCurrentImage } from "../../../services/indexDb";
 import { clamp, cropToBlob, getQualityClass, getQualityFromPpi, makeCenteredCropPx, parseSizeInches } from "./helper";
+import { calculatePPI, getCropDimensionsInOriginalPixels } from "../../../pages/printData";
 
 
 const handleUrlSelect = (imageUrl, handleNext) => {
@@ -92,17 +93,23 @@ const SIZES = [
 
 
 
-const getAllSize = async (setSizeOptions, template) => {
-  console.log("Fetching size options from API...", template.sizeOptions);
-  try {
-    const data = template?.sizeOptions;
-    const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor }));
-    console.log('filterdData', filterdData)
-    setSizeOptions(filterdData);
-  } catch (err) {
-    console.error("Error while getting size options:", err.message);
-  }
-}
+
+// const getAllSize = async (setSizeOptions, template) => {
+//   console.log("Fetching size options from API...", template.sizeOptions);
+//   try {
+//     // const data = template?.sizeOptions;
+//     const data = useMemo(() => {
+//       return (template?.sizeOptions || []).filter(
+//         (size) => size.status === true
+//       );
+//     }, [template?.paperOptions]);
+//     const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor }));
+//     console.log('filterdData', filterdData)
+//     setSizeOptions(filterdData);
+//   } catch (err) {
+//     console.error("Error while getting size options:", err.message);
+//   }
+// }
 
 // const getValidationRules = async () => {
 //   console.log("Fetching Validation Rules from API...");
@@ -121,14 +128,28 @@ export default function App({ handleBack, handleNext, template }) {
   const [imageSrc, setImageSrc] = useState("/sample.jpg"); // optional default
   const [selectedSizeId, setSelectedSizeId] = useState(SIZES[0].id);
   const [rotation, setRotation] = useState(false);
-  const [sizeOptions, setSizeOptions] = useState([]);
+  // const [sizeOptions, setSizeOptions] = useState([]);
+  const [imageData, setImageData] = useState(null);
   const handleRotate = () => {
     setRotation((prev) => !prev);
   };
 
+
+
+  const sizeOptions = useMemo(() => {
+    return (template?.sizeOptions || [])
+      .filter((size) => size.status === true)
+      .map((size) => ({
+        ...size,
+        w: size.width,
+        h: size.height,
+        id: size.dimensionText,
+        price: size.priceDeltaMinor,
+      }));
+  }, [template?.sizeOptions]);
   const selectedSize = useMemo(
-    () => sizeOptions.find((s) => s.id === selectedSizeId) ?? SIZES[0],
-    [selectedSizeId]
+    () => sizeOptions.find((s) => s.id === selectedSizeId) ?? sizeOptions[0],
+    [selectedSizeId, sizeOptions]
   );
 
   const aspect = rotation
@@ -137,6 +158,8 @@ export default function App({ handleBack, handleNext, template }) {
 
   const [crop, setCrop] = useState();
   const [completedCrop, setCompletedCrop] = useState(null);
+  const [cropCoords, setCropCoords] = useState(null);
+
 
   const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
   const [cropHeightPx, setCropHeightPx] = useState(260);
@@ -188,50 +211,57 @@ export default function App({ handleBack, handleNext, template }) {
     setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
   }
 
-  async function onDownload() {
-    try {
-      const img = imgRef.current;
-      if (!img) return alert("Upload an image first.");
-      if (!completedCrop) return alert("Select a crop area first.");
+  // async function onDownload() {
+  //   try {
+  //     const img = imgRef.current;
+  //     if (!img) return alert("Upload an image first.");
+  //     if (!completedCrop) return alert("Select a crop area first.");
 
-      // 1️⃣ Export cropped image
-      const blob = await cropToBlob(img, completedCrop, "image/png");
-      const finalImageUrl = URL.createObjectURL(blob);
+  //     // 1️⃣ Export cropped image
+  //     const blob = await cropToBlob(img, completedCrop, "image/png");
+  //     const finalImageUrl = URL.createObjectURL(blob);
+  //     console.log("----displayyy", displayDims)
+  //     // 2️⃣ Compute PPI for selected size
+  //     // const ppi = computePpiForSize(selectedSizeId, displayDims);
+  //     const res = calculatePPI(
+  //       displayDims.w,
+  //       displayDims.h,
+  //       selectedSize.w,
+  //       selectedSize.h,
+  //       rotation
+  //     );
 
-      // 2️⃣ Compute PPI for selected size
-      const ppi = computePpiForSize(selectedSizeId, displayDims);
+  //     // 3️⃣ Build payload
+  //     const payload = {
+  //       size: {
+  //         id: selectedSize.id,
+  //         label: selectedSize.id,
+  //         width: selectedSize.w,
+  //         height: selectedSize.h,
+  //         price: selectedSize.price,
+  //       },
+  //       crop: completedCrop,
+  //       croppedPpi: res.PPI,
+  //       finalImageUrl,
+  //     };
 
-      // 3️⃣ Build payload
-      const payload = {
-        size: {
-          id: selectedSize.id,
-          label: selectedSize.id,
-          width: selectedSize.w,
-          height: selectedSize.h,
-          price: selectedSize.price,
-        },
-        crop: completedCrop,
-        ppi,
-        finalImageUrl,
-      };
+  //     // 4️⃣ Save to IndexedDB (optional but good)
+  //     await saveCurrentImage({
+  //       url: finalImageUrl,
+  //       width: img.width,
+  //       height: img.height,
+  //       blob,
+  //       type: "image/png"
+  //     });
 
-      // 4️⃣ Save to IndexedDB (optional but good)
-      await saveCurrentImage({
-        url: finalImageUrl,
-        width: img.width,
-        height: img.height,
-        blob,
-        type:"image/png"
-      });
+  //     // 5️⃣ Move to next step WITH DATA
+  //     handleNext(payload);
 
-      // 5️⃣ Move to next step WITH DATA
-      handleNext(payload);
-
-    } catch (err) {
-      console.error(err);
-      alert(err?.message ?? "Failed to export crop");
-    }
-  }
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert(err?.message ?? "Failed to export crop");
+  //   }
+  // }
 
 
   // async function onDownload() {
@@ -248,11 +278,61 @@ export default function App({ handleBack, handleNext, template }) {
   //     alert(err?.message ?? "Failed to export crop");
   //   }
   // }
+  async function onDownload() {
+    try {
+      const img = imgRef.current;
+
+      if (!img) return alert("Upload an image first.");
+      if (!completedCrop) return alert("Select a crop area first.");
+
+      const blob = await cropToBlob(img, completedCrop, "image/png");
+      const finalImageUrl = URL.createObjectURL(blob);
+
+      // ✅ compute crop pixels in original scale
+      const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+        completedCrop,
+        imgRef,
+        imageData
+      );
+
+      const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, rotation);
+      // console.log("------resone", res.PPI)
+
+      handleNext({
+        size: {
+          id: selectedSize.id,
+          label: selectedSize.id,
+          width: selectedSize.w,
+          height: selectedSize.h,
+          price: selectedSize.price,
+        },
+        crop: completedCrop,
+        cropPixels: { width: cropWpx, height: cropHpx },
+        croppedPpi: res.PPI,
+        croppedPpiValid: res.isValid,
+        finalImageUrl,
+      });
+
+      await saveCurrentImage({
+        url: finalImageUrl,
+        width: cropWpx,
+        height: cropHpx,
+        blob,
+        type: "image/png",
+      });
+    } catch (err) {
+      console.error(err);
+      alert(err?.message ?? "Failed to export crop");
+    }
+  }
+
 
   useEffect(() => {
     (async () => {
       try {
         const saved = await loadImageFromDb();
+        setImageData(saved);
+        // console.log("-----saved", imageData)
         if (saved && saved.url) {
           setImageSrc(saved.url);
         }
@@ -262,9 +342,11 @@ export default function App({ handleBack, handleNext, template }) {
     })();
   }, []);
 
-  useEffect(() => {
-    getAllSize(setSizeOptions, template);
-  }, []);
+  // useEffect(() => {
+  //   getAllSize(setSizeOptions, template);
+  // }, []);
+
+  // console.log("-imageData", imageData)
 
   return (
     <div className="page">
@@ -278,9 +360,11 @@ export default function App({ handleBack, handleNext, template }) {
               <ReactCrop
                 crop={crop}
                 onChange={(_, percentCrop) => {
-                  console.log("onchange percentcrop:", percentCrop, _);
+                  // console.log("------coordssss", _)
+                  // console.log("onchange percentcrop:", percentCrop, _);
                   // We keep px crop in state for accurate export.
                   setCrop(_);
+                  setCropCoords(_);
                   onCropChange(_, percentCrop);
                 }}
                 onComplete={(c) => {
@@ -387,30 +471,82 @@ export default function App({ handleBack, handleNext, template }) {
 
           {/* Size Grid */}
           <div className="editorSizeGrid">
-            {sizeOptions?.map((item) => {
-              const ppi = computePpiForSize(item.id, displayDims);
-              const quality = getQualityFromPpi(ppi);
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setSelectedSizeId(item.id)}
-                  className={
-                    "editorSizeCard " +
-                    (selectedSizeId === item.id ? "editorSizeCardSelected" : "")
-                  }
-                >
-                  <div className="editor-size-card-size">{item.id}"</div>
-                  <div className="editor-size-card-price">{`$${item.price.toFixed(2)}` ?? "N/A"}</div>
-                  <div
+            {[...(sizeOptions || [])]
+              .map((item) => {
+                // const res = calculatePPI(
+                //   imageData?.width,
+                //   imageData?.height,
+                //   item.w,
+                //   item.h,
+                //   rotation
+                // );
+
+                const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+                  completedCrop,
+                  imgRef,
+                  imageData
+                );
+
+                const res = calculatePPI(
+                  cropWpx,
+                  cropHpx,
+                  item.w,
+                  item.h,
+                  rotation
+                );
+                // console.log("------restwo", res.PPI)
+
+
+                const ppi = res?.PPI ?? 0;
+                const disabled = ppi < 150;
+
+                return { item, ppi, disabled };
+              })
+              .sort((a, b) => Number(a.disabled) - Number(b.disabled)) // ✅ enabled first
+              .map(({ item, ppi, disabled }) => {
+                {/* {sizeOptions?.map((item) => { */ }
+                // const ppi = computePpiForSize(item.id, displayDims);
+                // const res = calculatePPI(
+                //   imageData?.width,
+                //   imageData?.height,
+                //   item.w,
+                //   item.h,
+                //   rotation
+                // );
+                // const ppi = res?.PPI;
+                // console.log("------ppi", ppi)       // ✅ number
+                // const isValid = res?.isValid;
+                // const disabled = ppi < 150; // ✅ boolean
+
+                const quality = getQualityFromPpi(ppi);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (disabled) return;
+                      setSelectedSizeId(item.id);
+                    }}
+
                     className={
-                      "editor-size-card-ppi " + getQualityClass(quality)
+                      "editorSizeCard " +
+                      (selectedSizeId === item.id ? "editorSizeCardSelected" : "") +
+                      (disabled ? " editorSizeCardDisabled" : "")
                     }
+                    title={disabled ? "Minimum 150 PPI required for this size" : ""}
                   >
-                    {ppi ? `${ppi} PPI` : "—"}
-                  </div>
-                </button>
-              );
-            })}
+                    <div className="editor-size-card-size">{item.id}"</div>
+                    <div className="editor-size-card-price">{`$${item.price.toFixed(2)}` ?? "N/A"}</div>
+                    <div
+                      className={
+                        "editor-size-card-ppi " + getQualityClass(quality)
+                      }
+                    >
+                      {ppi ? `${ppi} PPI` : "—"}
+                    </div>
+                    {disabled && <div className="editor-size-card-warning">Not available</div>}
+                  </button>
+                );
+              })}
           </div>
 
           {/* Print Quality Guide */}

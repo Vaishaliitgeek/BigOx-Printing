@@ -83,7 +83,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   const [uploadError, setUploadError] = useState("");
 
   const Sizes = template?.sizeOptions;
-  console.log("-------Sizes", Sizes)
+  // console.log("-------Sizes", Sizes)
 
   // Load image from IndexedDB on mount
   useEffect(() => {
@@ -91,6 +91,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
       try {
         const saved = await loadCurrentImage();
         if (saved) {
+
           setImageData(saved);
           onImageUpload?.(saved.url, saved.width, saved.height);
         }
@@ -109,6 +110,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
+      // console.log("---------img", img)
       img.onload = async () => {
 
 
@@ -124,7 +126,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
             toastId: "image-upload-warning", // prevents duplicate toasts
           });
           // setUploadError(validation?.message);
-          console.log("-----uplll", uploadError)
+          // console.log("-----uplll", uploadError)
           // alert(validation.message); // or Polaris Toast
           e.target.value = ""; // reset file input
           return;
@@ -180,7 +182,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
       }
       else return combineRules;
     }, "");
-    console.log("typesResult", typesResult)
+    // console.log("typesResult", typesResult)
     return typesResult;
   }
 
@@ -356,15 +358,16 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
 
               <div className="resolution-grid">
                 {Sizes?.slice(0, 4).map((size) => {
-                  const ppi = calculatePPI(
+                  const { PPI: ppi } = calculatePPI(
                     imageData.width,
                     imageData.height,
                     size.width,
                     size.height
                   );
+                  // console.log("-------ppi", ppi)
                   // const quality = getQualityLevel(ppi);
                   const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
-                  console.log("-quality", quality)
+                  // console.log("-quality", quality)
                   // const colorKey = getQualityColor(quality);
                   //  // "green" | "orange" | "red" | "gray"
                   const color = quality?.color;
@@ -397,11 +400,44 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
           </div>
 
           {/* Footer button */}
-          <div className="step-upload-footer">
+          {/* <div className="step-upload-footer">
             <button type="button" className="btn-continue" onClick={() => handleNext()}>
               CONTINUE TO SIZE &amp; CROP
             </button>
+          </div> */}
+          <div className="step-upload-footer">
+            <button
+              type="button"
+              className="btn-continue"
+              onClick={() => {
+                handleNext();
+                // const sizeForPpi = Sizes?.[0] || PRINT_SIZES?.[0]; // baseline size
+                // const res = sizeForPpi
+                //   ? calculatePPI(
+                //     imageData?.width,
+                //     imageData?.height,
+                //     sizeForPpi.width,
+                //     sizeForPpi.height
+                //   )
+                //   : { PPI: null };
+
+                // handleNext({
+                //   originalPpi: res?.PPI ?? null,
+                //   originalMeta: {
+                //     width: imageData?.width,
+                //     height: imageData?.height,
+                //     size: imageData?.size,
+                //     name: imageData?.name,
+                //     type: imageData?.type,
+                //   },
+                // });
+              }}
+              disabled={!imageData}
+            >
+              CONTINUE TO SIZE &amp; CROP
+            </button>
           </div>
+
         </>
       )}
     </div>

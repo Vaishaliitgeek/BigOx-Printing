@@ -7,8 +7,15 @@ import { loadCropImageFromDb } from '../../../services/indexDb';
 // --- Component ---
 
 const Paper = ({ handleBack, handleNext, template }) => {
-  const PAPERS = template?.paperOptions;
-  console.log("--paper", PAPERS)
+
+  // only show thiose paper whose status is true 
+  const PAPERS = useMemo(() => {
+    return (template?.paperOptions || []).filter(
+      (paper) => paper.status === true
+    );
+  }, [template?.paperOptions]);
+
+  // console.log("--paper", PAPERS)
 
   const [imageSrc, setImageSrc] = useState(null);
   const [selectedPaperId, setSelectedPaperId] = useState(0);
@@ -39,8 +46,8 @@ const Paper = ({ handleBack, handleNext, template }) => {
 
 
   const selectedPaper = useMemo(
-    () => PAPERS?.find((paper) => paper._id === selectedPaperId) ?? PAPERS[0],
-    [selectedPaperId]
+    () => PAPERS?.find((paper) => paper._id === selectedPaperId) ?? PAPERS?.[0],
+    [PAPERS, selectedPaperId]
   );
   // const selectedPaper = PAPERS?.find(
   //   (paper) => paper._id === selectedPaperId
@@ -106,7 +113,7 @@ const Paper = ({ handleBack, handleNext, template }) => {
             </p>
 
             <div className="paper-grid">
-              {PAPERS.map((paper) => (
+              {PAPERS?.map((paper) => (
                 <button
                   key={paper._id}
                   onClick={() => setSelectedPaperId(paper._id)}
@@ -197,6 +204,7 @@ const Paper = ({ handleBack, handleNext, template }) => {
 
               <button
                 className="footer-btn footer-btn-primary"
+                disabled={!selectedPaper}
                 onClick={() =>
                   handleNext({
                     paper: {

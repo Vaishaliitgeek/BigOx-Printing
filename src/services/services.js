@@ -1,5 +1,5 @@
 import { apiConnecter } from "../utils/ApiConnector";
-const BASE_URL = "https://departure-qui-deborah-inches.trycloudflare.com";
+const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
 const shop = "amjad-itgeeks.myshopify.com";
 
 // ***********************************************************************************************************************************************
@@ -140,7 +140,7 @@ export async function getTemplateFromDb() {
       `${BASE_URL}/api/tamplates/getTamplatesByProductId`,
       null,
       null,
-      { shop, productId: "gid://shopify/Product/7197032874064" }
+      { shop, productId: "gid://shopify/Product/8759366385862" }
     );
     console.log(res.data.result);
     return res.data.result[0];
@@ -206,5 +206,40 @@ export async function getDropboxFileNamingConfig(data) {
     return res.data.result;
   } catch (err) {
     console.error("Error while uploading image on dropbox:", err.message);
+  }
+}
+
+
+// Quantity Discount 
+export async function getCommerceRulesQuantityAndDiscounts() {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/commerceRules/getCommerceRulesQuantityDiscounts`,
+      null,
+      null,
+      { shop }
+    );
+    console.log(res.data.result);
+    return res.data.result;
+  } catch (err) {
+    console.error("Error while getting  quantity and discounts:", err.message);
+  }
+}
+
+// Customer Discount 
+export async function getCommerceRulesCustomerDiscounts() {
+  try {
+    const res = await apiConnecter(
+      "get",
+      `${BASE_URL}/api/commerceRules/getCommerceRulesCustomerDiscounts`,
+      null,
+      null,
+      { shop }
+    );
+    console.log(res.data.result);
+    return res.data.result;
+  } catch (err) {
+    console.error("Error while getting  quantity and discounts:", err.message);
   }
 }

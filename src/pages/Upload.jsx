@@ -32,7 +32,7 @@ const Upload = () => {
         const droppedFile = e.dataTransfer.files[0];
         if (droppedFile && isValidFile(droppedFile)) {
             setFile(droppedFile);
-            console.log('File dropped:', droppedFile);
+            // console.log('File dropped:', droppedFile);
         }
     };
 
@@ -47,7 +47,7 @@ const Upload = () => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile && isValidFile(selectedFile)) {
             setFile(selectedFile);
-            console.log('File selected:', selectedFile);
+            // console.log('File selected:', selectedFile);
         }
     };
 

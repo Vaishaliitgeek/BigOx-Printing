@@ -1,12 +1,10 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import './stepFinish.css'
-import { getCommerceRulesQuantityAndLimits } from '../../../services/services';
+import { getCommerceRulesCustomerDiscounts, getCommerceRulesQuantityAndDiscounts, getCommerceRulesQuantityAndLimits } from '../../../services/services';
 import { loadCropImageFromDb } from '../../../services/indexDb';
 import { cartHandler } from './helper';
-// import './styles.css';
+import { calculateOrderPrice } from '../../../services/calculateOrderTotal';
 
-// No border and mat data
 const NO_BORDER_OPTION = {
   _id: "no-border",
   thickness: 0,
@@ -22,82 +20,133 @@ const NO_Mat_OPTION = {
   label: "No Mat",
 };
 
-
-const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
-  console.log("------orderConfig", orderConfig)
-  // Mat data set
-  // const Mats = template?.metaOptions;
+const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
   const rawMats = template?.metaOptions || [];
+  const Mats = [NO_Mat_OPTION, ...rawMats.filter(l => l.status !== false)];
 
-  const Mats = [
-    NO_Mat_OPTION,
-    ...rawMats.filter(l => l.status !== false),
-  ];
-
-  // Borders data set
   const rawBorders = template?.borderOptions || [];
-  const borderOptions = [
-    NO_BORDER_OPTION,
-    ...rawBorders.filter(b => b.status),
-  ];
+  const borderOptions = [NO_BORDER_OPTION, ...rawBorders.filter(b => b.status)];
 
+  const hasMatOptions = Array.isArray(Mats) && Mats.length > 1;
+  const hasBorderOptions = Array.isArray(borderOptions) && borderOptions.length > 1;
 
-  // get mat or border option available
-  const hasMatOptions =
-    Array.isArray(Mats) &&
-    Mats.length > 1; // more than "No Mat"
-
-  const hasBorderOptions =
-    Array.isArray(borderOptions) &&
-    borderOptions.length > 1; // more than "No Border"
-
-
-  const [borderSize, setBorderSize] = useState('0');
   const [selectedBorder, setSelectedBorder] = useState(NO_BORDER_OPTION);
   const [imageSrc, setImageSrc] = useState(null);
   const [activeTab, setActiveTab] = useState("Mat");
   const [activeMat, setActiveMat] = useState(NO_Mat_OPTION);
-  const [quantityAndLimits, setquantityAndLimits] = useState([])
+  const [quantityAndLimits, setquantityAndLimits] = useState([]);
+  const [status, setStatus] = useState("start");
+  const [borderPx, setBorderPx] = useState(0);
+
+
+  // api discount data
+  const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
+  const [quantityDiscountRules, setQuantityDiscountRules] = useState([]);
+
+  // Ref for image to measure actual rendered size
+  const imageRef = useRef(null);
+
   const basePrice = 68;
-  // Default for quantity integration
   const quantityRule = quantityAndLimits?.[0];
   const minQty = quantityRule?.minQuantity ?? 1;
   const maxQty = quantityRule?.maxQuantity ?? 20;
   const stepQty = quantityRule?.stepSize ?? 1;
   const defaultQty = quantityRule?.defaultQuantity ?? 1;
-  const validationMsg =
-    quantityRule?.previewValidationMessage ??
+  const validationMsg = quantityRule?.previewValidationMessage ??
     `Please select a quantity between ${minQty} and ${maxQty}.`;
   const [quantity, setQuantity] = useState(defaultQty);
 
-  // function to call api
   const fetchData = async () => {
     const data = await getCommerceRulesQuantityAndLimits();
     setquantityAndLimits(data);
   };
-  console.log("----------quantityAndLimits", quantityAndLimits)
 
-  // const handleQuantityChange = (value) => {
-  //   const newQuantity = Math.max(1, Math.min(20, value));
-  //   setQuantity(newQuantity);
-  // };
   const handleQuantityChange = (value) => {
     if (isNaN(value)) return;
-
     let newValue = Math.round(value / stepQty) * stepQty;
-
     if (newValue < minQty) newValue = minQty;
     if (newValue > maxQty) newValue = maxQty;
-
     setQuantity(newValue);
+    setOrderConfig((prev) => ({ ...prev, quantity: newValue }));
+
   };
 
 
-  const total = basePrice * quantity;
 
+  const total = useMemo(() => {
+    if (!customerDiscountRules.length || !quantityDiscountRules.length) {
+      return 0;
+    }
 
+    return calculateOrderPrice({
+      orderConfig: {
+        ...orderConfig,
+        quantity,
+        tags: ["wsgtesttag", "test_wholesale"],
+      },
+      customerDiscountRules,
+      quantityDiscountRules,
+    });
+  }, [
+    orderConfig,
+    quantity,
+    customerDiscountRules,
+    quantityDiscountRules,
+  ]);
+  console.log("----totalls", total)
 
+  // ✅ CORRECT APPROACH: Calculate border in pixels based on actual image size
+  const calculateBorderPx = () => {
+    const borderThicknessIn = selectedBorder?.thickness || 0;
+    if (!borderThicknessIn) return 0;
 
+    const printWidthIn = orderConfig?.size?.width;
+    if (!printWidthIn) return 0;
+
+    const img = imageRef.current;
+    if (!img) return 0;
+
+    const previewWidthPx = img.clientWidth;
+
+    // Real-world proportional border
+    const realBorderPx =
+      (borderThicknessIn / printWidthIn) * previewWidthPx;
+
+    // UX scaling (visual softening)
+    const PREVIEW_BORDER_SCALE = 0.35;
+
+    return Math.round(realBorderPx * PREVIEW_BORDER_SCALE);
+  };
+
+  // Update border whenever image loads or border selection changes
+  useEffect(() => {
+    const updateBorder = () => {
+      const px = calculateBorderPx();
+      setBorderPx(px);
+    };
+
+    // Update on border change
+    updateBorder();
+
+    // Also update on window resize
+    window.addEventListener('resize', updateBorder);
+    return () => window.removeEventListener('resize', updateBorder);
+  }, [selectedBorder, orderConfig?.size, imageSrc]);
+
+  const getBorderStyle = () => {
+    // console.log("------orderConfig", orderConfig)
+    if (borderPx === 0) {
+      return { padding: 0 };
+    }
+
+    return {
+      padding: `${borderPx}px`,
+      backgroundColor: selectedBorder?.color || '#ffffff',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    };
+  };
+
+  // const total = basePrice * quantity;
 
   useEffect(() => {
     (async () => {
@@ -112,22 +161,16 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
     })();
   }, []);
 
-
   useEffect(() => {
-
-
     fetchData();
   }, []);
 
   useEffect(() => {
     if (quantityRule?.defaultQuantity) {
       setQuantity(quantityRule.defaultQuantity);
+      setOrderConfig((prev) => ({ ...prev, quantity: quantityRule.defaultQuantity }));
     }
   }, [quantityRule]);
-
-
-
-  // load initial data
 
   useEffect(() => {
     if (!selectedBorder && borderOptions.length) {
@@ -135,68 +178,105 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
     }
   }, [borderOptions, selectedBorder]);
 
-
   useEffect(() => {
-    if (!setActiveMat && rawMats.length) {
+    if (!activeMat && rawMats.length) {
       setActiveMat(NO_Mat_OPTION);
     }
-  }, [rawMats, setActiveMat]);
+  }, [rawMats, activeMat]);
 
-
-  // tab handle
   useEffect(() => {
     if (activeTab === "Mat" && !hasMatOptions && hasBorderOptions) {
       setActiveTab("Border");
     }
-
     if (activeTab === "Border" && !hasBorderOptions && hasMatOptions) {
       setActiveTab("Mat");
     }
   }, [hasMatOptions, hasBorderOptions, activeTab]);
 
 
+
+  // useeffect for discount csaal
+  useEffect(() => {
+    (async () => {
+      const customerRes = await getCommerceRulesCustomerDiscounts();
+      const quantityRes = await getCommerceRulesQuantityAndDiscounts();
+
+      setCustomerDiscountRules(customerRes?.[0]?.customerTiers ? customerRes : []);
+      setQuantityDiscountRules(quantityRes?.[0]?.discountTiers || []);
+    })();
+  }, []);
+
   return (
     <div className="containerr">
       <div className="preview-section">
         <h2 className="section-title">Preview</h2>
         <div className="preview-box">
-          <img
-            src={imageSrc ? imageSrc : "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&h=500&fit=crop"}
-            alt="preview-image"
-            className="preview-image"
+          <div
+            className="preview-image-container"
             style={{
-              padding: `${borderSize}vh`, // Applying the border dynamically
+              ...getBorderStyle(),
               borderRadius: '8px',
+              overflow: 'hidden',
+              maxWidth: '100%',
+              display: 'inline-block',
             }}
-          />
-          <p className="preview-label">16×20" print</p>
+          >
+            <img
+              ref={imageRef}
+              src={imageSrc || "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&h=500&fit=crop"}
+              alt="preview-image"
+              className="preview-image"
+              onLoad={() => {
+                // Recalculate border when image loads
+                const px = calculateBorderPx();
+                setBorderPx(px);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: 'auto',
+                borderRadius: '0',
+              }}
+            />
+          </div>
+          <p className="preview-label">
+            {orderConfig?.size?.label || "16×20\""} print
+            {selectedBorder?.thickness > 0 &&
+              ` with ${selectedBorder.thickness}" ${selectedBorder.color || 'white'} border`
+            }
+          </p>
         </div>
 
         <div className="order-summary">
           <h3 className="summary-title">Order Summary</h3>
           <div className="summary-row">
             <span className="summary-label">Size</span>
-            <span className="summary-value">{orderConfig?.size?.label || "None"}</span>
+            <span className="summary-value">{orderConfig?.size?.label ?? "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Paper</span>
-            <span className="summary-value">{orderConfig?.paper?.name || "None"}</span>
+            <span className="summary-value">{orderConfig?.paper?.name ?? "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Border</span>
-            <span className="summary-value">{orderConfig?.border?.thickness + '"' || "None"}</span>
+            <span className="summary-value">
+              {selectedBorder?.thickness === 0
+                ? "None"
+                : `${selectedBorder.thickness}"`
+              }
+            </span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Lamination</span>
-            <span className="summary-value">{orderConfig?.lamination?.name || "None"}</span>
+            <span className="summary-value">{orderConfig?.lamination?.name ?? "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Mounting</span>
-            <span className="summary-value">{orderConfig?.mounting?.name || "None"}</span>
+            <span className="summary-value">{orderConfig?.mounting?.name ?? "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Mat</span>
-            <span className="summary-value">{orderConfig?.mat?.name || "None"}</span>
+            <span className="summary-value">{activeMat?.optionName ?? "None"}</span>
           </div>
           <div className="summary-row">
             <span className="summary-label">Quantity</span>
@@ -211,105 +291,105 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
 
       <div className='right-section'>
         <div className='tab'>
-          {hasMatOptions && (<div className={`tab-option ${activeTab == "Mat" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Mat") }}>Mat</div>)}
-          {hasBorderOptions && (<div className={`tab-option ${activeTab == "Border" ? "active-tab" : ""}`} onClick={() => { setActiveTab("Border") }}>Border</div>)}
-
-
+          {hasMatOptions && (
+            <div
+              className={`tab-option ${activeTab === "Mat" ? "active-tab" : ""}`}
+              onClick={() => setActiveTab("Mat")}
+            >
+              Mat
+            </div>
+          )}
+          {hasBorderOptions && (
+            <div
+              className={`tab-option ${activeTab === "Border" ? "active-tab" : ""}`}
+              onClick={() => setActiveTab("Border")}
+            >
+              Border
+            </div>
+          )}
         </div>
 
-
-        {
-          activeTab == "Mat" ?
-            <div className='mat-wrapper'>
-              <h3 className="subsection-title">Mat Style </h3>
-
-              {Mats.map((mat) => {
-                const isNotOption = mat.optionName == "No Mat";
-                return <div className={`mat-container ${activeMat?._id == mat._id ? "active-mat" : ""} `} onClick={() => {
-                  setActiveMat(mat);
-
-                  setOrderConfig((prev) => ({
-                    ...prev,
-                    mat:
-                      mat._id === "no-mat"
-                        ? null
-                        : {
-                          id: mat._id,
-                          name: mat.optionName,
-                          price: mat.priceDeltaMinor,
-                        },
-                  }));
-                }}
+        {activeTab === "Mat" ? (
+          <div className='mat-wrapper'>
+            <h3 className="subsection-title">Mat Style</h3>
+            {Mats.map((mat) => {
+              const isNoMat = mat.optionName === "No Mat";
+              return (
+                <div
+                  key={mat._id}
+                  className={`mat-container ${activeMat?._id === mat._id ? "active-mat" : ""}`}
+                  onClick={() => {
+                    setActiveMat(mat);
+                    setOrderConfig((prev) => ({
+                      ...prev,
+                      mat: mat._id === "no-mat" ? null : {
+                        id: mat._id,
+                        name: mat.optionName,
+                        price: mat.priceDeltaMinor,
+                      },
+                    }));
+                  }}
                 >
                   <div className='mat-left'>
-                    {
-                      !isNotOption &&
+                    {!isNoMat && (
                       <div className='mat-left-image-container'>
-                        <img src={mat.thumbnailUrl} height={50} width={50}></img>
+                        <img src={mat.thumbnailUrl} height={50} width={50} alt={mat.optionName} />
                       </div>
-                    }
+                    )}
                     <div className='mat-left-text-container'>
                       <div className='mat-left-text'>{mat.optionName}</div>
                       <div className='mat-left-text'>{mat.shortDescription}</div>
                     </div>
                   </div>
-                  {
-                    !isNotOption &&
+                  {!isNoMat && (
                     <div className='mat-right'>
                       +${mat.priceDeltaMinor}
                     </div>
-                  }
+                  )}
                 </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="border-section">
+            <h3 className="subsection-title">Border Size</h3>
+            <div className="border-grid">
+              {borderOptions.map((border) => {
+                const isActive = selectedBorder?._id === border._id;
+                return (
+                  <button
+                    key={border._id}
+                    className={`border-button ${isActive ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedBorder(border);
+                      setOrderConfig((prev) => ({
+                        ...prev,
+                        border: border.thickness === 0 ? null : {
+                          id: border._id,
+                          thickness: border.thickness,
+                          color: border.color,
+                          priceDeltaMinor: border.priceDeltaMinor,
+                        },
+                      }));
+                    }}
+                  >
+                    {border.thickness === 0 ? "No Border" : `${border.thickness}"`}
+                  </button>
+                );
               })}
-            </div> :
-            // Border tab
-            <div className="border-section">
-              <h3 className="subsection-title">Border Size</h3>
-              <div className="border-grid">
-                {borderOptions.map((border) => {
-                  const isActive = selectedBorder?._id === border._id;
-
-                  return (
-                    <button
-                      key={border._id}
-                      className={`border-button ${isActive ? "active" : ""}`}
-                      onClick={() => {
-                        setSelectedBorder(border);
-
-                        setOrderConfig((prev) => ({
-                          ...prev,
-                          border:
-                            border.thickness === 0
-                              ? null
-                              : {
-                                id: border._id,
-                                thickness: border.thickness,
-                                price: border.priceDeltaMinor,
-                              },
-                        }));
-                      }}
-
-                    >
-                      {border.thickness === 0
-                        ? "No Border"
-                        : `${border.thickness}"`}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <p className="border-note">Borders are blank space added around your image, not a mat or frame.</p>
             </div>
-        }
+            <p className="border-note">
+              Borders are blank space added around your image, not a mat or frame.
+            </p>
+          </div>
+        )}
+
         <div className="config-section">
-
-
           <div className="quantity-section">
             <h3 className="subsection-title">Quantity</h3>
             <div className="quantity-control">
               <button
-                className={`quantity-button ${quantity <= minQty ? "quantity-button-disabled" : ""
-                  }`}
+                className={`quantity-button ${quantity <= minQty ? "quantity-button-disabled" : ""}`}
                 onClick={() => handleQuantityChange(quantity - stepQty)}
                 disabled={quantity <= minQty}
               >
@@ -325,51 +405,42 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
                 onChange={(e) => handleQuantityChange(Number(e.target.value))}
               />
               <button
-                className={`quantity-button ${quantity >= maxQty ? "quantity-button-disabled" : ""
-                  }`}
+                className={`quantity-button ${quantity >= maxQty ? "quantity-button-disabled" : ""}`}
                 onClick={() => handleQuantityChange(quantity + stepQty)}
                 disabled={quantity >= maxQty}
               >
                 +
               </button>
-              {/* <span className="quantity-limit">(Max 20 per order)</span>
-               */}
-              <span className="quantity-limit">
-                (Min {minQty}, Max {maxQty})
-              </span>
-
+              <span className="quantity-limit">(Min {minQty}, Max {maxQty})</span>
             </div>
           </div>
-          {validationMsg ? (
-            <p className="quantity-warning">{validationMsg}</p>
-          ) : null}
+          {validationMsg && <p className="quantity-warning">{validationMsg}</p>}
 
           <div className="price-breakdown">
             <h3 className="breakdown-title">Price Breakdown</h3>
             <div className="breakdown-row">
-              <span className="breakdown-label">Base price (16×20")</span>
+              <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span>
               <span className="breakdown-value">${basePrice}</span>
             </div>
-
             <div className="breakdown-row">
               <span className="breakdown-label">Border</span>
-              <span className="breakdown-value">+{orderConfig?.border?.price}%</span>
+              <span className="breakdown-value">+{orderConfig?.border?.priceDeltaMinor || 0}%</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Mat</span>
-              <span className="breakdown-value">+{orderConfig?.border?.price}$</span>
+              <span className="breakdown-value">+${activeMat?.priceDeltaMinor || 0}</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Lamination</span>
-              <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor}%</span>
+              <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor || 0}%</span>
             </div>
             <div className="breakdown-row">
-              <span className="breakdown-label">Paper upgrade (Metallic Gloss)</span>
-              <span className="breakdown-value">+{orderConfig?.paper?.priceDeltaMinor}%</span>
+              <span className="breakdown-label">Paper upgrade</span>
+              <span className="breakdown-value">+{orderConfig?.paper?.priceDeltaMinor || 0}%</span>
             </div>
             <div className="breakdown-row">
-              <span className="breakdown-label">Mounting (Acrylic Face Mount)</span>
-              <span className="breakdown-value">+{orderConfig?.mounting?.priceDeltaMinor}$</span>
+              <span className="breakdown-label">Mounting</span>
+              <span className="breakdown-value">+${orderConfig?.mounting?.price || 0}</span>
             </div>
             <div className="breakdown-row">
               <span className="breakdown-label">Quantity</span>
@@ -382,19 +453,31 @@ const StepFinish = ({ template, orderConfig, setOrderConfig }) => {
           </div>
 
           <div className="action-buttons">
-            <button className="back-button">BACK</button>
-            <button className="add-to-cart-button" onClick={cartHandler}>
+            <button className="back-button" onClick={() => handleBack()}>BACK</button>
+            <button className="add-to-cart-button" onClick={() => cartHandler(setStatus, orderConfig)}>
               🛒 ADD TO CART
             </button>
           </div>
 
           <p className="shipping-note">Free shipping on orders over $100</p>
         </div>
-
-
-
       </div>
     </div>
   );
 };
+
 export default StepFinish;
+
+
+
+// example
+// For a 1" border on 16×20" print:
+
+// Preview image width: 400px
+// Border ratio: 1" ÷ 16" = 0.0625
+// Border in pixels: 400px × 0.0625 = 25px
+
+// For a 0.25" border on 16×20" print:
+
+// Border ratio: 0.25" ÷ 16" = 0.015625
+// Border in pixels: 400px × 0.015625 = 6.25px(~6px)

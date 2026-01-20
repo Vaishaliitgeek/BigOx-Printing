@@ -72,11 +72,84 @@ export const BORDER_OPTIONS = [
 ];
 
 // calculate min PPI for a given print size
-export function calculatePPI(imageWidth, imageHeight, printWidth, printHeight) {
-  const ppiWidth = imageWidth / printWidth;
-  const ppiHeight = imageHeight / printHeight;
-  return Math.min(ppiWidth, ppiHeight);
+// export function calculatePPI(imageWidth, imageHeight, printWidth, printHeight) {
+//   const ppiWidth = imageWidth / printWidth;
+//   const ppiHeight = imageHeight / printHeight;
+//   return Math.min(ppiWidth, ppiHeight);
+// }
+
+
+// function to get cropped image data
+export const getCropDimensionsInOriginalPixels = (completedCrop, imgRef, imageData) => {
+  if (!completedCrop || !imgRef.current || !imageData) {
+    return { cropWpx: imageData?.width || 0, cropHpx: imageData?.height || 0 };
+  }
+
+  const img = imgRef.current;
+  const origW = imageData.width || img.naturalWidth || img.width;
+  const origH = imageData.height || img.naturalHeight || img.height;
+
+  const rect = img.getBoundingClientRect();
+  const renderedW = rect.width;
+  const renderedH = rect.height;
+
+  let cropWRender = completedCrop.width;
+  let cropHRender = completedCrop.height;
+
+  if (completedCrop.unit === "%") {
+    cropWRender = (completedCrop.width / 100) * renderedW;
+    cropHRender = (completedCrop.height / 100) * renderedH;
+  }
+
+  const scaleX = origW / renderedW;
+  const scaleY = origH / renderedH;
+
+  const cropWpx = Math.round(cropWRender * scaleX);
+  const cropHpx = Math.round(cropHRender * scaleY);
+
+  return { cropWpx, cropHpx };
+};
+
+
+function toInches(imagePx, threshold = 300) {
+  imagePx = Number(imagePx);
+  threshold = Number(threshold);
+  const imageInches = Math.floor(imagePx / threshold);
+  return imageInches;
 }
+
+// calculate min PPI for a given print size
+export function calculatePPI(
+  imageWidth,
+  imageHeight,
+  printWidth,
+  printHeight,
+  isRotated = false,
+) {
+  const imageWidthInches = toInches(imageWidth);
+  const imageHeightInches = toInches(imageHeight);
+  const PPI = Math.min(imageHeightInches, imageWidthInches);
+
+
+  const tempPPI = Math.floor(Math.max(Math.min(imageHeight / printWidth, imageWidth / printHeight), Math.min(imageHeight / printHeight, imageWidth / printWidth)));
+
+  if (isRotated) {
+    //ROTATED CASE
+    if (printWidth <= imageHeightInches && printHeight <= imageWidthInches) {
+      return { PPI: tempPPI, isValid: true };
+    }
+  } else {
+    //NORMAL CASE WITHOUT ROTATE
+    if (printWidth <= imageWidthInches && printHeight <= imageHeightInches) {
+      return { PPI: tempPPI, isValid: true };
+    }
+  }
+
+  //BOTH CONDITON FALSE THE IMAGE IS NOT VALID
+
+  return { PPI: tempPPI, isValid: false };
+}
+
 
 // quality buckets
 export function getQualityLevel(ppi) {

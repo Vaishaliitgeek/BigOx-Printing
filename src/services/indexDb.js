@@ -32,7 +32,7 @@ export async function loadImageFromDb() {
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const request = store.get(CURRENT_IMAGE_KEY);
-    console.log("IndexedDB request:", request);
+    // console.log("IndexedDB request:", request);
 
     request.onsuccess = () => resolve(request.result || null);
     request.onerror = (event) => reject(event.target.error);
@@ -45,7 +45,7 @@ export async function loadCropImageFromDb() {
     const tx = db.transaction(STORE_NAME, "readonly");
     const store = tx.objectStore(STORE_NAME);
     const request = store.get(CROP_IMAGE_KEY);
-    console.log("IndexedDB request:", request);
+    // console.log("IndexedDB request:", request);
 
     request.onsuccess = () => resolve(request.result || null);
     request.onerror = (event) => reject(event.target.error);

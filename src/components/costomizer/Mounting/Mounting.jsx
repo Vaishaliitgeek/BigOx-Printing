@@ -35,6 +35,15 @@ const Mounting = ({ handleBack, handleNext, template }) => {
     const [mountingData, setMountingData] = useState([]);
 
     // fetching mounting data from api
+
+    const MountingData = useMemo(() => {
+        const active = (template?.mountingOptions || []).filter(
+            (mounting) => mounting.status === true
+        );
+
+        return [NO_MOUNTING_OPTION, ...active];
+    }, [template?.mountingOptions]);
+
     useEffect(() => {
         const getMountingData = async () => {
             try {
@@ -43,8 +52,8 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                 // if (!res) {
                 //     console.log("Failed to fetch mounting data")
                 // }
-                setMountingData(template?.mountingOptions)
-                console.log(res)
+                setMountingData(MountingData);
+                // console.log(res)
             } catch (error) {
                 console.log(error.message);
             }
@@ -69,14 +78,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
     }, []);
     // initial load
 
-    useEffect(() => {
-        if (template?.mountingOptions?.length) {
-            setMountingData([
-                NO_MOUNTING_OPTION,
-                ...template.mountingOptions,
-            ]);
-        }
-    }, [template]);
+
 
     // selected data to send
     // const selectedMounting = mountingData.find(
@@ -148,7 +150,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                             Select Mounting
                         </h2>
                         <div className="mounting-grid">
-                            {mountingData.map((mounting) => {
+                            {mountingData?.map((mounting) => {
                                 const isNomounting = mounting._id === "no-mounting";
                                 const isSelected = selectedMountingId === mounting._id;
 
@@ -199,12 +201,12 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                                                 {mounting.optionName}
                                             </span>
 
-                                            {(mounting.AdditionalNotes || mounting.shortDescription) && (
+                                            {(!isNomounting && (mounting.AdditionalNotes || mounting.shortDescription)) && (
                                                 <div className="tooltip-wrapper">
                                                     <TooltipHoverIcon />
 
                                                     <div className="tooltip-content">
-                                                        {mounting.AdditionalNotes}
+                                                        {mounting.AdditionalNotes || "No Info"}
                                                     </div>
                                                 </div>
                                             )}
@@ -221,16 +223,16 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                                         <span className="mounting-card-description">{mounting.shortDescription}</span>
                                         <span>
                                             <span className='mounting-card-description'> Best For : </span>
-                                            <span className="mounting-card-description-bestfor mounting-card-description">{mounting.AdditionalNotes}</span>
+                                            <span className="mounting-card-description-bestfor mounting-card-description">{mounting?.AdditionalNotes}</span>
                                         </span>
-                                        {
+                                        {/* {
                                             isNomounting &&
                                             <span>
                                                 <span className='mounting-card-description'> Best For : </span>
                                                 <span className="mounting-card-description-bestfor mounting-card-description">{mounting.AdditionalNotes}</span>
                                             </span>
 
-                                        }
+                                        } */}
 
                                         {
                                             !isNomounting &&
@@ -263,7 +265,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                             <button
                                 className={`footer-btn footer-btn-primary ${!selectedMounting ? "footer-btn-disabled" : ""
                                     }`}
-                                disabled={!selectedMounting}
+                                disabled={!mountingData.length}
                                 onClick={() => {
                                     if (!selectedMounting) return;
 
@@ -275,7 +277,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                                             name: selectedMounting.optionName,
                                             substrateType: selectedMounting.substrateType || null,
                                             thickness: selectedMounting.thickness || null,
-                                            priceDeltaMinor: selectedMounting.priceDeltaMinor || 0,
+                                            price: selectedMounting.priceDeltaMinor || 0,
                                             notes: selectedMounting.AdditionalNotes,
                                             isNone: selectedMounting.isFrontendOnly === true,
                                         },
