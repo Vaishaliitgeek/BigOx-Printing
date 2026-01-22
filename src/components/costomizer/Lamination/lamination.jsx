@@ -20,6 +20,7 @@ const NO_LAMINATION_OPTION = {
 
 const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
+
     const [laminationData, setLaminationData] = useState([]);
 
     const [imageSrc, setImageSrc] = useState(null);
@@ -27,7 +28,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
 
     const [selectedLaminationId, setselectedLaminationId] =
-        useState(NO_LAMINATION_OPTION._id);
+        useState(orderConfig?.lamination?.id ?? NO_LAMINATION_OPTION._id);
 
     const Laminations = useMemo(() => {
         const active = (template?.laminationOptions || []).filter(

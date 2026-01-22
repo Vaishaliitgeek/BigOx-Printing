@@ -52,12 +52,16 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
     template.mountingOptions.some(m => m.status);
   const hasSizeOptions = Array.isArray(template?.sizeOptions) && template.sizeOptions.length > 0;
 
+
+  // console.log("-orderConfig", orderConfig)
   // api discount data
   const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
   const [quantityDiscountRules, setQuantityDiscountRules] = useState([]);
 
   // Ref for image to measure actual rendered size
   const imageRef = useRef(null);
+
+ 
 
   const basePrice = 68;
   const quantityRule = quantityAndLimits?.[0];
@@ -185,17 +189,51 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
     }
   }, [quantityRule]);
 
-  useEffect(() => {
-    if (!selectedBorder && borderOptions.length) {
-      setSelectedBorder(NO_BORDER_OPTION);
-    }
-  }, [borderOptions, selectedBorder]);
+  // useEffect(() => {
+  //   if (!selectedBorder && borderOptions.length) {
+  //     setSelectedBorder(NO_BORDER_OPTION);
+  //   }
+  // }, [borderOptions, selectedBorder]);
 
+  // useEffect(() => {
+  //   if (!activeMat && rawMats.length) {
+  //     setActiveMat(NO_Mat_OPTION);
+  //   }
+  // }, [rawMats, activeMat]);
+
+
+  // Add these two useEffect hooks (place them near your other useEffects, e.g., after the quantityRule effect)
+
+
+  // Restore selectedBorder from orderConfig when component mounts or orderConfig changes
   useEffect(() => {
-    if (!activeMat && rawMats.length) {
-      setActiveMat(NO_Mat_OPTION);
+    if (!borderOptions.length) return;
+
+    if (orderConfig?.border?.id) {
+      const matched = borderOptions.find(b => b._id === orderConfig.border.id);
+      if (matched) {
+        setSelectedBorder(matched);
+        return;
+      }
     }
-  }, [rawMats, activeMat]);
+    // Fallback: no border selected (or invalid id)
+    setSelectedBorder(NO_BORDER_OPTION);
+  }, [orderConfig?.border, borderOptions]);
+
+  // Restore activeMat from orderConfig when component mounts or orderConfig changes
+  useEffect(() => {
+    if (!Mats.length) return;
+
+    if (orderConfig?.mat?.id) {
+      const matched = Mats.find(m => m._id === orderConfig.mat.id);
+      if (matched) {
+        setActiveMat(matched);
+        return;
+      }
+    }
+    // Fallback: no mat selected (or invalid id)
+    setActiveMat(NO_Mat_OPTION);
+  }, [orderConfig?.mat, Mats]);
 
   useEffect(() => {
     if (!showTabs) {
@@ -256,10 +294,10 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
             />
           </div>
           <p className="preview-label">
-             {orderConfig?.size?.width} X { } {orderConfig?.size?.height}" print
-            {selectedBorder?.thickness > 0 &&
+            {orderConfig?.size?.width} X { } {orderConfig?.size?.height}" print
+            {/* {selectedBorder?.thickness > 0 &&
               ` with ${selectedBorder.thickness}" ${selectedBorder.color || 'white'} border`
-            }
+            } */}
           </p>
         </div>
 

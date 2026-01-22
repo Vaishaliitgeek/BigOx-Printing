@@ -18,7 +18,7 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
   // console.log("--paper", PAPERS)
 
   const [imageSrc, setImageSrc] = useState(null);
-  const [selectedPaperId, setSelectedPaperId] = useState(0);
+  const [selectedPaperId, setSelectedPaperId] = useState(orderConfig?.paper?.id ?? null);
 
 
 

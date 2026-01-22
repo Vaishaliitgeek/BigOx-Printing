@@ -11,23 +11,15 @@ import { loadImageFromDb, saveCurrentImage } from "../../../services/indexDb";
 import { clamp, cropToBlob, getQualityClass, getQualityFromPpi, makeCenteredCropPx, parseSizeInches } from "./helper";
 import { calculatePPI, getCropDimensionsInOriginalPixels, getQualityInfoByPPI } from "../../../pages/printData";
 
-const SIZES = [
-  { id: "4 × 4", label: 'test"', w: 4, h: 4, price: 799.0, minPPIThreshold: 180 },
-  { id: "4 x 5", label: '4 x 5"', w: 4, h: 5, price: 1199.95, minPPIThreshold: 180 },
-  { id: "4x6", label: '4x6"', w: 4, h: 6, price: 1430.71, minPPIThreshold: 150 },
-  { id: "5x5", label: '5x5"', w: 5, h: 5, price: 1569.17, minPPIThreshold: 150 },
-  { id: "5x7", label: "5x7", w: 5, h: 7, price: 1707.62, minPPIThreshold: 150 },
-  { id: "6x6", label: '6x6"', w: 6, h: 6, price: 2299.0, minPPIThreshold: 150 },
-  { id: "6x8", label: '6x8"', w: 6, h: 8, price: 2899.0, minPPIThreshold: 150 },
-];
 
-export default function App({ handleBack, handleNext, template, rules }) {
+
+export default function App({ handleBack, handleNext, template, rules, orderConfig }) {
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
 
   const [imageSrc, setImageSrc] = useState("/sample.jpg");
-  const [selectedSizeId, setSelectedSizeId] = useState(null); // Changed to null initially
-  const [rotation, setRotation] = useState(false);
+  const [selectedSizeId, setSelectedSizeId] = useState(orderConfig?.size?.id ?? null); // Changed to null initially
+  const [rotation, setRotation] = useState(orderConfig?.rotation ?? false);
   const [imageData, setImageData] = useState(null);
 
   const [crop, setCrop] = useState();
@@ -35,10 +27,82 @@ export default function App({ handleBack, handleNext, template, rules }) {
   const [cropCoords, setCropCoords] = useState(null);
   const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
   const [cropHeightPx, setCropHeightPx] = useState(260);
+  const [isCropping, setIsCropping] = useState(orderConfig?.isCropping ?? false);
+
+  const initialZoomValue = 260; // Initial zoom value
+
+
+  // Restore rotation and selected size on mount (if coming back)
+  useEffect(() => {
+    if (orderConfig) {
+      console.log("----orderConfig", orderConfig)
+      if (orderConfig.rotation !== undefined) {
+        setRotation(!!orderConfig.rotation);
+      }
+      if (orderConfig.size?.id) {
+        setSelectedSizeId(orderConfig.size.id);
+        console.log("selectedSizeId", selectedSizeId)
+      }
+    }
+  }, [orderConfig]);
+
+
+  useEffect(() => {
+    console.log("CURRENT selectedSizeId after update:", selectedSizeId);
+  }, [selectedSizeId]);
+
 
   const handleRotate = () => {
     setRotation((prev) => !prev);
   };
+
+  // correct only ppi not update
+  // const handleReset = () => {
+  //   // Reset zoom to initial value
+  //   if (!displayDims.w || !displayDims.h || !selectedSize) return;
+
+  //   const newAspect = selectedSize.w / selectedSize.h;  // Normal orientation
+  //   const newHeightMax = Math.min(displayDims.h, displayDims.w / newAspect);
+  //   const initialH = newHeightMax;
+
+  //   setCropHeightPx(initialH);
+  //   // setCropHeightPx(initialZoomValue);
+
+  //   // Reset crop area to initial state
+  //   setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, initialH));
+  //   // setCompletedCrop(null); // Reset crop completion state
+  // };
+
+
+
+  const handleReset = () => {
+    // Reset zoom to initial value
+    if (!displayDims.w || !displayDims.h || !selectedSize) return;
+
+    const newAspect = selectedSize.w / selectedSize.h;  // Normal orientation
+    const newHeightMax = Math.min(displayDims.h, displayDims.w / newAspect);
+    const initialH = newHeightMax;
+
+    setCropHeightPx(initialH);
+    setIsCropping(false);
+
+    // Reset crop area to initial state
+    const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, initialH);
+    setCrop(newCrop);
+    setCompletedCrop(newCrop);
+
+    // After resetting the crop, trigger PPI recalculation
+    setSelectedSizeId((prevSizeId) => {
+      // Recalculate size availability and PPI after resetting
+      const currentSize = sizeAvailability.find((s) => s.id === prevSizeId);
+      if (currentSize?.disabled) {
+        const firstAvailable = sizeAvailability.find(s => !s.disabled);
+        return firstAvailable?.id ?? prevSizeId;
+      }
+      return prevSizeId;
+    });
+  };
+
 
   const sizeOptions = useMemo(() => {
     return (template?.sizeOptions || [])
@@ -126,22 +190,49 @@ export default function App({ handleBack, handleNext, template, rules }) {
     const h = img.height;
     setDisplayDims({ w, h });
 
-    const initialH = Math.min(heightMax || h, h) * 1;
-    setCropHeightPx(initialH);
+    if (orderConfig?.crop && orderConfig.crop.width > 0 && orderConfig.crop.height > 0) {
+      // Restore exact saved crop (pixel-based, matches original image)
+      const savedCrop = {
+        ...orderConfig.crop,
+        unit: "px",  // Ensure unit is px
+      };
+      setCrop(savedCrop);
+      setCompletedCrop(savedCrop);
+      setCropHeightPx(savedCrop.height);  // Restores zoom level exactly
+    } else {
+      // First-time or no saved crop → initial centered full-fit
+      const initialH = Math.min(heightMax || h, h);
+      setCropHeightPx(initialH);
+      const c = makeCenteredCropPx(w, h, aspect, initialH);
+      setCrop(c);
+    }
 
-    const c = makeCenteredCropPx(w, h, aspect, initialH);
-    setCrop(c);
+    // const initialH = Math.min(heightMax || h, h) * 1;
+    // setCropHeightPx(initialH);
+
+    // const c = makeCenteredCropPx(w, h, aspect, initialH);
+    // setCrop(c);
   }
 
   const onCropChange = (_, percentCrop) => {
     setCrop(_);
   };
 
+  // If aspect changes (size selected/rotation), rebuild crop centered
   useEffect(() => {
     if (!displayDims.w || !displayDims.h) return;
     const h = clamp(cropHeightPx, 40, heightMax);
-    setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
+    const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
+    setCrop(newCrop);
+    // setCompletedCrop(newCrop); // ✅ Update completedCrop when aspect changes
   }, [aspect, heightMax]);
+
+
+  // useEffect(() => {
+  //   if (!displayDims.w || !displayDims.h) return;
+  //   const h = clamp(cropHeightPx, 40, heightMax);
+  //   setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
+  // }, [aspect, heightMax]);
 
   function onCropHeightSlider(val) {
     const h = clamp(Number(val), 40, heightMax);
@@ -203,6 +294,8 @@ export default function App({ handleBack, handleNext, template, rules }) {
         originalPpi: resdata.PPI,
         croppedPpiValid: res.isValid,
         finalImageUrl,
+        rotation,
+        isCropping: isCropping,
       });
 
       await saveCurrentImage({
@@ -246,6 +339,7 @@ export default function App({ handleBack, handleNext, template, rules }) {
                     setCrop(_);
                     setCropCoords(_);
                     onCropChange(_, percentCrop);
+                    setIsCropping(true);
                   }}
                   onComplete={(c) => {
                     setCompletedCrop(c);
@@ -295,7 +389,7 @@ export default function App({ handleBack, handleNext, template, rules }) {
                           style={{ accentColor: "#CE1312" }}
                         />
                       </div>
-                      <button onClick={() => { }} className="editorResetBtn">
+                      <button onClick={handleReset} className="editorResetBtn">
                         Reset
                       </button>
                     </div>
@@ -390,6 +484,7 @@ export default function App({ handleBack, handleNext, template, rules }) {
               <button
                 className="footer-btn footer-btn-primary"
                 onClick={() => onDownload()}
+                disabled={!isCropping || !selectedSizeId}
               >
                 Continue
               </button>

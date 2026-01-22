@@ -27,10 +27,11 @@ const NO_MOUNTING_OPTION = {
 
 
 const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
+    console.log("-orderconfig", orderConfig)
 
     const [imageSrc, setImageSrc] = useState(null);
 
-    const [selectedMountingId, setselectedMountingId] = useState("no-mounting");
+    const [selectedMountingId, setselectedMountingId] = useState(orderConfig?.mounting?.id ?? "no-mounting");
 
     const [mountingData, setMountingData] = useState([]);
 

@@ -235,7 +235,7 @@ function App() {
           handleNext={handleNext}
           rules={rules}
           template={template}
-        // orderConfig={orderConfig}
+          orderConfig={orderConfig}
         />
       )}
 
@@ -279,6 +279,7 @@ function App() {
           template={template}
           orderConfig={orderConfig}
           setOrderConfig={setOrderConfig}
+          handleBack={handleBack}
         />
       )}
 
