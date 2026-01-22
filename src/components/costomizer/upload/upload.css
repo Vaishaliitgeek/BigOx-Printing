@@ -218,6 +218,9 @@
 
 .upload-file-close {
   border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: transparent;
   padding: 0.25rem;
   border-radius: 9999px;
@@ -282,6 +285,7 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
 @media (max-width: 400px) {
   .upload-file-icon {
     display: none;
@@ -366,5 +370,5 @@
 
 .btn-continue:hover {
   background-color: #c8101e;
-  box-shadow: 0 8px 15px rgba(185, 28, 28, 0.3);
+  /* box-shadow: 0 8px 15px rgba(185, 28, 28, 0.3); */
 }

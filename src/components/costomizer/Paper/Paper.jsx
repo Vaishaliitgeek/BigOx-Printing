@@ -6,7 +6,7 @@ import { loadCropImageFromDb } from '../../../services/indexDb';
 
 // --- Component ---
 
-const Paper = ({ handleBack, handleNext, template }) => {
+const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
   // only show thiose paper whose status is true 
   const PAPERS = useMemo(() => {
@@ -92,7 +92,7 @@ const Paper = ({ handleBack, handleNext, template }) => {
                     No image found. Please upload an image first.
                   </div>
                 )}
-                <p className='selected-size'>10x12" print</p>
+                <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}" print print</p>
               </div>
 
               {/* <div className="editor-size-label">
@@ -185,8 +185,8 @@ const Paper = ({ handleBack, handleNext, template }) => {
                           : '')
                       }
                     >
-                      +{Math.abs(paper.priceDeltaMinor)}
-                      {paper.priceDeltaMinor > 0 ? '%' : ''}
+                      {paper.priceDeltaMinor > 0 ? '+ $' : '- $'}
+                      {Math.abs(paper.priceDeltaMinor)}
                     </span>
                   </div>
 

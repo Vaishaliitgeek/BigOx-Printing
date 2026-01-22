@@ -26,7 +26,7 @@ const NO_MOUNTING_OPTION = {
 };
 
 
-const Mounting = ({ handleBack, handleNext, template }) => {
+const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
 
     const [imageSrc, setImageSrc] = useState(null);
 
@@ -132,7 +132,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                                         No image found. Please upload an image first.
                                     </div>
                                 )}
-                                <p className='selected-size'>10x12" print</p>
+                                <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}" print print</p>
                             </div>
                         </div>
                         <div className='mounting-wrappper-text'>

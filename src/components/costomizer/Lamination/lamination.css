@@ -27,6 +27,8 @@
 
 .lamination-card-thumb {
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .lamination-card-thumb img {
@@ -37,6 +39,10 @@
   max-width: 80px; */
   object-fit: cover;
   margin: 0 auto;
+  object-fit: cover;
+  max-height: 100px;
+  margin: 0 auto;
+  max-width: 100px;
 }
 
 .lamination-grid {
@@ -135,6 +141,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  border: 1px solid #E5E5E5;
 }
 
 .lamination-editor-image {

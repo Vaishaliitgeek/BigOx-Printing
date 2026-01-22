@@ -356,24 +356,24 @@ export default function App({ handleBack, handleNext, template, rules }) {
           <div className="editor-guide">
             <h3 className="editor-guide-title">Print Quality Guide</h3>
             <div className="editor-guide-list">
-              <div className="editor-guide-item">
-                <span className="editor-guide-dot guide-dot-green"></span>
-                <span className="editor-guide-text">
-                  &gt;180 PPI: Excellent quality
-                </span>
-              </div>
-              <div className="editor-guide-item">
-                <span className="editor-guide-dot guide-dot-orange"></span>
-                <span className="editor-guide-text">
-                  150–179 PPI: Good quality
-                </span>
-              </div>
-              <div className="editor-guide-item">
-                <span className="editor-guide-dot guide-dot-red"></span>
-                <span className="editor-guide-text">
-                  &lt;150 PPI: May show pixelation
-                </span>
-              </div>
+              {rules?.ppiBandColors?.map((band, index) => (
+                <div key={index} className="editor-guide-item">
+                  <span
+                    className="editor-guide-dot"
+                    style={{
+                      backgroundColor: band?.color, // Apply the background color based on the quality
+                      borderRadius: "50%", // Ensure the dot is round
+                      width: "16px", // Set size of the dot
+                      height: "16px", // Set size of the dot
+                      marginRight: "8px", // Space between the dot and text
+                      display: "inline-block", // Ensure the dot is inline with the text
+                    }}
+                  ></span>
+                  <span className="editor-guide-text">
+                    ≥{band?.minPPI} PPI: {band?.qualityLabel} quality
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

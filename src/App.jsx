@@ -15,7 +15,7 @@ import "./App.css";
 import { PRINT_SIZES, PAPERS } from "./pages/printData";
 
 // API / services
-import { getCommerceRulesCustomerDiscounts, getTemplateFromDb, getValidationRules } from "./services/services.js";
+import { getTemplateFromDb, getValidationRules } from "./services/services.js";
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -74,12 +74,9 @@ function App() {
   // Otherwise, remove it to reduce unused state.
   const [sizeOptions, setSizeOptions] = useState([]);
   const [isValideOptions, setIsValideOption] = useState({ "borderOption": true, "metaOptions": true });
-  // Customer tags
-  const [customerTags, setCustomerTags] = useState([]);
 
   // Handle Order data
   const [orderConfig, setOrderConfig] = useState({
-    templateName: null,
     size: null,
     paper: null,
     lamination: null,
@@ -90,9 +87,9 @@ function App() {
   });
 
 
-  console.log("------orderConfig", orderConfig)
+
   function updateStepsWithValideData(template) {
-    // console.log("------------template", template)
+    console.log("------------template", template)
     if (!template) return;
     let currentStep = 1;
     const stepMapping = {};
@@ -130,7 +127,7 @@ function App() {
     try {
       const fetchedRules = await getValidationRules();
       setRules(fetchedRules);
-      // console.log("Validation rules:", fetchedRules);
+      console.log("Validation rules:", fetchedRules);
     } catch (error) {
       console.error("Failed to load validation rules:", error);
       setRules(null); // safe fallback
@@ -138,20 +135,12 @@ function App() {
   }, []);
 
   const loadTemplates = useCallback(async () => {
+
     try {
       const fetchTemplate = await getTemplateFromDb();
       // const currentTemplate = fetchTemplate[2];
       setTemplate(fetchTemplate);
       updateStepsWithValideData(fetchTemplate);
-      const templateName =
-        fetchTemplate?.templateName ||
-        fetchTemplate?.result?.[0]?.templateName ||
-        null;
-
-      setOrderConfig((prev) => ({
-        ...prev,
-        templateName,
-      }));
       // console.log("fetchTemplate :", fetchTemplate);
     } catch (error) {
       console.error("Failed to load Template:", error);
@@ -159,25 +148,9 @@ function App() {
     }
   }, [])
 
-
-  const loadCustomerTagsDiscount = useCallback(async () => {
-    try {
-      const fetchTags = await getCommerceRulesCustomerDiscounts();
-      // console.log("------fetchTags-", fetchTags)
-      const tags = fetchTags?.[0].customerTiers || [];
-      setCustomerTags(tags);
-      console.log("Customer Tags:", tags);
-    }
-    catch (error) {
-      console.error("Failed to load customer tags", error);
-      setCustomerTags([]);
-    }
-  })
-
   useEffect(() => {
     loadRules();
     loadTemplates();
-    loadCustomerTagsDiscount();
   }, [loadRules, loadTemplates]);
 
   // -----------------------------
@@ -225,7 +198,6 @@ function App() {
   //   setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   // }, []);
   const handleNext = useCallback((payload = {}) => {
-    // console.log("-payload", payload)
     setOrderConfig((prev) => ({
       ...prev,
       ...payload,
@@ -263,7 +235,7 @@ function App() {
           handleNext={handleNext}
           rules={rules}
           template={template}
-
+        // orderConfig={orderConfig}
         />
       )}
 
@@ -273,7 +245,7 @@ function App() {
           handleNext={handleNext}
           rules={rules}
           template={template}
-
+          orderConfig={orderConfig}
         />
       )}
       {currentStep === appSteps.laminationOptions && (
@@ -282,7 +254,7 @@ function App() {
           handleNext={handleNext}
           rules={rules}
           template={template}
-
+          orderConfig={orderConfig}
         />
       )}
       {currentStep === appSteps.mountingOptions && (
@@ -291,7 +263,7 @@ function App() {
           handleNext={handleNext}
           rules={rules}
           template={template}
-
+          orderConfig={orderConfig}
         />
       )}
 
@@ -307,13 +279,12 @@ function App() {
           template={template}
           orderConfig={orderConfig}
           setOrderConfig={setOrderConfig}
-          handleBack={handleBack}
         />
       )}
 
       <ToastContainer
         position="top-right"
-        autoClose={4000}
+        autoClose={8000}
         hideProgressBar={false}
         closeOnClick
         pauseOnHover

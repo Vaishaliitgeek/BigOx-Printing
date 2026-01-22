@@ -1,7 +1,7 @@
 /* Header.module.css */
 
 /* global css revert */
-div:empty{
+div:empty {
     display: revert;
 }
 
@@ -228,7 +228,7 @@ div:empty{
     bottom: -1.5rem;
     white-space: nowrap;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: bold;
     transition: color 150ms ease;
     display: none;
 }

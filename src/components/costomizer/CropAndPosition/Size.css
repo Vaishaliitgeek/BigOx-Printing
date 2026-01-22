@@ -304,10 +304,13 @@ quality-gray {
 
 /* Guide card */
 .editor-guide {
-  background-color: #ffffff;
-  border-radius: 0.5rem;
+  /* background-color: #ffffff; */
+  /* border-radius: 0.5rem; */
   padding: 1rem;
   margin-bottom: 1.5rem;
+  /* outline: 2px solid #000000; */
+  background-color: #FDF9EE;
+  border: 2px solid #E5E5E5;
 }
 
 .editor-guide-title {
@@ -387,7 +390,7 @@ quality-gray {
 
 /* Page layout */
 .page {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  /* font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; */
   color: #111;
   background: #fff;
   min-height: 100vh;

@@ -18,7 +18,7 @@ const NO_LAMINATION_OPTION = {
 };
 
 
-const Lamination = ({ handleBack, handleNext, template }) => {
+const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
     const [laminationData, setLaminationData] = useState([]);
 
@@ -124,7 +124,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                                         No image found. Please upload an image first.
                                     </div>
                                 )}
-                                <p className='selected-size'>10x12" print</p>
+                                <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}" print print</p>
                             </div>
                         </div>
                         <div className='laminate-wrappper-text'>

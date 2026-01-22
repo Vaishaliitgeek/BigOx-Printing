@@ -126,7 +126,7 @@ export function calculatePPI(
   printHeight,
   isRotated = false,
 ) {
-  console.log("isRotated==========",isRotated)
+  console.log("isRotated==========", isRotated)
   const imageWidthInches = toInches(imageWidth);
   const imageHeightInches = toInches(imageHeight);
   const PPI = Math.min(imageHeightInches, imageWidthInches);

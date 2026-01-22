@@ -231,7 +231,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
             className="preview-image-container"
             style={{
               ...getBorderStyle(),
-              borderRadius: '8px',
+              // borderRadius: '8px',
               overflow: 'hidden',
               maxWidth: '100%',
               display: 'inline-block',
@@ -256,7 +256,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
             />
           </div>
           <p className="preview-label">
-            {orderConfig?.size?.label || "16×20\""} print
+             {orderConfig?.size?.width} X { } {orderConfig?.size?.height}" print
             {selectedBorder?.thickness > 0 &&
               ` with ${selectedBorder.thickness}" ${selectedBorder.color || 'white'} border`
             }
@@ -511,7 +511,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
 
           <div className="action-buttons">
             <button className="back-button" onClick={() => handleBack()}>BACK</button>
-            <button className="add-to-cart-button" onClick={() => cartHandler(setStatus, orderConfig)}>
+            <button className="add-to-cart-button" onClick={() => cartHandler(setStatus, orderConfig, total)}>
               🛒 ADD TO CART
             </button>
           </div>
