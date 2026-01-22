@@ -1,140 +1,44 @@
-// import React, { useState, useRef, useEffect } from 'react';
-// // import './Size.css'
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaArrowRotateLeft } from "react-icons/fa6";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-// import "./App.css";
+import { toast } from "react-toastify"; // Add this import
+import "react-toastify/dist/ReactToastify.css"; // Add this import
 import "./size.css";
 import { apiConnecter } from "../../../utils/ApiConnector";
 import { getSizeOptions } from "../../../services/services";
 import { loadImageFromDb, saveCurrentImage } from "../../../services/indexDb";
 import { clamp, cropToBlob, getQualityClass, getQualityFromPpi, makeCenteredCropPx, parseSizeInches } from "./helper";
-import { calculatePPI, getCropDimensionsInOriginalPixels } from "../../../pages/printData";
-
-
-const handleUrlSelect = (imageUrl, handleNext) => {
-  if (!imageUrl) return;
-
-  const img = new Image();
-  img.onload = async () => {
-    const url = imageUrl;
-    const sizeInMB = (img.src.length / (1024 * 1024)).toFixed(1); // Since URL will not have file size, we're using image source length for estimation
-
-    const imageObj = {
-      url,
-      width: img.width,
-      height: img.height,
-      size: `${sizeInMB} MB`,
-      name: "image-from-url", // Since this is from a URL, we won't have a filename. You can modify this as needed
-      type: "image/jpeg", // Assuming it's a jpeg, you may adjust this based on the actual content type.
-      lastModified: Date.now(), // Assuming this is a new image, we can set the current timestamp
-      isSample: false,
-    };
-
-    // setImageData(imageObj);
-
-    try {
-      await saveCurrentImage(imageObj);
-      handleNext();
-    } catch (err) {
-      console.error("Error saving image to IndexedDB:", err);
-    }
-
-    onImageUpload?.(url, img.width, img.height);
-  };
-
-  img.src = imageUrl; // Set the image source to the URL
-};
-// //   // compute PPI for a given size string
-const computePpiForSize = (sizeStr, imageDimensions) => {
-  const { w, h } = imageDimensions;
-  if (!w || !h) return null;
-
-  const { widthIn, heightIn } = parseSizeInches(sizeStr);
-  if (!widthIn || !heightIn) return null;
-
-  const ppiW = w / widthIn;
-  const ppiH = h / heightIn;
-  const ppi = Math.floor(Math.min(ppiW, ppiH));
-  return ppi;
-};
+import { calculatePPI, getCropDimensionsInOriginalPixels, getQualityInfoByPPI } from "../../../pages/printData";
 
 const SIZES = [
   { id: "4 × 4", label: 'test"', w: 4, h: 4, price: 799.0, minPPIThreshold: 180 },
-  {
-    id: "4 x 5",
-    label: '4 x 5"',
-    w: 4,
-    h: 5,
-    price: 1199.95,
-    minPPIThreshold: 180,
-  },
-  {
-    id: "4x6",
-    label: '4x6"',
-    w: 4,
-    h: 6,
-    price: 1430.71,
-    minPPIThreshold: 150,
-  },
-  {
-    id: "5x5",
-    label: '5x5"',
-    w: 5,
-    h: 5,
-    price: 1569.17,
-    minPPIThreshold: 150,
-  },
+  { id: "4 x 5", label: '4 x 5"', w: 4, h: 5, price: 1199.95, minPPIThreshold: 180 },
+  { id: "4x6", label: '4x6"', w: 4, h: 6, price: 1430.71, minPPIThreshold: 150 },
+  { id: "5x5", label: '5x5"', w: 5, h: 5, price: 1569.17, minPPIThreshold: 150 },
   { id: "5x7", label: "5x7", w: 5, h: 7, price: 1707.62, minPPIThreshold: 150 },
   { id: "6x6", label: '6x6"', w: 6, h: 6, price: 2299.0, minPPIThreshold: 150 },
   { id: "6x8", label: '6x8"', w: 6, h: 8, price: 2899.0, minPPIThreshold: 150 },
 ];
 
-
-
-
-// const getAllSize = async (setSizeOptions, template) => {
-//   console.log("Fetching size options from API...", template.sizeOptions);
-//   try {
-//     // const data = template?.sizeOptions;
-//     const data = useMemo(() => {
-//       return (template?.sizeOptions || []).filter(
-//         (size) => size.status === true
-//       );
-//     }, [template?.paperOptions]);
-//     const filterdData = data.map((obj) => ({ ...obj, w: obj.width, h: obj.height, id: obj.dimensionText, price: obj.priceDeltaMinor }));
-//     console.log('filterdData', filterdData)
-//     setSizeOptions(filterdData);
-//   } catch (err) {
-//     console.error("Error while getting size options:", err.message);
-//   }
-// }
-
-// const getValidationRules = async () => {
-//   console.log("Fetching Validation Rules from API...");
-//   try {
-//     // const data = await getValidationRules();
-//     // setSizeOptions(data);
-//   } catch (err) {
-//     console.error("Error while getting size options:", err.message);
-//   }
-// }
-
-export default function App({ handleBack, handleNext, template }) {
+export default function App({ handleBack, handleNext, template, rules }) {
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
 
-  const [imageSrc, setImageSrc] = useState("/sample.jpg"); // optional default
-  const [selectedSizeId, setSelectedSizeId] = useState(SIZES[0].id);
+  const [imageSrc, setImageSrc] = useState("/sample.jpg");
+  const [selectedSizeId, setSelectedSizeId] = useState(null); // Changed to null initially
   const [rotation, setRotation] = useState(false);
-  // const [sizeOptions, setSizeOptions] = useState([]);
   const [imageData, setImageData] = useState(null);
+
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [cropCoords, setCropCoords] = useState(null);
+  const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
+  const [cropHeightPx, setCropHeightPx] = useState(260);
+
   const handleRotate = () => {
     setRotation((prev) => !prev);
   };
-
-
 
   const sizeOptions = useMemo(() => {
     return (template?.sizeOptions || [])
@@ -147,31 +51,73 @@ export default function App({ handleBack, handleNext, template }) {
         price: size.priceDeltaMinor,
       }));
   }, [template?.sizeOptions]);
+
+  // Calculate which sizes are available based on current crop
+  const sizeAvailability = useMemo(() => {
+    if (!completedCrop || !imageData) {
+      return sizeOptions.map(item => ({ ...item, disabled: false, ppi: 0 }));
+    }
+
+    const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+      completedCrop,
+      imgRef,
+      imageData
+    );
+
+    return sizeOptions.map((item) => {
+      const res = calculatePPI(cropWpx, cropHpx, item.w, item.h, rotation);
+      const ppi = res?.PPI ?? 0;
+      const disabled = ppi < 150;
+      const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
+
+      return {
+        ...item,
+        ppi,
+        disabled,
+        color: quality?.color
+      };
+    });
+  }, [completedCrop, imageData, sizeOptions, rotation, rules]);
+
+  // Auto-select first available size
+  useEffect(() => {
+    if (!selectedSizeId || sizeAvailability.length === 0) {
+      const firstAvailable = sizeAvailability.find(s => !s.disabled);
+      if (firstAvailable) {
+        setSelectedSizeId(firstAvailable.id);
+      }
+    }
+  }, [sizeAvailability, selectedSizeId]);
+
+  // Check if currently selected size becomes disabled after crop change
+  useEffect(() => {
+    if (selectedSizeId && completedCrop) {
+      const currentSize = sizeAvailability.find(s => s.id === selectedSizeId);
+      if (currentSize?.disabled) {
+        // Find first available alternative
+        const firstAvailable = sizeAvailability.find(s => !s.disabled);
+        if (firstAvailable) {
+          setSelectedSizeId(firstAvailable.id);
+          // toast.info(`Size ${selectedSizeId} is no longer available. Switched to ${firstAvailable.id}"`);
+        }
+      }
+    }
+  }, [completedCrop, selectedSizeId, sizeAvailability]);
+
   const selectedSize = useMemo(
-    () => sizeOptions.find((s) => s.id === selectedSizeId) ?? sizeOptions[0],
-    [selectedSizeId, sizeOptions]
+    () => sizeAvailability.find((s) => s.id === selectedSizeId) ?? sizeAvailability[0],
+    [selectedSizeId, sizeAvailability]
   );
 
   const aspect = rotation
-    ? selectedSize.h / selectedSize.w
-    : selectedSize.w / selectedSize.h;
-
-  const [crop, setCrop] = useState();
-  const [completedCrop, setCompletedCrop] = useState(null);
-  const [cropCoords, setCropCoords] = useState(null);
-
-
-  const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
-  const [cropHeightPx, setCropHeightPx] = useState(260);
+    ? selectedSize?.h / selectedSize?.w
+    : selectedSize?.w / selectedSize?.h;
 
   const heightMax = useMemo(() => {
     if (!displayDims.w || !displayDims.h) return 600;
     return Math.min(displayDims.h, displayDims.w / aspect);
   }, [displayDims, aspect]);
 
-
-
-  // When image loads, set initial crop.
   function onImageLoad(e) {
     const img = e.currentTarget;
     imgRef.current = img;
@@ -187,108 +133,53 @@ export default function App({ handleBack, handleNext, template }) {
     setCrop(c);
   }
 
-  // Update crop area on change
   const onCropChange = (_, percentCrop) => {
     setCrop(_);
   };
 
-
-
-  // If aspect changes (size selected), rebuild crop centered, keep similar height.
   useEffect(() => {
     if (!displayDims.w || !displayDims.h) return;
     const h = clamp(cropHeightPx, 40, heightMax);
     setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aspect, heightMax]);
 
-
-
-  // Slider changes crop rect size (height) while keeping aspect.
   function onCropHeightSlider(val) {
     const h = clamp(Number(val), 40, heightMax);
     setCropHeightPx(h);
     setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
   }
 
-  // async function onDownload() {
-  //   try {
-  //     const img = imgRef.current;
-  //     if (!img) return alert("Upload an image first.");
-  //     if (!completedCrop) return alert("Select a crop area first.");
-
-  //     // 1️⃣ Export cropped image
-  //     const blob = await cropToBlob(img, completedCrop, "image/png");
-  //     const finalImageUrl = URL.createObjectURL(blob);
-  //     console.log("----displayyy", displayDims)
-  //     // 2️⃣ Compute PPI for selected size
-  //     // const ppi = computePpiForSize(selectedSizeId, displayDims);
-  //     const res = calculatePPI(
-  //       displayDims.w,
-  //       displayDims.h,
-  //       selectedSize.w,
-  //       selectedSize.h,
-  //       rotation
-  //     );
-
-  //     // 3️⃣ Build payload
-  //     const payload = {
-  //       size: {
-  //         id: selectedSize.id,
-  //         label: selectedSize.id,
-  //         width: selectedSize.w,
-  //         height: selectedSize.h,
-  //         price: selectedSize.price,
-  //       },
-  //       crop: completedCrop,
-  //       croppedPpi: res.PPI,
-  //       finalImageUrl,
-  //     };
-
-  //     // 4️⃣ Save to IndexedDB (optional but good)
-  //     await saveCurrentImage({
-  //       url: finalImageUrl,
-  //       width: img.width,
-  //       height: img.height,
-  //       blob,
-  //       type: "image/png"
-  //     });
-
-  //     // 5️⃣ Move to next step WITH DATA
-  //     handleNext(payload);
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert(err?.message ?? "Failed to export crop");
-  //   }
-  // }
-
-
-  // async function onDownload() {
-  //   try {
-  //     const img = imgRef.current;
-  //     if (!img) return alert("Upload an image first.");
-  //     if (!completedCrop) return alert("Select a crop area first.");
-
-  //     const blob = await cropToBlob(img, completedCrop, "image/png");
-  //     const url = URL.createObjectURL(blob);
-  //     handleUrlSelect(url, handleNext);
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert(err?.message ?? "Failed to export crop");
-  //   }
-  // }
   async function onDownload() {
     try {
       const img = imgRef.current;
 
-      if (!img) return alert("Upload an image first.");
-      if (!completedCrop) return alert("Select a crop area first.");
+      if (!img) {
+        toast.error("Please upload an image first");
+        return;
+      }
+
+      if (!completedCrop) {
+        toast.error("Please select a crop area first");
+        return;
+      }
+
+      // Check if all sizes are disabled
+      const hasAvailableSize = sizeAvailability.some(s => !s.disabled);
+      if (!hasAvailableSize) {
+        toast.error("Please choose a high quality image. Current image resolution is too low for any print size.");
+        return;
+      }
+
+      // Check if selected size is disabled
+      const currentSize = sizeAvailability.find(s => s.id === selectedSizeId);
+      if (currentSize?.disabled) {
+        toast.error("Selected size is not available. Please choose a different size or upload a higher quality image.");
+        return;
+      }
 
       const blob = await cropToBlob(img, completedCrop, "image/png");
       const finalImageUrl = URL.createObjectURL(blob);
 
-      // ✅ compute crop pixels in original scale
       const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
         completedCrop,
         imgRef,
@@ -296,7 +187,7 @@ export default function App({ handleBack, handleNext, template }) {
       );
 
       const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, rotation);
-      // console.log("------resone", res.PPI)
+      const resdata = calculatePPI(imageData?.width, imageData?.height, selectedSize.w, selectedSize.h, rotation);
 
       handleNext({
         size: {
@@ -309,6 +200,7 @@ export default function App({ handleBack, handleNext, template }) {
         crop: completedCrop,
         cropPixels: { width: cropWpx, height: cropHpx },
         croppedPpi: res.PPI,
+        originalPpi: resdata.PPI,
         croppedPpiValid: res.isValid,
         finalImageUrl,
       });
@@ -322,17 +214,15 @@ export default function App({ handleBack, handleNext, template }) {
       });
     } catch (err) {
       console.error(err);
-      alert(err?.message ?? "Failed to export crop");
+      toast.error(err?.message ?? "Failed to export crop");
     }
   }
-
 
   useEffect(() => {
     (async () => {
       try {
         const saved = await loadImageFromDb();
         setImageData(saved);
-        // console.log("-----saved", imageData)
         if (saved && saved.url) {
           setImageSrc(saved.url);
         }
@@ -342,204 +232,117 @@ export default function App({ handleBack, handleNext, template }) {
     })();
   }, []);
 
-  // useEffect(() => {
-  //   getAllSize(setSizeOptions, template);
-  // }, []);
-
-  // console.log("-imageData", imageData)
-
   return (
     <div className="page">
-
-
       <main className="content">
         <section className="left">
           <h2>Crop &amp; Position</h2>
           <div className="imageFrame">
             {imageSrc ? (
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => {
-                  // console.log("------coordssss", _)
-                  // console.log("onchange percentcrop:", percentCrop, _);
-                  // We keep px crop in state for accurate export.
-                  setCrop(_);
-                  setCropCoords(_);
-                  onCropChange(_, percentCrop);
-                }}
-                onComplete={(c) => {
-                  setCompletedCrop(c);
-                  if (c && c.height) {
-                    setCropHeightPx(c.height);
-                  }
-                }}
-                aspect={aspect}
-                keepSelection
-                ruleOfThirds={false}
-                minWidth={40}
-                minHeight={40}
-              >
-                {/* Important: use onLoad to set initial crop */}
-                <img
-                  src={imageSrc}
-                  alt="to crop"
-                  onLoad={onImageLoad}
-                  className="cropImage"
-                  crossOrigin="anonymous"
-                  style={{
-                    maxWidth: "900px",
-                    maxHeight: "600px",
-                    width: "100%",
-                    height: "100%",
+              <>
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => {
+                    setCrop(_);
+                    setCropCoords(_);
+                    onCropChange(_, percentCrop);
                   }}
-                />
-              </ReactCrop>
+                  onComplete={(c) => {
+                    setCompletedCrop(c);
+                    if (c && c.height) {
+                      setCropHeightPx(c.height);
+                    }
+                  }}
+                  aspect={aspect}
+                  keepSelection
+                  ruleOfThirds={false}
+                  minWidth={40}
+                  minHeight={40}
+                >
+                  <img
+                    src={imageSrc}
+                    alt="to crop"
+                    onLoad={onImageLoad}
+                    className="cropImage"
+                    crossOrigin="anonymous"
+                    style={{
+                      maxWidth: "900px",
+                      maxHeight: "600px",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                </ReactCrop>
+                <div className="controlsCard">
+                  <div className="controlRow">
+                    <div className="editorControlsrapper">
+                      <button onClick={handleRotate} className="editorRotateBtn">
+                        <FaArrowRotateLeft />
+                        Rotate
+                      </button>
+                      <div className="editorZoomGroup">
+                        <p htmlFor="zoom" className="zoomLabel">
+                          Zoom
+                        </p>
+                        <input
+                          type="range"
+                          min={40}
+                          max={Math.max(40, Math.floor(heightMax))}
+                          value={Math.min(cropHeightPx, heightMax || cropHeightPx)}
+                          onChange={(e) => onCropHeightSlider(e.target.value)}
+                          className="range"
+                          id="zoom"
+                          style={{ accentColor: "#CE1312" }}
+                        />
+                      </div>
+                      <button onClick={() => { }} className="editorResetBtn">
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="hint">
+                    Tip: drag the crop rectangle to position it. Selecting a new size
+                    locks the ratio.
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="empty">Upload an image to start</div>
             )}
           </div>
-
-          <div className="controlsCard">
-            <div className="controlRow">
-              <div className="editorControlsrapper">
-                <button onClick={handleRotate} className="editorRotateBtn">
-                  <FaArrowRotateLeft />
-                  Rotate
-                </button>
-                <div className="editorZoomGroup">
-                  <p htmlFor="zoom" className="zoomLabel">
-                    Zoom
-                  </p>
-                  <input
-                    type="range"
-                    min={40}
-                    max={Math.max(40, Math.floor(heightMax))}
-                    value={Math.min(cropHeightPx, heightMax || cropHeightPx)}
-                    onChange={(e) => onCropHeightSlider(e.target.value)}
-                    className="range"
-                    id="zoom"
-                    style={{ accentColor: "#CE1312" }}
-                  />
-                </div>
-                <button onClick={() => { }} className="editorResetBtn">
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            <div className="hint">
-              Tip: drag the crop rectangle to position it. Selecting a new size
-              locks the ratio.
-            </div>
-          </div>
         </section>
 
-        {/* <aside className="right">
-          <div className="sizesCard">
-            <div className="sizesList">
-              {SIZES.map((s, idx) => {
-                const active = s.id === selectedSizeId;
-                return (
-                  <button
-                    key={s.id}
-                    className={`sizeRow ${idx % 2 ? "alt" : ""} ${active ? "active" : ""}`}
-                    onClick={() => setSelectedSizeId(s.id)}
-                  >
-                    <span className={`radio ${active ? "on" : ""}`} />
-                    <span className="sizeLabel">{s.label}</span>
-                    <span className="price">From Rs. {s.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="ctaBar">
-            <div className="ctaLeft">{selectedSize.label}</div>
-            <div className="ctaRight">
-              <div className="ctaPrice">
-                From Rs. {selectedSize.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </div>
-              <button className="saveBtn" onClick={onDownload}>
-                Save Crop
-              </button>
-            </div>
-          </div>
-        </aside> */}
         <div className="editor-right">
           <h2 className="editor-title-right">Select Image Size</h2>
 
           {/* Size Grid */}
           <div className="editorSizeGrid">
-            {[...(sizeOptions || [])]
-              .map((item) => {
-                // const res = calculatePPI(
-                //   imageData?.width,
-                //   imageData?.height,
-                //   item.w,
-                //   item.h,
-                //   rotation
-                // );
-
-                const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
-                  completedCrop,
-                  imgRef,
-                  imageData
-                );
-
-                const res = calculatePPI(
-                  cropWpx,
-                  cropHpx,
-                  item.w,
-                  item.h,
-                  rotation
-                );
-                // console.log("------restwo", res.PPI)
-
-
-                const ppi = res?.PPI ?? 0;
-                const disabled = ppi < 150;
-
-                return { item, ppi, disabled };
-              })
-              .sort((a, b) => Number(a.disabled) - Number(b.disabled)) // ✅ enabled first
-              .map(({ item, ppi, disabled }) => {
-                {/* {sizeOptions?.map((item) => { */ }
-                // const ppi = computePpiForSize(item.id, displayDims);
-                // const res = calculatePPI(
-                //   imageData?.width,
-                //   imageData?.height,
-                //   item.w,
-                //   item.h,
-                //   rotation
-                // );
-                // const ppi = res?.PPI;
-                // console.log("------ppi", ppi)       // ✅ number
-                // const isValid = res?.isValid;
-                // const disabled = ppi < 150; // ✅ boolean
-
-                const quality = getQualityFromPpi(ppi);
+            {[...sizeAvailability]
+              .sort((a, b) => Number(a.disabled) - Number(b.disabled))
+              .map(({ id, w, h, price, ppi, disabled, color }) => {
                 return (
                   <button
-                    key={item.id}
+                    key={id}
                     onClick={() => {
-                      if (disabled) return;
-                      setSelectedSizeId(item.id);
+                      if (disabled) {
+                        toast.warning("This size requires a higher quality image (minimum 150 PPI)");
+                        return;
+                      }
+                      setSelectedSizeId(id);
                     }}
-
                     className={
                       "editorSizeCard " +
-                      (selectedSizeId === item.id ? "editorSizeCardSelected" : "") +
+                      (selectedSizeId === id && !disabled ? "editorSizeCardSelected" : "") +
                       (disabled ? " editorSizeCardDisabled" : "")
                     }
                     title={disabled ? "Minimum 150 PPI required for this size" : ""}
                   >
-                    <div className="editor-size-card-size">{item.id}"</div>
-                    <div className="editor-size-card-price">{`$${item.price.toFixed(2)}` ?? "N/A"}</div>
+                    <div className="editor-size-card-size">{id}"</div>
+                    <div className="editor-size-card-price">{`$${price.toFixed(2)}` ?? "N/A"}</div>
                     <div
-                      className={
-                        "editor-size-card-ppi " + getQualityClass(quality)
-                      }
+                      className="editor-size-card-ppi"
+                      style={{ color }}
                     >
                       {ppi ? `${ppi} PPI` : "—"}
                     </div>

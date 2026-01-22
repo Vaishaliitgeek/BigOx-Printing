@@ -79,7 +79,8 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   // console.log("---rules", template)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
-  const [allowedTypes, setAllowedTypes] = useState('JPG ,PNG, TIFF');
+  const [allowedTypes, setAllowedTypes] = useState('.jpg,.jpeg,.png,.tif,.tiff');
+
   const [uploadError, setUploadError] = useState("");
 
   const Sizes = template?.sizeOptions;
@@ -185,6 +186,17 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
     // console.log("typesResult", typesResult)
     return typesResult;
   }
+  // function getAllowedTypes() {
+  //   if (!rules?.fileConstraints?.allowedTypes) return "";
+
+  //   return rules.fileConstraints.allowedTypes
+  //     .filter(t => t.status)
+  //     .map(t => {
+  //       const subtype = t.imageType.split("/")[1];
+  //       return `.${subtype.toLowerCase()}`;
+  //     })
+  //     .join(",");
+  // }
 
 
   // Image validate from rules admin api

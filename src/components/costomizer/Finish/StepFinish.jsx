@@ -37,7 +37,20 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
   const [quantityAndLimits, setquantityAndLimits] = useState([]);
   const [status, setStatus] = useState("start");
   const [borderPx, setBorderPx] = useState(0);
+  const showTabs = hasMatOptions && hasBorderOptions;
+  // check that this option exist or not 
+  const hasPaperOptions =
+    Array.isArray(template?.paperOptions) &&
+    template.paperOptions.some(p => p.status);
 
+  const hasLaminationOptions =
+    Array.isArray(template?.laminationOptions) &&
+    template.laminationOptions.some(l => l.status);
+
+  const hasMountingOptions =
+    Array.isArray(template?.mountingOptions) &&
+    template.mountingOptions.some(m => m.status);
+  const hasSizeOptions = Array.isArray(template?.sizeOptions) && template.sizeOptions.length > 0;
 
   // api discount data
   const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
@@ -185,11 +198,14 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
   }, [rawMats, activeMat]);
 
   useEffect(() => {
-    if (activeTab === "Mat" && !hasMatOptions && hasBorderOptions) {
-      setActiveTab("Border");
-    }
-    if (activeTab === "Border" && !hasBorderOptions && hasMatOptions) {
-      setActiveTab("Mat");
+    if (!showTabs) {
+
+      if (activeTab === "Mat" && !hasMatOptions && hasBorderOptions) {
+        setActiveTab("Border");
+      }
+      if (activeTab === "Border" && !hasBorderOptions && hasMatOptions) {
+        setActiveTab("Mat");
+      }
     }
   }, [hasMatOptions, hasBorderOptions, activeTab]);
 
@@ -290,26 +306,30 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
       </div>
 
       <div className='right-section'>
-        <div className='tab'>
-          {hasMatOptions && (
-            <div
-              className={`tab-option ${activeTab === "Mat" ? "active-tab" : ""}`}
-              onClick={() => setActiveTab("Mat")}
-            >
-              Mat
-            </div>
-          )}
-          {hasBorderOptions && (
-            <div
-              className={`tab-option ${activeTab === "Border" ? "active-tab" : ""}`}
-              onClick={() => setActiveTab("Border")}
-            >
-              Border
-            </div>
-          )}
-        </div>
 
-        {activeTab === "Mat" ? (
+        {showTabs && (
+
+          <div className='tab'>
+            {hasMatOptions && (
+              <div
+                className={`tab-option ${activeTab === "Mat" ? "active-tab" : ""}`}
+                onClick={() => setActiveTab("Mat")}
+              >
+                Mat
+              </div>
+            )}
+            {hasBorderOptions && (
+              <div
+                className={`tab-option ${activeTab === "Border" ? "active-tab" : ""}`}
+                onClick={() => setActiveTab("Border")}
+              >
+                Border
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "Mat" && hasMatOptions && (
           <div className='mat-wrapper'>
             <h3 className="subsection-title">Mat Style</h3>
             {Mats.map((mat) => {
@@ -350,7 +370,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
               );
             })}
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'Border' && hasBorderOptions && (
           <div className="border-section">
             <h3 className="subsection-title">Border Size</h3>
             <div className="border-grid">
@@ -418,30 +440,65 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
 
           <div className="price-breakdown">
             <h3 className="breakdown-title">Price Breakdown</h3>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span>
-              <span className="breakdown-value">${basePrice}</span>
-            </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Border</span>
-              <span className="breakdown-value">+{orderConfig?.border?.priceDeltaMinor || 0}%</span>
-            </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Mat</span>
-              <span className="breakdown-value">+${activeMat?.priceDeltaMinor || 0}</span>
-            </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Lamination</span>
-              <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor || 0}%</span>
-            </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Paper upgrade</span>
-              <span className="breakdown-value">+{orderConfig?.paper?.priceDeltaMinor || 0}%</span>
-            </div>
-            <div className="breakdown-row">
-              <span className="breakdown-label">Mounting</span>
-              <span className="breakdown-value">+${orderConfig?.mounting?.price || 0}</span>
-            </div>
+
+            {/* size */}
+            {hasSizeOptions && orderConfig?.size?.label && (
+
+              <div className="breakdown-row">
+
+                <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span>
+                <span className="breakdown-value">${basePrice}</span>
+              </div>
+
+            )
+
+            }
+
+            {/* border */}
+            {hasBorderOptions && (
+
+              <div className="breakdown-row">
+                <span className="breakdown-label">Border</span>
+                <span className="breakdown-value">+{orderConfig?.border?.priceDeltaMinor || 0}%</span>
+              </div>
+
+            )}
+
+            {hasMatOptions && (
+              <div className="breakdown-row">
+                <span className="breakdown-label">Mat</span>
+                <span className="breakdown-value">+${orderConfig?.mat?.price || 0}</span>
+              </div>
+
+            )}
+
+            {hasLaminationOptions && (
+              <div className="breakdown-row">
+                <span className="breakdown-label">Lamination</span>
+                <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor || 0}%</span>
+              </div>
+
+            )}
+
+            {hasPaperOptions && (
+
+              <div className="breakdown-row">
+                <span className="breakdown-label">Paper upgrade</span>
+                <span className="breakdown-value">+{orderConfig?.paper?.priceDeltaMinor || 0}%</span>
+              </div>
+            )
+
+            }
+
+            {hasMountingOptions && (
+
+              <div className="breakdown-row">
+                <span className="breakdown-label">Mounting</span>
+                <span className="breakdown-value">+${orderConfig?.mounting?.price || 0}</span>
+              </div>
+            )}
+
+
             <div className="breakdown-row">
               <span className="breakdown-label">Quantity</span>
               <span className="breakdown-value">×{quantity}</span>

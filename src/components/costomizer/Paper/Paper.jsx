@@ -185,8 +185,8 @@ const Paper = ({ handleBack, handleNext, template }) => {
                           : '')
                       }
                     >
-                      {paper.priceDeltaMinor > 0 ? '+ $' : '- $'}
-                      {Math.abs(paper.priceDeltaMinor)}
+                      +{Math.abs(paper.priceDeltaMinor)}
+                      {paper.priceDeltaMinor > 0 ? '%' : ''}
                     </span>
                   </div>
 

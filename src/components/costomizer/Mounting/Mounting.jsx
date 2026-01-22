@@ -85,10 +85,19 @@ const Mounting = ({ handleBack, handleNext, template }) => {
     //     (m) => m._id === selectedMountingId
     // );
 
-    const selectedMounting = useMemo(
-        () => mountingData?.find((m) => m._id === selectedMountingId) ?? mountingData[0],
-        [selectedMountingId]
-    );
+    // const selectedMounting = useMemo(
+    //     () => mountingData?.find((m) => m._id === selectedMountingId) ?? mountingData[0],
+    //     [selectedMountingId]
+    // );
+
+    const selectedMounting = useMemo(() => {
+        if (!mountingData.length) return null;
+
+        return (
+            mountingData.find(m => m._id === selectedMountingId) ||
+            mountingData[0]
+        );
+    }, [selectedMountingId, mountingData]);
 
 
     return (
@@ -267,7 +276,7 @@ const Mounting = ({ handleBack, handleNext, template }) => {
                                     }`}
                                 disabled={!mountingData.length}
                                 onClick={() => {
-                                    if (!selectedMounting) return;
+                                    // if (!selectedMounting) return;
 
                                     handleNext({
                                         mounting: {

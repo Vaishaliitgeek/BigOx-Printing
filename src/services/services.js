@@ -182,19 +182,42 @@ export async function getCommerseRule() {
 }
 
 // ************************************* POST APIS***************************************************
-export async function uploadImageOnDropBox(data) {
+// export async function uploadImageOnDropBox(data) {
+//   // console.log("----data",data)
+//   const randomFileName = `file_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+
+//   try {
+//     const res = await apiConnecter(
+//       "post",
+//       `${BASE_URL}/api/dropboxConfig/uploadImagesOnDropBoxByClientEnd?shop=amjad-itgeeks.myshopify.com&fileName=${randomFileName}&targetFolder=test`,
+//       data,
+//     );
+//     console.log(res.data.result, "====img");
+//     return res.data.result.dropboxUrl;
+//   } catch (err) {
+//     console.error("Error while uploading image on dropbox:", err.message);
+//   }
+// }
+
+export async function uploadImageOnDropBox({ data, fileName, targetFolder }) {
+  const finalFileName = fileName || `file_${Date.now()}`;
+  const finalFolder = targetFolder || "default";
+
   try {
     const res = await apiConnecter(
       "post",
-      `${BASE_URL}/api/dropboxConfig/uploadFilesToDropBox_2`,
-      data,
+      `${BASE_URL}/api/dropboxConfig/uploadImagesOnDropBoxByClientEnd?shop=${shop}&fileName=${finalFileName}&targetFolder=${finalFolder}`,
+      data
     );
-    console.log(res.data.result);
+
     return res.data.result.dropboxUrl;
   } catch (err) {
     console.error("Error while uploading image on dropbox:", err.message);
+    throw err;
   }
 }
+
+
 export async function getDropboxFileNamingConfig(data) {
   try {
     const res = await apiConnecter(
@@ -202,7 +225,7 @@ export async function getDropboxFileNamingConfig(data) {
       `${BASE_URL}/api/dropboxConfig/getDropboxConfigAndConnectedCheck`,
       data,
     );
-    console.log(res.data.result);
+    console.log(res.data.result, "filenameee");
     return res.data.result;
   } catch (err) {
     console.error("Error while uploading image on dropbox:", err.message);
@@ -243,3 +266,5 @@ export async function getCommerceRulesCustomerDiscounts() {
     console.error("Error while getting  quantity and discounts:", err.message);
   }
 }
+
+

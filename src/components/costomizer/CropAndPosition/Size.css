@@ -456,8 +456,10 @@ quality-gray {
   background: #fafafa;
   min-height: 520px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 20px;
 }
 
 .cropImage {
@@ -472,8 +474,8 @@ quality-gray {
 }
 
 .controlsCard {
-  border: 1px solid #eee;
-  border-radius: 14px;
+  /* border: 1px solid #eee; */
+  /* border-radius: 14px; */
   padding: 14px;
 }
 

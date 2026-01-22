@@ -3,12 +3,14 @@ import {
   loadImageFromDb,
 } from "../../../services/indexDb.js";
 import {
+  addToCartWithMetadata,
   getDropboxFileNamingConfig,
   uploadImageOnDropBox,
 } from "../../../services/services.js";
 
 import ExifReader from "exifreader";
 import { toast } from "react-toastify";
+import { getDateTokens, resolveTemplate } from "../../../utils/DropboxTemplate.js";
 
 async function getMetaData(file) {
   // Read file as ArrayBuffer
@@ -43,7 +45,7 @@ function base64ToBlob(base64) {
   return new Blob([buffer], { type: mime });
 }
 
-async function uploadFileMaker(originalImage, isCroped) {
+async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
   // console.log("originalImage", originalImage);
 
   let originalImageBlob = originalImage.blob;
@@ -68,18 +70,30 @@ async function uploadFileMaker(originalImage, isCroped) {
   const originalImageFormData = new FormData();
   originalImageFormData.append("image", originalImageFile);
 
-  const originalImageCloudUrl = await uploadImageOnDropBox(
-    originalImageFormData
-  );
+  // const originalImageCloudUrl = await uploadImageOnDropBox(
+  //   originalImageFormData
+  // );
+  const originalImageCloudUrl = await uploadImageOnDropBox({
+    data: originalImageFormData,
+    ...dropboxMeta,
+  });
 
+  console.log("--------originalImageCloudUrl", originalImageCloudUrl)
   return { originalImageCloudUrl, metadata };
 }
 
-async function uploadAndGetCloudeURl(setStatus) {
+async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
   const originalImage = await loadImageFromDb();
   // setStatus("image one is being uploading");
-  const { originalImageCloudUrl, metadata } = await uploadFileMaker(originalImage);
-  // console.log("Original Image Cloud URL:", originalImageCloudUrl);
+  // const { originalImageCloudUrl, metadata } = await uploadFileMaker(originalImage, false, dropboxMeta);
+  // const res = await uploadFileMaker(originalImage, false, dropboxMeta);
+  const res = await uploadFileMaker(originalImage, false, {
+    ...dropboxMeta,
+    fileName: `${dropboxMeta.fileName}_original`,
+  });
+
+
+  console.log("Original Image Cloud URL:", res);
   // console.log("----metadata", metadata)
 
   // ------------------------------------------------------------------
@@ -89,7 +103,13 @@ async function uploadAndGetCloudeURl(setStatus) {
 
   // setStatus("image two is being uploading");
 
-  const { originalImageCloudUrl: croppedImageCloudUrl, metadata: cropMetadata } = await uploadFileMaker(croppedImageBlob, true);
+  // const { originalImageCloudUrl: croppedImageCloudUrl, metadata: cropMetadata } = await uploadFileMaker(croppedImageBlob, true, dropboxMeta);
+  const { originalImageCloudUrl: croppedImageCloudUrl, metadata: cropMetadata } =
+    await uploadFileMaker(croppedImageBlob, true, {
+      ...dropboxMeta,
+      fileName: `${dropboxMeta.fileName}_cropped`,
+    });
+
 
   // console.log("Cropped Image Cloud URL:", croppedImageCloudUrl, cropMetadata);
 
@@ -120,38 +140,60 @@ async function uploadAndGetCloudeURl(setStatus) {
 // }
 
 
-export async function cartHandler(orderConfig, setStatus) {
+
+
+
+
+export async function cartHandler(setStatus, orderConfig) {
+  // ---------------------------------------------
+  // 1. Fetch Dropbox config
+  // ---------------------------------------------
+  const dropboxConfig = await getDropboxFileNamingConfig();
+
+  const folderTemplate = dropboxConfig?.folderTemplateConfig;
+  const fileTemplate = dropboxConfig?.fileNamingTemplateConfig;
+  console.log("-orderconfig", orderConfig)
+  // ---------------------------------------------
+  // 2. Build token map (dynamic, future-proof)
+  // ---------------------------------------------
+  const tokenMap = {
+    ...getDateTokens(),
+    paper_code: orderConfig?.paper?.name,
+    border_code: orderConfig?.border?.thickness,
+    size: orderConfig?.size?.label,
+    quantity: orderConfig?.quantity,
+  };
+
+  // ---------------------------------------------
+  // 3. Resolve folder + file names
+  // ---------------------------------------------
+  const targetFolder = folderTemplate
+    ? resolveTemplate(folderTemplate, tokenMap)
+    : "default";
+
+  const fileName = fileTemplate
+    ? resolveTemplate(fileTemplate, tokenMap)
+    : `file_${Date.now()}`;
+
+  // ---------------------------------------------
+  // 4. Upload images (NO STRUCTURE CHANGE)
+  // ---------------------------------------------
   const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
-    await uploadAndGetCloudeURl(setStatus);
-  toast.success("Saved successfully!");
+    await uploadAndGetCloudeURl(setStatus, {
+      targetFolder,
+      fileName,
+    });
+
+
+
+  // const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
+  //   await uploadAndGetCloudeURl(setStatus);
   // console.log(originalImageCloudUrl, metadata, croppedImageCloudUrl, cropMetadata, "-==========cartDAtaaaa")
 
-  const originalImagePayload = {
-    url: originalImageCloudUrl,
-    // dpi: metadata?.dpi,
-    ppi: orderConfig?.originalPpi,
-    width: metadata?.width,
-    height: metadata?.height,
-    fileSize: metadata.size,
-    colorSpace: metadata?.colorSpace,
-    photographer: metadata?.photographer,
-    copyright: metadata?.copyright,
-    source: metadata?.source,
-  };
-  const croppedImagePayload = {
-    url: croppedImageCloudUrl,
-    dpi: orderConfig?.croppedPpi,
-    width: cropMetadata?.width,
-    height: cropMetadata?.height,
-    fileSize: cropMetadata.size,
-    colorSpace: metadata?.colorSpace,
-    photographer: metadata?.photographer,
-    copyright: metadata?.copyright,
-    source: metadata?.source,
-  };
 
 
 
+  console.log(originalImageCloudUrl, "-----url")
 
   const properties = buildImageAttributes({
     originalImageCloudUrl,
@@ -160,13 +202,13 @@ export async function cartHandler(orderConfig, setStatus) {
     cropMetadata,
     orderConfig
   });
-  // console.log("--------properties", properties);
-  await addToCartWithMetadata({
-    variantId: '45459186450630',
-    quantity: orderConfig?.quantity ?? 1,
-    properties
+  console.log("--------properties", properties);
+  // await addToCartWithMetadata({
+  //   variantId: '45459186450630',
+  //   quantity: orderConfig?.quantity ?? 1,
+  //   properties
 
-  });
+  // });
 }
 
 function buildImageAttributes({
@@ -206,20 +248,20 @@ function buildImageAttributes({
   add("Copyright", metadata?.copyright);
   add("Source", metadata?.source);
   // ---- Order Config (your steps) ----
-  add("Template Name", designConfig?.templateName);
-  add("Size", designConfig?.size?.label);                 // e.g. 16×20"
-  add("Paper Type", designConfig?.paper?.name);      // e.g. Photo Rag
-  add("Finish Type", designConfig?.paper?.finish);
+  add("Template Name", orderConfig?.templateName);
+  add("Size", orderConfig?.size?.label);                 // e.g. 16×20"
+  add("Paper Type", orderConfig?.paper?.name);      // e.g. Photo Rag
+  add("Finish Type", orderConfig?.paper?.finish);
   // e.g. Matte / Gloss
 
-  const border = designConfig?.border;
+  const border = orderConfig?.border;
 
   const borderLabel = !border || !border.thickness
     ? "No Border"
     : `${border.thickness}" ${border.color || ""} Border`.replace(/\s+/g, " ").trim();
   add("Border", borderLabel);             // e.g. 1"
-  add("Mounting Option", designConfig?.mountingOption?.name);
-  add("Lamination", designConfig?.laminationOption ?? designConfig?.lamination?.name);
+  add("Mounting Option", orderConfig?.mountingOption?.name);
+  add("Lamination", orderConfig?.laminationOption ?? orderConfig?.lamination?.name);
 
 
   return props;

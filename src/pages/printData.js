@@ -126,19 +126,25 @@ export function calculatePPI(
   printHeight,
   isRotated = false,
 ) {
+  console.log("isRotated==========",isRotated)
   const imageWidthInches = toInches(imageWidth);
   const imageHeightInches = toInches(imageHeight);
   const PPI = Math.min(imageHeightInches, imageWidthInches);
 
 
-  const tempPPI = Math.floor(Math.max(Math.min(imageHeight / printWidth, imageWidth / printHeight), Math.min(imageHeight / printHeight, imageWidth / printWidth)));
+  let tempPPI = null;
+
+
+  // Math.floor(Math.max(Math.min(imageHeight / printWidth, imageWidth / printHeight), Math.min(imageHeight / printHeight, imageWidth / printWidth)));
 
   if (isRotated) {
+    tempPPI = Math.floor(Math.min(imageHeight / printWidth, imageWidth / printHeight));
     //ROTATED CASE
     if (printWidth <= imageHeightInches && printHeight <= imageWidthInches) {
       return { PPI: tempPPI, isValid: true };
     }
   } else {
+    tempPPI = Math.floor(Math.min(imageHeight / printHeight, imageWidth / printWidth));
     //NORMAL CASE WITHOUT ROTATE
     if (printWidth <= imageWidthInches && printHeight <= imageHeightInches) {
       return { PPI: tempPPI, isValid: true };

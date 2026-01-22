@@ -77,10 +77,19 @@ const Lamination = ({ handleBack, handleNext, template }) => {
     // const selectedLamination = laminationData.find(
     //     (l) => l._id === selectedLaminationId
     // );
-    const selectedLamination = useMemo(
-        () => laminationData?.find((l) => l._id === selectedLaminationId) ?? laminationData[0],
-        [selectedLaminationId]
-    );
+    // const selectedLamination = useMemo(
+    //     () => laminationData?.find((l) => l._id === selectedLaminationId) ?? laminationData[0],
+    //     [selectedLaminationId]
+    // );
+    const selectedLamination = useMemo(() => {
+        if (!laminationData.length) return null;
+
+        return (
+            laminationData.find(l => l._id === selectedLaminationId) ||
+            laminationData[0]
+        );
+    }, [selectedLaminationId, laminationData]);
+
     console.log("----slectedlamination", selectedLamination)
 
     return (
@@ -229,8 +238,8 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                                                             : '')
                                                     }
                                                 >
-                                                    {Lamination.priceDeltaMinor > 0 ? '+ $' : '- $'}
-                                                    {Math.abs(Lamination.priceDeltaMinor)}
+                                                    +{Math.abs(Lamination.priceDeltaMinor)}
+                                                    {Lamination.priceDeltaMinor > 0 ? ' %' : ''}
                                                 </span>
 
                                             </div>
@@ -254,7 +263,7 @@ const Lamination = ({ handleBack, handleNext, template }) => {
                                 className="footer-btn footer-btn-primary"
                                 disabled={!laminationData.length}
                                 onClick={() => {
-                                    if (!selectedLamination) return;
+                                    // if (!selectedLamination) return;
                                     handleNext({
                                         lamination: {
                                             id: selectedLamination.isFrontendOnly
