@@ -48,6 +48,7 @@ const MAX_STEP = STEPS.FINISH;
 
 function App() {
 
+
   const [appSteps, setAppSteps] = useState(STEPS);
   // -----------------------------
   // Stepper / navigation state
@@ -77,6 +78,7 @@ function App() {
 
   // Handle Order data
   const [orderConfig, setOrderConfig] = useState({
+    templateName: null,
     size: null,
     paper: null,
     lamination: null,
@@ -140,8 +142,9 @@ function App() {
       const fetchTemplate = await getTemplateFromDb();
       // const currentTemplate = fetchTemplate[2];
       setTemplate(fetchTemplate);
-      updateStepsWithValideData(fetchTemplate);
-      // console.log("fetchTemplate :", fetchTemplate);
+      // updateStepsWithValsetOrderConfig()
+      setOrderConfig((prev) => ({ ...prev, templateName: fetchTemplate?.templateName }));
+      console.log("fetchTemplate :", fetchTemplate);
     } catch (error) {
       console.error("Failed to load Template:", error);
       setRules(null); // safe fallback
@@ -153,6 +156,8 @@ function App() {
     loadTemplates();
   }, [loadRules, loadTemplates]);
 
+
+  console.log("----------------templatechech", template)
   // -----------------------------
   // Handlers for finish-step inputs
   // -----------------------------
@@ -205,7 +210,7 @@ function App() {
 
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
-
+  console.log("--------rulescheck", rules)
 
   // -----------------------------
   // Render

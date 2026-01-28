@@ -25,7 +25,7 @@ async function getMetaData(file) {
   const height = Number(tags?.["Image Height"]?.value) || null;
 
   // ---------- DPI (JPEG: XResolution/YResolution are often useless = 1) ----------
-  let dpi = '23';
+  // let dpi = '23';
   // if (
   //   tags?.XResolution?.value &&
   //   tags?.Resolution?.value &&
@@ -60,10 +60,7 @@ async function getMetaData(file) {
     null;
 
   // ---------- Copyright (IGNORE ICC Copyright) ----------
-  const copyright =
-    tags?.Copyright?.description ||
-    tags?.Rights?.description ||
-    null;
+  const copyright = tags?.Copyright?.description || tags?.["ICC Copyright"]?.description || tags?.Rights?.description || null;
 
   // ---------- Source ----------
   const source =
@@ -71,10 +68,12 @@ async function getMetaData(file) {
     tags?.Software?.description ||
     null;
 
+  const fileType = tags?.FileType?.description || null;
+
   return {
     width,
     height,
-    dpi,
+    // dpi,
     colorSpace,
     bitsPerSample,
     colorComponents,
@@ -82,7 +81,7 @@ async function getMetaData(file) {
     photographer,
     copyright,
     source,
-    fileType: tags?.FileType?.description || null,
+    fileType,
   };
 }
 
@@ -108,10 +107,10 @@ async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
   try {
     const toastKey = isCroped ? "crop-upload" : "original-upload";
     console.log("originalImage", originalImage);
-    showProgress(
-      toastKey,
-      isCroped ? "Uploading cropped image…" : "Uploading original image…"
-    );
+    // showProgress(
+    //   toastKey,
+    //   isCroped ? "Uploading cropped image…" : "Uploading original image…"
+    // );
 
     let originalImageBlob = originalImage.blob;
     if (!isCroped) {
@@ -154,9 +153,11 @@ async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
     return { originalImageCloudUrl, metadata };
   }
   catch (error) {
+    console.log("-errorrr", error)
     showError(
+
       isCroped ? "crop-upload" : "original-upload",
-      "Image upload failed"
+      "Image upload failed", error?.response?.data?.message
     );
     throw error;
   }
@@ -275,14 +276,19 @@ async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
 
 // extract varinat id
 function extractVariantId(runtimeResult) {
-  const variant =
-    runtimeResult?.response?.find(r => r.success)?.variant;
+  const savedVariants = runtimeResult?.[0]?.result?.savedVariants;
 
-  if (!variant?.id) {
-    throw new Error("Runtime variant creation failed");
+  if (!savedVariants || savedVariants.length === 0) {
+    throw new Error("No saved variants found.");
   }
 
-  return variant.id;
+  // Return the variant_id of the first variant
+  const variant = savedVariants[0];  // Assuming only one variant
+  if (!variant?.variant_id) {
+    throw new Error("Runtime variant creation failed: No variant_id found.");
+  }
+
+  return variant.variant_id;  // Return the first variant_id
 }
 
 
@@ -349,7 +355,7 @@ function getNumericVariantId(gid) {
 
 
 
-export async function cartHandler(setStatus, orderConfig, total) {
+export async function cartHandler(setStatus, orderConfig, total, productId) {
   // ---------------------------------------------
   // 1. Fetch Dropbox config
   // ---------------------------------------------
@@ -365,6 +371,8 @@ export async function cartHandler(setStatus, orderConfig, total) {
     // ---------------------------------------------
     // showProgress(TOAST_MAIN, "Preparing artwork naming…");
     const dropboxConfig = await getDropboxFileNamingConfig();
+    if (!dropboxConfig) throw new Error("Dropbox config failed");
+
 
     const folderTemplate = dropboxConfig?.folderTemplateConfig;
     const fileTemplate = dropboxConfig?.fileNamingTemplateConfig;
@@ -374,9 +382,10 @@ export async function cartHandler(setStatus, orderConfig, total) {
     // ---------------------------------------------
     const tokenMap = {
       ...getDateTokens(),
-      paper_code: orderConfig?.paper?.name,
-      border_code: orderConfig?.border?.thickness,
-      size: orderConfig?.size?.label,
+      paper_name: orderConfig?.paper?.name,
+      // border_code: orderConfig?.border?.thickness,
+      size_w: orderConfig?.size?.width,
+      size_h: orderConfig?.size?.height,
       quantity: orderConfig?.quantity,
     };
 
@@ -388,7 +397,7 @@ export async function cartHandler(setStatus, orderConfig, total) {
       : "default";
 
     const fileName = fileTemplate
-      ? resolveTemplate(fileTemplate, tokenMap)
+      ? resolveTemplate(fileTemplate, tokenMap).replace(/\//g, "_") // Replace slashes with underscores
       : `file_${Date.now()}`;
 
     // ---------------------------------------------
@@ -400,17 +409,37 @@ export async function cartHandler(setStatus, orderConfig, total) {
         targetFolder,
         fileName,
       });
+
+
+    if (!originalImageCloudUrl || !croppedImageCloudUrl) {
+      throw new Error("Image upload failed");
+    }
     console.log("-----------originalImageCloudUrl", originalImageCloudUrl)
+
+    // varinat array
+    const variantsArray = [
+      { realBaseSku: "4012500555719", price: Number(total) },
+      // { realBaseSku: "4012500555719", price: 40 },
+      // { realBaseSku: "4012500555719", price: 60 }
+    ];
+
+
+
 
     // showProgress(TOAST_VARIANT, "Creating runtime variant…");
     const runtimeResult = await createRuntimeVariant({
-      productId: "8760612421830",   // Shopify product ID (numeric)
+      productId: productId,   // Shopify product ID (numeric)
       dataPrice: Number(total),
       availableQty: orderConfig?.quantity ?? 1,
+      variantsArray,
     });
 
+    // console.log("----------")
+
     const GlobalvariantId = extractVariantId(runtimeResult);
-    const variantId = getNumericVariantId(GlobalvariantId)
+    setStatus(GlobalvariantId);
+    const variantId = GlobalvariantId;
+    if (!variantId) throw new Error("Variant creation failed");
 
     // const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
     //   await uploadAndGetCloudeURl(setStatus);
@@ -428,7 +457,8 @@ export async function cartHandler(setStatus, orderConfig, total) {
       cropMetadata,
       orderConfig
     });
-    // console.log("--------properties", properties);
+    console.log("--------properties", properties);
+    // setStatus(JSON.stringify(orderConfig, null, 2));
     await addToCartWithMetadata({
       variantId: variantId,
       quantity: orderConfig?.quantity ?? 1,
@@ -437,16 +467,14 @@ export async function cartHandler(setStatus, orderConfig, total) {
     });
     // showSuccess("Item added to cart successfully");
     // showSuccess(TOAST_MAIN, "Artwork saved & added to cart 🎉");
-    toast.success('Item added to cart successfully')
+    // toast.success('Item added to cart successfully')
+    return true;
+    // window.location.reload();
   }
   catch (error) {
-    dismissToast("original-upload");
-    dismissToast("crop-upload");
-    dismissToast(TOAST_VARIANT);
-    dismissToast(TOAST_CART);
 
-    showError(TOAST_MAIN, getErrMsg(error));
-    throw error;
+    console.error("Cart flow failed:", error);
+    throw error; // ⬅️ VERY IMPORTANT
   }
 
 }
@@ -467,42 +495,44 @@ function buildImageAttributes({
   };
 
   // ---- Preview / images ----
-  add("Preview Image", croppedImageCloudUrl);
-  add("Original Image URL", originalImageCloudUrl);
+  add("_Preview Image", croppedImageCloudUrl);
+  add("_Original Image URL", originalImageCloudUrl);
+  // add("Tags", "runtimeVariant");
+
 
   // ---- Cropped image details ----
-  add("Crop DPI", 300);
-  add("Crop Width", cropMetadata?.width);
-  add("Crop Height", cropMetadata?.height);
-  add("Crop File Size (MB)", cropMetadata?.size);
+  add("_Crop DPI", orderConfig?.croppedPpi);
+  add("_Crop Width", cropMetadata?.width);
+  add("_Crop Height", cropMetadata?.height);
+  add("_Crop File Size (MB)", cropMetadata?.size);
 
   // ---- Original image details ----
-  add("Original DPI", metadata?.dpi);
-  add("Original Width", metadata?.width);
-  add("Original Height", metadata?.height);
-  add("Original File Size (MB)", metadata?.size);
+  add("_Original DPI", orderConfig?.originalPpi);
+  add("_Original Width", metadata?.width);
+  add("_Original Height", metadata?.height);
+  add("_Original File Size (MB)", metadata?.size);
 
   // ---- Optional metadata ----
-  add("Color Space", metadata?.colorSpace);
-  add("Photographer", metadata?.photographer);
-  add("Copyright", metadata?.copyright);
-  add("Source", metadata?.source);
+  add("_Color Space", metadata?.colorSpace ?? 'N/A');
+  add("_Photographer", metadata?.photographer ?? 'N/A');
+  add("_Copyright", metadata?.copyright ?? 'N/A');
+  add("_Source", metadata?.source ?? 'N/A');
+  add('_fileType', metadata?.fileType ?? 'N/A');
+
   // ---- Order Config (your steps) ----
-  add("Template Name", orderConfig?.templateName);
-  add("Size", orderConfig?.size?.label);                 // e.g. 16×20"
-  add("Paper Type", orderConfig?.paper?.name);      // e.g. Photo Rag
-  add("Finish Type", orderConfig?.paper?.finish);
-  // e.g. Matte / Gloss
+  add("_Template Name", orderConfig?.templateName);
+  add("_Size", orderConfig?.size?.label);                 // e.g. 16×20"
+  add("_Paper Type", orderConfig?.paper?.name);      // e.g. Photo Rag
+  add("_Finish Type", orderConfig?.paper?.finish);  // e.g. Matte / Gloss
 
   const border = orderConfig?.border;
 
   const borderLabel = !border || !border.thickness
     ? "No Border"
     : `${border.thickness}" ${border.color || ""} Border`.replace(/\s+/g, " ").trim();
-  add("Border", borderLabel);             // e.g. 1"
-  add("Mounting Option", orderConfig?.mountingOption?.name);
-  add("Lamination", orderConfig?.laminationOption ?? orderConfig?.lamination?.name);
-
+  add("_Border", borderLabel);             // e.g. 1"
+  add("_Mounting Option", orderConfig?.mounting?.name);
+  add("_Lamination", orderConfig?.laminationOption ?? orderConfig?.lamination?.name);
 
   return props;
-};
+}

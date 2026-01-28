@@ -6,7 +6,8 @@
   padding: 0 1rem;
 }
 
-/* @media (min-width: 768px) {
+/* 
+@media (min-width: 768px) {
   .editor-page {
     padding: 2rem;
   }
@@ -86,6 +87,7 @@
 .zoomLabel {
   font-size: 14px;
   color: #525252;
+  margin: 0;
 }
 
 .editor-image {
@@ -314,7 +316,7 @@ quality-gray {
 }
 
 .editor-guide-title {
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
   margin-bottom: 0.75rem;
 }

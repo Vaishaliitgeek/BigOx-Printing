@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Header.module.css'; // Import the CSS module
 import { RxCross2 } from "react-icons/rx";
-import { FaAngleLeft } from "react-icons/fa6";
+import { FaAngleLeft, FaArrowLeft } from "react-icons/fa6";
 import StepIndicator from './StepIndicator';
 
 
@@ -89,7 +89,8 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
                         className={styles.backButton}
                         onClick={onBack} // use handler from App
                     >
-                        <FaAngleLeft className={styles.icon} />
+                        {/* <FaAngleLeft className={styles.icon} /> */}
+                        <FaArrowLeft className={styles.icon} />
                         <span className={styles.backTextDesktop}>Back to Product</span>
                         <span className={styles.backTextMobile}></span>
                     </button>
@@ -107,9 +108,9 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
                                                     currentStep === step.number ? styles.stepCircleCurrent :
                                                         styles.stepCircleUpcoming
                                             ].join(' ')}
-                                            onClick={() => {
-                                                if (onStepClick) onStepClick(step.number);
-                                            }}
+                                            // onClick={() => {
+                                            //     if (onStepClick) onStepClick(step.number);
+                                            // }}
                                             style={{ cursor: onStepClick ? 'pointer' : 'default' }}
                                         >
                                             {step.completed ? (

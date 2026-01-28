@@ -56,7 +56,7 @@
 .lamination-card-body {
   display: flex;
   flex-direction: column;
-  width: 80%;
+  width: 75%;
   gap: 5px;
 }
 
@@ -176,4 +176,56 @@
   padding: 6px 10px;
   border-radius: 7px;
   font-weight: 500;
+}
+
+
+/* image skeleton */
+/* Skeleton wrapper – fixed size */
+.lamination-thumb-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Skeleton box */
+.lamination-thumb-skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg,
+      #eee 25%,
+      #f5f5f5 37%,
+      #eee 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}
+
+/* Image */
+.lamination-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.25s ease;
+}
+
+.lamination-thumb-image.hidden {
+  opacity: 0;
+}
+
+.lamination-thumb-image.visible {
+  opacity: 1;
+}
+
+/* Skeleton animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: 0 0;
+  }
 }

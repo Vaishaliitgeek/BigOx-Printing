@@ -8,7 +8,6 @@ import { RiSubtractFill } from "react-icons/ri";
 
 import { IoCartOutline } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
-import { toast } from 'react-toastify';
 
 
 
@@ -35,7 +34,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
 
 
 
-  // console.log("---------productId", productId)
+  console.log("---------productId", productId)
   const rawMats = template?.metaOptions || [];
   const Mats = [NO_Mat_OPTION, ...rawMats.filter(l => l.status !== false)];
 
@@ -73,12 +72,6 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
   const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
   const [quantityDiscountRules, setQuantityDiscountRules] = useState([]);
 
-
-  // loading states
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [cartError, setCartError] = useState(null);
-
-
   // Ref for image to measure actual rendered size
   const imageRef = useRef(null);
 
@@ -98,14 +91,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
 
 
   const basePrice = productId ? Number(Productprice) : 0;
-  // const percentBasePrice = basePrice * quantity;
-
-  const percentBasePrice = useMemo(() => {
-    if (!basePrice || !quantity) return 0;
-    return Number(basePrice) * Number(quantity);
-  }, [basePrice, quantity]);
-
-
+  const percentBasePrice = basePrice * quantity;
 
   const fetchData = async () => {
     const data = await getCommerceRulesQuantityAndLimits();
@@ -303,16 +289,6 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
     })();
   }, []);
 
-
-  const [matImageLoadedMap, setMatImageLoadedMap] = useState({});
-
-  const handleMatImageLoaded = (id) => {
-    setMatImageLoadedMap(prev => ({
-      ...prev,
-      [id]: true,
-    }));
-  };
-
   return (
     <div className="containerr">
       <div className="preview-section">
@@ -443,25 +419,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
                 >
                   <div className='mat-left'>
                     {!isNoMat && (
-                      <div className="mat-thumb-wrapper">
-                        {/* Skeleton */}
-                        <div
-                          className={`mat-thumb-skeleton ${matImageLoadedMap[mat._id] ? "hide" : ""
-                            }`}
-                        />
-
-                        {/* Image */}
-                        <img
-                          src={mat.thumbnailUrl}
-                          alt={mat.optionName}
-                          className="mat-thumb-image"
-                          onLoad={() => handleMatImageLoaded(mat._id)}
-                          onError={() => handleMatImageLoaded(mat._id)}
-                          loading="lazy"
-                        />
+                      <div className='mat-left-image-container'>
+                        <img src={mat.thumbnailUrl} height={50} width={50} alt={mat.optionName} />
                       </div>
-
-
                     )}
                     <div className='mat-left-text-container'>
                       <div className='mat-left-text'>{mat.optionName}</div>
@@ -548,26 +508,13 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
           <div className="price-breakdown">
             <h3 className="breakdown-title">Price Breakdown</h3>
 
-
-            <div className="breakdown-row">
-
-              {/* <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span> */}
-              <span className="breakdown-label">Base price </span>
-
-              <span className="breakdown-value">${Number(percentBasePrice).toFixed(2)}</span>
-            </div>
-
-
-
-
-
             {/* size */}
             {hasSizeOptions && orderConfig?.size?.label && (
 
               <div className="breakdown-row">
 
-                <span className="breakdown-label">Size ({orderConfig?.size?.label || "16×20\""})</span>
-                <span className="breakdown-value">+${orderConfig?.size?.price}</span>
+                <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span>
+                <span className="breakdown-value">${basePrice}</span>
               </div>
 
             )
@@ -645,52 +592,20 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
               Back
             </button>
 
-            {/* <button
+            <button
               className={`footer-btn footer-btn-primary footer-btn-finish
                                     `}
               onClick={() => cartHandler(setStatus, orderConfig, total, productId)}
 
             >
               <span className='cartIcon'> <IoCartOutline /></span>Add To Cart
-            </button> */}
-            <button
-              className={`footer-btn footer-btn-primary footer-btn-finish ${isAddingToCart ? "btn-loading" : ""
-                }`}
-              disabled={isAddingToCart}
-              onClick={async () => {
-                setCartError(null);
-                setIsAddingToCart(true);
-
-                try {
-                  await cartHandler(setStatus, orderConfig, total, productId);
-                  toast.success("Item added to cart successfully 🎉");
-                  window.location.reload();
-                } catch (err) {
-                  toast.error(
-                    err?.message || "Something went wrong. Please try again."
-                  );
-                  setCartError(err);
-                } finally {
-                  setIsAddingToCart(false);
-                }
-              }}
-            >
-              {isAddingToCart ? (
-                <span className="loader-spinner" />
-              ) : (
-                <>
-                  <span className="cartIcon"><IoCartOutline /></span>
-                  Add To Cart
-                </>
-              )}
             </button>
-
 
           </div>
 
 
 
-          {/* <p className="shipping-note">Free shipping on orders over $100</p> */}
+          <p className="shipping-note">Free shipping on orders over $100</p>
         </div>
       </div>
     </div>

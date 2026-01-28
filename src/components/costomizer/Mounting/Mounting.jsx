@@ -100,6 +100,16 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
         );
     }, [selectedMountingId, mountingData]);
 
+    const [imageLoadedMap, setImageLoadedMap] = useState({});
+
+    const handleImageLoaded = (id) => {
+        setImageLoadedMap(prev => ({
+            ...prev,
+            [id]: true,
+        }));
+    };
+
+
 
     return (
         <div className="editor-page">
@@ -180,7 +190,25 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
                                         {
                                             !isNomounting &&
                                             // <img src={mounting?.thumbnailUrl} alt='mounting-img' height={80} width={80}></img>
-                                            <img src={mounting?.thumbnailUrl || "https://viviaprint.com/products/mounted-matte-on-black-foamcore/main-mounted-matte-black-foamcore-vivia-print.jpg"} alt='mounting-img' height={80} width={80}></img>
+                                            <div className="mounting-thumb-wrapper">
+                                                {/* Skeleton */}
+                                                {!imageLoadedMap[mounting._id] && (
+                                                    <div className="mounting-thumb-skeleton" />
+                                                )}
+
+                                                {/* Image */}
+                                                <img
+                                                    src={
+                                                        mounting?.thumbnailUrl ||
+                                                        "https://viviaprint.com/products/mounted-matte-on-black-foamcore/main-mounted-matte-black-foamcore-vivia-print.jpg"
+                                                    }
+                                                    alt="mounting-img"
+                                                    className={`mounting-thumb-image ${imageLoadedMap[mounting._id] ? "visible" : "hidden"
+                                                        }`}
+                                                    onLoad={() => handleImageLoaded(mounting._id)}
+                                                />
+                                            </div>
+
                                         }
                                         <div className="mounting-card-radio">
                                             {isSelected && (

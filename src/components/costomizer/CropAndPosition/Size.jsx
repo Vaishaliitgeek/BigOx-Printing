@@ -448,7 +448,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
 
           {/* Print Quality Guide */}
           <div className="editor-guide">
-            <h3 className="editor-guide-title">Print Quality Guide</h3>
+            <h5 className="editor-guide-title">Print Quality Guide</h5>
             <div className="editor-guide-list">
               {rules?.ppiBandColors?.map((band, index) => (
                 <div key={index} className="editor-guide-item">

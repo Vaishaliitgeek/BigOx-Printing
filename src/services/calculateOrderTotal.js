@@ -83,6 +83,7 @@ export function calculateOrderPrice({
     orderConfig,
     customerDiscountRules = [],
     quantityDiscountRules = [],
+    Productprice,
 }) {
     if (!orderConfig?.size) return 0;
 
@@ -98,28 +99,47 @@ export function calculateOrderPrice({
     } = orderConfig;
 
     // ------------------------------
-    // 1️⃣ Base price (per unit)
+    // 1️⃣ Retail price × quantity FIRST
     // ------------------------------
-    const RETAIL_PRICE = 100; // 🔴 replace later
-    let baseAfterDiscount = RETAIL_PRICE;
+    const basePrice = Productprice * quantity;
+
+    // This is the ONLY base for percentage calculations
+    let orderPrice = basePrice;
 
     // ------------------------------
-    // 2️⃣ Customer discount
+    // 2️⃣ Percentage add-ons
+    // (ALWAYS calculated on basePrice)
     // ------------------------------
-    const customerDiscountPercent = resolveCustomerDiscount(
-        tags,
-        customerDiscountRules
-    );
+    if (paper?.priceDeltaMinor) {
+        orderPrice += calculatePercentage(
+            basePrice,
+            paper.priceDeltaMinor
+        );
+    }
 
-    if (customerDiscountPercent > 0) {
-        baseAfterDiscount -= calculatePercentage(
-            baseAfterDiscount,
-            customerDiscountPercent
+    if (lamination?.priceDeltaMinor) {
+        orderPrice += calculatePercentage(
+            basePrice,
+            lamination.priceDeltaMinor
+        );
+    }
+
+    if (border?.priceDeltaMinor) {
+        orderPrice += calculatePercentage(
+            basePrice,
+            border.priceDeltaMinor
         );
     }
 
     // ------------------------------
-    // 3️⃣ Quantity discount
+    // 3️⃣ Flat add-ons (per unit × quantity)
+    // ------------------------------
+    if (size?.price) orderPrice += size.price * quantity;
+    if (mounting?.price) orderPrice += mounting.price * quantity;
+    if (mat?.price) orderPrice += mat.price * quantity;
+
+    // ------------------------------
+    // 4️⃣ Quantity discount
     // ------------------------------
     const quantityDiscountPercent = resolveQuantityDiscount(
         quantity,
@@ -127,61 +147,27 @@ export function calculateOrderPrice({
     );
 
     if (quantityDiscountPercent > 0) {
-        baseAfterDiscount -= calculatePercentage(
-            baseAfterDiscount,
+        orderPrice -= calculatePercentage(
+            orderPrice,
             quantityDiscountPercent
         );
     }
 
-    // 🔒 Lock discounted base
-    let unitPrice = baseAfterDiscount;
-
     // ------------------------------
-    // 4️⃣ Percentage add-ons
-    // (always on discounted base)
+    // 5️⃣ Customer / Tier discount LAST
     // ------------------------------
+    const customerDiscountPercent = resolveCustomerDiscount(
+        tags,
+        customerDiscountRules
+    );
 
-    if (paper?.priceDeltaMinor) {
-        unitPrice += calculatePercentage(
-            baseAfterDiscount,
-            paper.priceDeltaMinor
+    if (customerDiscountPercent > 0) {
+        orderPrice -= calculatePercentage(
+            orderPrice,
+            customerDiscountPercent
         );
     }
 
-    if (lamination?.priceDeltaMinor) {
-        unitPrice += calculatePercentage(
-            baseAfterDiscount,
-            lamination.priceDeltaMinor
-        );
-    }
-
-    if (border?.priceDeltaMinor) {
-        unitPrice += calculatePercentage(
-            baseAfterDiscount,
-            border.priceDeltaMinor
-        );
-    }
-
-    // ------------------------------
-    // 5️⃣ Flat add-ons (per unit)
-    // ------------------------------
-
-    if (size?.price) {
-        unitPrice += size.price;
-    }
-
-    if (mounting?.price) {
-        unitPrice += mounting.price;
-    }
-
-    if (mat?.price) {
-        unitPrice += mat.price;
-    }
-
-    // ------------------------------
-    // 6️⃣ Quantity multiplication
-    // ------------------------------
-    const totalPrice = unitPrice * quantity;
-
-    return roundPrice(totalPrice);
+    return roundPrice(orderPrice);
 }
+

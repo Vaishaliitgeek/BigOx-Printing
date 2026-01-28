@@ -54,6 +54,15 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
   // );
 
 
+  const [paperImageLoadedMap, setPaperImageLoadedMap] = useState({});
+
+  const handlePaperImageLoaded = (id) => {
+    setPaperImageLoadedMap(prev => ({
+      ...prev,
+      [id]: true,
+    }));
+  };
+
 
   return (
     <div className="editor-page">
@@ -121,9 +130,8 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                     }`}
                 >
                   {/* Thumbnail area */}
-                  <div className="paper-card-thumb">
-                    {/* you can swap this gradient for real sample images later */}
-                    {/* <div className="paper-card-thumb-art" /> */}
+                  {/* <div className="paper-card-thumb">
+                   
                     <img src={paper?.thumbnailUrl}></img>
                     <div className="paper-card-radio">
                       {selectedPaperId === paper._id && (
@@ -144,7 +152,46 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                         </div>
                       )}
                     </div>
+                  </div> */}
+                  <div className="paper-card-thumb">
+                    {/* Skeleton (always rendered) */}
+                    <div
+                      className={`paper-thumb-skeleton ${paperImageLoadedMap[paper._id] ? "hide" : ""
+                        }`}
+                    />
+
+                    {/* Image */}
+                    <img
+                      src={paper.thumbnailUrl}
+                      alt={paper.paperName}
+                      className="paper-thumb-image"
+                      onLoad={() => handlePaperImageLoaded(paper._id)}
+                      onError={() => handlePaperImageLoaded(paper._id)}
+                      loading="lazy"
+                    />
+
+                    {/* Radio */}
+                    <div className="paper-card-radio">
+                      {selectedPaperId === paper._id && (
+                        <div className="paper-card-radio-outer">
+                          <svg
+                            className="checkIcon"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
 
                   {/* Text area */}
                   <div className="paper-card-body">
@@ -185,8 +232,11 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                           : '')
                       }
                     >
-                      {paper.priceDeltaMinor > 0 ? '+ $' : '- $'}
-                      {Math.abs(paper.priceDeltaMinor)}
+
+                      {/* {Math.abs(paper.priceDeltaMinor)}
+                      {paper.priceDeltaMinor > 0 ? ' %' : ''} */}
+                      +{Math.abs(paper.priceDeltaMinor)}
+                      {paper.priceDeltaMinor > 0 ? '%' : ''}
                     </span>
                   </div>
 

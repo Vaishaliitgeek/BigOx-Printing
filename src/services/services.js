@@ -1,8 +1,12 @@
 import { apiConnecter } from "../utils/ApiConnector";
-const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
-// const BASE_URL = "https://sold-phase-caught-likewise.trycloudflare.com";
+// const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
+const BASE_URL = "https://willow-worldcat-twenty-changelog.trycloudflare.com";
 
-const shop = "amjad-itgeeks.myshopify.com";
+export const shop = "amjad-itgeeks.myshopify.com";
+// const shop = "ytkwkd-h0.myshopify.com";
+// const shop = '';
+
+
 
 // ***********************************************************************************************************************************************
 // *                                   Functions to add itms in cart                                                                                           *
@@ -135,14 +139,16 @@ export async function getLaminationOptions() {
 }
 
 // Fetch Mounting Lamination from the API
-export async function getTemplateFromDb() {
+export async function getTemplateFromDb(productId) {
   try {
     const res = await apiConnecter(
       "get",
       `${BASE_URL}/api/tamplates/getTamplatesByProductId`,
       null,
       null,
-      { shop, productId: "gid://shopify/Product/8759366385862" }
+      { shop, productId: `gid://shopify/Product/8759366385862` }
+
+      // { shop, productId: `gid://shopify/Product/${productId}` }
     );
     console.log(res.data.result);
     return res.data.result[0];
@@ -185,7 +191,9 @@ export async function getCommerseRule() {
 
 // ************************************* POST APIS***************************************************
 export async function uploadImageOnDropBox({ data, fileName, targetFolder }) {
-  const finalFileName = fileName || `file_${Date.now()}`;
+  // const finalFileName = `${fileName}` || `file_${Date.now()}`;
+  const finalFileName = fileName ? `${fileName}_${Date.now()}` : `file_${Date.now()}`;
+
   const finalFolder = targetFolder || "default";
 
   try {
@@ -252,17 +260,17 @@ export async function getCommerceRulesCustomerDiscounts() {
 
 
 // CREATE RUNTIME VARIANT
-export async function createRuntimeVariant({ productId, dataPrice, availableQty }) {
+export async function createRuntimeVariant({ productId, dataPrice, availableQty, variantsArray }) {
   const res = await apiConnecter(
     "post",
-    `https://amjad-itgeeks.myshopify.com/apps/my-custom-path/runTimeVarintsCreation`,
+    `https://${shop}/apps/my-custom-path/runTimeVarintsCreation`,
 
     {
-      dataPrice,
-      availableQty,
+      productId,
+      variantsArray
     },
     null,
-    { productId, shop }
+    { shop }
   );
 
   return res.data?.result;

@@ -144,7 +144,7 @@
 .step-upload-result-section {
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  /* border-radius: 0.75rem; */
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
@@ -169,7 +169,7 @@
 .upload-file-icon {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 0.5rem;
+  /* border-radius: 0.5rem; */
   border: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
@@ -294,7 +294,7 @@
 
 .resolution-card {
   background-color: #ffffff;
-  border-radius: 0.25rem;
+  /* border-radius: 0.25rem; */
   border: 1px solid #e5e7eb;
   padding: 0.75rem 0.5rem;
   text-align: center;

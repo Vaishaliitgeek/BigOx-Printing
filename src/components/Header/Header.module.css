@@ -45,6 +45,7 @@ div:empty {
 .backButton {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.25rem;
     font-size: 0.875rem;
     font-weight: 500;

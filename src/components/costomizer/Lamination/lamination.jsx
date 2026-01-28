@@ -25,6 +25,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
     const [imageSrc, setImageSrc] = useState(null);
 
+    const [imageLoadedMap, setImageLoadedMap] = useState({});
 
 
     const [selectedLaminationId, setselectedLaminationId] =
@@ -54,6 +55,13 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
         fetchLaminations();
     }, []);
 
+    // helper to load image
+    const handleImageLoaded = (id) => {
+        setImageLoadedMap(prev => ({
+            ...prev,
+            [id]: true,
+        }));
+    };
 
     // Load image from IndexedDB
     useEffect(() => {
@@ -164,7 +172,22 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
                                         {
                                             !isNoLamination &&
-                                            <img src={Lamination?.thumbnailUrl} alt='lamination-img' height={80} width={80}></img>
+                                            <div className="lamination-thumb-wrapper">
+                                                {/* Skeleton */}
+                                                {!imageLoadedMap[Lamination._id] && (
+                                                    <div className="lamination-thumb-skeleton" />
+                                                )}
+
+                                                {/* Image */}
+                                                <img
+                                                    src={Lamination?.thumbnailUrl}
+                                                    alt="lamination-img"
+                                                    className={`lamination-thumb-image ${imageLoadedMap[Lamination._id] ? 'visible' : 'hidden'
+                                                        }`}
+                                                    onLoad={() => handleImageLoaded(Lamination._id)}
+                                                />
+                                            </div>
+
                                         }
                                         <div className="lamination-card-radio">
                                             {selectedLaminationId === Lamination._id && (
