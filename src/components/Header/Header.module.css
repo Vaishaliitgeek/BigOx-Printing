@@ -11,6 +11,10 @@ div:empty {
     height: 6rem;
     background-color: #ffffff;
     border-bottom: 1px solid #e5e7eb;
+    /* position: fixed;
+    top: 0;
+    left: 0; */
+    z-index: 999;
 }
 
 /* Container (center + max width) */

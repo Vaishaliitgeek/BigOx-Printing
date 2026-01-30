@@ -45,6 +45,12 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   text-wrap: inherit;
+
+  max-height: 450px;
+  /* Set a max-height to control the scrollable area */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
 }
 
 .mounting-card-body {

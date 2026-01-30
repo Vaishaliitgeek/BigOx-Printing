@@ -1,6 +1,6 @@
 import { apiConnecter } from "../utils/ApiConnector";
 // const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
-const BASE_URL = "https://willow-worldcat-twenty-changelog.trycloudflare.com";
+const BASE_URL = "https://gasoline-modern-parish-conservation.trycloudflare.com";
 
 export const shop = "amjad-itgeeks.myshopify.com";
 // const shop = "ytkwkd-h0.myshopify.com";

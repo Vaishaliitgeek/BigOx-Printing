@@ -154,7 +154,11 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
                                 mountingData?.map((mounting) => {
                                     return <div className='mounting-guide-sub-wrapper'>
                                         <div className='mounting-text-option'>{mounting.optionName}:</div>
-                                        <div className='mounting-text-desc'>{mounting.shortDescription.slice(0, 19)}</div>
+                                        <div className='mounting-text-desc'>
+                                            {mounting.shortDescription.length > 25
+                                                ? mounting.shortDescription.slice(0, 25) + '...'
+                                                : mounting.shortDescription}
+                                        </div>
                                     </div>
 
                                 })

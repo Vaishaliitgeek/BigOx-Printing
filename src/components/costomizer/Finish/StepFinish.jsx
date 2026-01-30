@@ -141,7 +141,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
       orderConfig: {
         ...orderConfig,
         quantity,
-        tags: ["wsgtesttag", "test_wholesale"],
+        tags: ["wsgTestTag", "test_wholesale"],
       },
       customerDiscountRules,
       quantityDiscountRules,

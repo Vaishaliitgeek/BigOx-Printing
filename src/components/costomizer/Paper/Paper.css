@@ -50,6 +50,14 @@
   grid-template-columns: repeat(2, minmax(0, 2fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* 🔥 enables scrolling */
+  /* padding-right: 6px; */
+  /* space for scrollbar */
+  flex: 1;
+  padding: 0 2rem;
 }
 
 
@@ -83,7 +91,7 @@
 
 .paper-card:hover {
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
+  /* transform: translateY(-1px); */
   border-color: #000000;
 }
 
@@ -97,7 +105,7 @@
 .paper-card-thumb {
   position: relative;
   overflow: hidden;
-  height: 190px;
+  height: 150px;
   width: 100%;
   /* max-width: 250px; */
   margin: 0 auto;
@@ -107,7 +115,7 @@
   width: 100%;
   /* max-width: 250px; */
   height: 100%;
-  max-height: 190px;
+  max-height: 150px;
   object-fit: cover;
   margin: 0 auto;
 }
@@ -234,11 +242,16 @@
 
 /* Full-width footer strip */
 .footer-bar {
-  border-top: 1px solid #e5e7eb;
+  /* border-top: 1px solid #e5e7eb; */
   /* light border */
   background-color: #fffef8;
   /* soft off-white like the screenshot */
   padding: 12px 16px;
+  position: fixed;
+  bottom: 0;
+  /* left: 0; */
+  margin-top: 2rem;
+  z-index: 999;
 }
 
 /* Centered inner container */
@@ -256,6 +269,7 @@
 .footer-btn {
   flex: 1;
   height: 44px;
+  width: 17rem;
   border-radius: 999px;
   /* pill shape */
   font-size: 14px;
@@ -298,8 +312,14 @@
 
 /* Responsive: stack buttons on small screens */
 @media (max-width: 640px) {
+  .footer-bar {
+    width: 80%;
+    position: unset;
+  }
+
   .footer-inner {
     flex-direction: column;
+    width: 100%;
   }
 
   .footer-btn {
@@ -314,7 +334,7 @@
 .paper-card-thumb {
   position: relative;
   overflow: hidden;
-  height: 190px;
+  height: 150px;
   width: 100%;
 }
 
@@ -354,4 +374,25 @@
   100% {
     background-position: 0 50%;
   }
+}
+
+/* -- */
+.editor-right-paper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* full viewport height */
+  overflow: hidden;
+  /* prevent page scroll */
+}
+
+.footer-inner {
+  flex-shrink: 0;
+
+
+  /* prevents shrinking */
+}
+
+.editor-title {
+  padding: 0 2rem 1rem;
 }

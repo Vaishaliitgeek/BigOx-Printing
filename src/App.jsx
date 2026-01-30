@@ -185,6 +185,7 @@ function App() {
    * Go to previous step (clamped).
    */
   const handleBack = useCallback(() => {
+    window.scrollTo(0, 0);
     setCurrentStep((prev) => Math.max(MIN_STEP, prev - 1));
   }, []);
 
@@ -208,6 +209,7 @@ function App() {
       ...payload,
     }));
 
+    window.scrollTo(0, 0);
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
   console.log("--------rulescheck", rules)

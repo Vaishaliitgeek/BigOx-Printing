@@ -10,6 +10,8 @@ import {
 } from "../../../pages/printData.js";
 import { FiUpload, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
+// import FileIcon from '../../../assets/File.jpg'
+import { FaRegFileImage } from "react-icons/fa";
 
 
 const DB_NAME = "image-db";
@@ -318,7 +320,9 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
             <div className="upload-file-bar">
               <div className="upload-file-left">
                 <div className="upload-file-icon">
-                  <div className="upload-file-icon-inner" />
+                  {/* <div className="upload-file-icon-inner" /> */}
+                  <FaRegFileImage />
+                  {/* <img src={FileIcon} alt="fileicon" /> */}
                 </div>
                 <div className="upload-file-text">
                   <p className="upload-file-name">{imageData.name}</p>
@@ -379,7 +383,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
 
                   return (
                     <div key={size.id} className="resolution-card">
-                      <p className="resolution-card-size">{size.label}</p>
+                      <p className="resolution-card-size">{size.label}"</p>
                       <p className={textClass} style={{ color }} >{Math.round(ppi)}PPI</p>
                     </div>
                   );

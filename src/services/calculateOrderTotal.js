@@ -37,15 +37,22 @@ export function calculatePercentage(base, percent) {
 export function resolveCustomerDiscount(customerTags = [], customerRules = []) {
     if (!customerTags.length || !customerRules.length) return 0;
 
+    // Normalize customer tags once
+    const normalizedCustomerTags = customerTags.map(tag =>
+        tag.toLowerCase().trim()
+    );
+
     let maxDiscount = 0;
 
     customerRules.forEach((rule) => {
         rule.customerTiers?.forEach((tier) => {
-            const hasAllTags = tier.customerTag.every(tag =>
-                customerTags.includes(tag)
+            const hasAnyTag = tier.customerTag.some(tierTag =>
+                normalizedCustomerTags.includes(
+                    tierTag.toLowerCase().trim()
+                )
             );
 
-            if (hasAllTags) {
+            if (hasAnyTag) {
                 maxDiscount = Math.max(maxDiscount, tier.discountPercent);
             }
         });
@@ -53,6 +60,7 @@ export function resolveCustomerDiscount(customerTags = [], customerRules = []) {
 
     return maxDiscount; // percent
 }
+
 
 // ==============================
 // Resolve Quantity Discount
@@ -85,6 +93,8 @@ export function calculateOrderPrice({
     quantityDiscountRules = [],
     Productprice,
 }) {
+
+    console.log("----------orderConfigcalculate", orderConfig)
     if (!orderConfig?.size) return 0;
 
     const {

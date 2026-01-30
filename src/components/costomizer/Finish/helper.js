@@ -292,63 +292,7 @@ function extractVariantId(runtimeResult) {
 }
 
 
-// cart handler
-// export async function cartHandler(setStatus) {
-//   try {
-//     showProgress("cart-flow", "Preparing your product…");
 
-//     // ----------------------------------------
-//     // 1️⃣ Create runtime variant FIRST
-//     // ----------------------------------------
-//     const runtimeResult = await createRuntimeVariant({
-//       productId: "8760612421830",   // Shopify product ID (numeric)
-//       dataPrice: 15,
-//       availableQty: 10,
-//     });
-
-//     const variantId = extractVariantId(runtimeResult);
-
-//     console.log('--------variantId', variantId)
-//     showProgress("cart-flow", "Preparing your artwork…");
-
-//     // ----------------------------------------
-//     // 2️⃣ Upload images
-//     // ----------------------------------------
-//     const {
-//       originalImageCloudUrl,
-//       croppedImageCloudUrl,
-//       metadata,
-//       cropMetadata,
-//     } = await uploadAndGetCloudeURl(setStatus);
-
-//     const properties = buildImageAttributes({
-//       originalImageCloudUrl,
-//       croppedImageCloudUrl,
-//       metadata,
-//       cropMetadata,
-//     });
-
-//     showProgress("add-to-cart", "Adding item to cart…");
-
-//     // ----------------------------------------
-//     // 3️⃣ Add to cart using NEW variant ID
-//     // ----------------------------------------
-//     await addToCartWithMetadata({
-//       variantId, // 🔥 dynamic runtime variant
-//       quantity: 1,
-//       properties,
-//     });
-
-//     showSuccess("add-to-cart", "Item added to cart successfully");
-//     showSuccess("cart-flow", "Artwork saved & added to cart 🎉");
-//   } catch (error) {
-//     dismissToast("add-to-cart");
-//     showError(
-//       "cart-flow",
-//       error?.response?.data?.message || error.message || "Something went wrong"
-//     );
-//   }
-// }
 function getNumericVariantId(gid) {
   return gid.split("/").pop();
 }
@@ -536,3 +480,146 @@ function buildImageAttributes({
 
   return props;
 }
+
+
+// for multiple variantss
+// async function cartHandler(setStatus, orderConfig, total, productId) {
+//   // ---------------------------------------------
+//   // 1. Fetch Dropbox config
+//   // ---------------------------------------------
+//   const TOAST_MAIN = "cart-flow";
+//   const TOAST_VARIANT = "runtime-variant";
+//   const TOAST_CART = "add-to-cart";
+
+//   try {
+//     // Show initial progress
+//     // showProgress(TOAST_MAIN, "Preparing your product…");
+
+//     // ---------------------------------------------
+//     // 1) Dropbox config + folder/file name
+//     // ---------------------------------------------
+//     const dropboxConfig = await getDropboxFileNamingConfig();
+//     if (!dropboxConfig) throw new Error("Dropbox config failed");
+
+//     const folderTemplate = dropboxConfig?.folderTemplateConfig;
+//     const fileTemplate = dropboxConfig?.fileNamingTemplateConfig;
+//     console.log("-orderconfig", orderConfig);
+
+//     // ---------------------------------------------
+//     // 2. Build token map (dynamic, future-proof)
+//     // ---------------------------------------------
+//     const tokenMap = {
+//       ...getDateTokens(),
+//       paper_name: orderConfig?.paper?.name,
+//       size_w: orderConfig?.size?.width,
+//       size_h: orderConfig?.size?.height,
+//       quantity: orderConfig?.quantity,
+//     };
+
+//     // ---------------------------------------------
+//     // 3. Resolve folder + file names
+//     // ---------------------------------------------
+//     const targetFolder = folderTemplate
+//       ? resolveTemplate(folderTemplate, tokenMap)
+//       : "default";
+
+//     const fileName = fileTemplate
+//       ? resolveTemplate(fileTemplate, tokenMap).replace(/\//g, "_") // Replace slashes with underscores
+//       : `file_${Date.now()}`;
+
+//     // ---------------------------------------------
+//     // 4. Upload images (NO STRUCTURE CHANGE)
+//     // ---------------------------------------------
+//     const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
+//       await uploadAndGetCloudeURl(setStatus, {
+//         targetFolder,
+//         fileName,
+//       });
+
+//     if (!originalImageCloudUrl || !croppedImageCloudUrl) {
+//       throw new Error("Image upload failed");
+//     }
+
+//     console.log("-----------originalImageCloudUrl", originalImageCloudUrl);
+
+//     // ---------------------------------------------
+//     // 5. Handle variants array
+//     // ---------------------------------------------
+//     const variantsArray = [
+//       { realBaseSku: "4012500555719", price: Number(total) },
+//       // Add more variants if needed
+//     ];
+
+//     // Loop through variants and add each one to the cart
+//     for (const variant of variantsArray) {
+//       const variantId = await createVariantAndAddToCart(
+//         variant, productId, originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata, orderConfig
+//       );
+
+//       if (variantId) {
+//         console.log(`Variant ${variantId} added to cart`);
+//       }
+//     }
+
+//     return true;
+
+//   } catch (error) {
+//     console.error("Cart flow failed:", error);
+//     throw error; // ⬅️ VERY IMPORTANT
+//   }
+// }
+
+// async function createVariantAndAddToCart(variant, productId, originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata, orderConfig) {
+//   try {
+//     // Create runtime variant
+//     const variantsArray = [
+//       { realBaseSku: variant.realBaseSku, price: variant.price },
+//     ];
+
+//     const runtimeResult = await createRuntimeVariant({
+//       productId,
+//       dataPrice: variant.price,
+//       availableQty: orderConfig?.quantity ?? 1,
+//       variantsArray,
+//     });
+
+//     const variantId = extractVariantId(runtimeResult);
+//     if (!variantId) throw new Error("Variant creation failed");
+
+//     // Prepare image attributes
+//     const properties = buildImageAttributes({
+//       originalImageCloudUrl,
+//       croppedImageCloudUrl,
+//       metadata,
+//       cropMetadata,
+//       orderConfig,
+//     });
+
+//     // Add variant to cart
+//     await addToCartWithMetadata({
+//       variantId: variantId,
+//       quantity: orderConfig?.quantity ?? 1,
+//       properties,
+//     });
+
+//     return variantId;
+//   } catch (error) {
+//     console.error("Error while creating variant and adding to cart:", error);
+//     throw error;
+//   }
+// }
+
+// // Extract variant id from runtime result
+// function extractVariantId(runtimeResult) {
+//   const savedVariants = runtimeResult?.[0]?.result?.savedVariants;
+//   if (!savedVariants || savedVariants.length === 0) {
+//     throw new Error("No saved variants found.");
+//   }
+
+//   const variant = savedVariants[0]; // Assuming only one variant
+//   if (!variant?.variant_id) {
+//     throw new Error("Runtime variant creation failed: No variant_id found.");
+//   }
+
+//   return variant.variant_id;  // Return the first variant_id
+// }

@@ -112,15 +112,15 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
           </div>
 
           {/* RIGHT SIDE – PAPER GRID */}
-          <div className="editor-right">
-
-            <h2 className="editor-title-right">
-              Select Paper
-            </h2>
-            <p>
-              Choose from our collection of museum-grade fine art papersthumbnailUrl
-            </p>
-
+          <div className="editor-right-paper">
+            <div className="editor-title">
+              <h2 className="editor-title-right">
+                Select Paper
+              </h2>
+              <p>
+                Choose from our collection of museum-grade fine art papersthumbnailUrl
+              </p>
+            </div>
             <div className="paper-grid">
               {PAPERS?.map((paper) => (
                 <button
