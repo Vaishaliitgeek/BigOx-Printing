@@ -101,7 +101,7 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                     No image found. Please upload an image first.
                   </div>
                 )}
-                <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}" print print</p>
+                <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}"  print</p>
               </div>
 
               {/* <div className="editor-size-label">

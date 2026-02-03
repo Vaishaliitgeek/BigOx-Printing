@@ -8,31 +8,27 @@ div:empty {
 /* Header container */
 .header {
     width: 100%;
-    height: 6rem;
+    height: 96px;
     background-color: #ffffff;
     border-bottom: 1px solid #e5e7eb;
-    /* position: fixed;
-    top: 0;
-    left: 0; */
-    z-index: 999;
 }
 
 /* Container (center + max width) */
 .headerContainer {
     max-width: 1120px;
     margin: 0 auto;
-    padding-inline: 0.75rem;
+    padding-inline: 12px;
 }
 
 @media (min-width: 640px) {
     .headerContainer {
-        padding-inline: 1.5rem;
+        padding-inline: 24px;
     }
 }
 
 @media (min-width: 1024px) {
     .headerContainer {
-        padding-inline: 2rem;
+        padding-inline: 32px;
     }
 }
 
@@ -41,8 +37,8 @@ div:empty {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 4rem;
-    margin-top: 1rem;
+    height: 64px;
+    /* margin-top: 1rem; */
 }
 
 /* Left: back button */
@@ -50,15 +46,22 @@ div:empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem;
-    font-size: 0.875rem;
+    height: 40px;
+    width: 40px;
+    gap: 4px;
+    font-size: 14px;
     font-weight: 500;
     color: #374151;
     background: none;
     border: none;
+    border-radius: 100%;
     cursor: pointer;
     transition: color 150ms ease;
     flex-shrink: 0;
+}
+
+.backButton:hover {
+    background-color: #f3f4f6;
 }
 
 @media (max-width: 768px) {
@@ -70,7 +73,7 @@ div:empty {
 
 @media (min-width: 640px) {
     .backButton {
-        gap: 0.5rem;
+        gap: 8px;
     }
 }
 
@@ -80,8 +83,8 @@ div:empty {
 
 /* Icon base */
 .icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 20px;
+    height: 20px;
 }
 
 /* Back text visibility (mobile vs desktop) */
@@ -130,12 +133,12 @@ div:empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 32px;
+    height: 32px;
     border-radius: 9999px;
     border: 2px solid #d1d5db;
     background-color: #ffffff;
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 600;
     color: #9ca3af;
     transition: all 150ms ease;
@@ -151,10 +154,11 @@ div:empty {
 
 @media (max-width: 768px) {
     .stepCircle {
-        width: 2rem;
-        height: 2rem;
-        font-size: 0.875rem;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
+
 
     .backTextDesktop {
         display: none;
@@ -163,14 +167,14 @@ div:empty {
 
 @media (max-width: 550px) {
     .stepCircle {
-        width: 1.7rem;
-        height: 1.7rem;
-        font-size: 0.875rem;
+        width: 27.2px;
+        height: 27.2px;
+        font-size: 14px;
     }
 
     .stepConnector {
-        width: 2rem !important;
-        margin-inline: 0.5rem;
+        width: 32px !important;
+        margin-inline: 8px;
     }
 
 }
@@ -216,23 +220,24 @@ div:empty {
 
 /* Check icon size */
 .checkIcon {
-    width: 1rem;
-    height: 1rem;
+    width: 16px;
+    height: 16px;
 }
 
 @media (min-width: 640px) {
     .checkIcon {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 20px;
+        height: 20px;
     }
 }
 
 /* Step label under circle */
 .stepLabel {
     position: absolute;
-    bottom: -1.5rem;
+    bottom: -24px;
     white-space: nowrap;
-    font-size: 0.75rem;
+    font-size: 12px;
+
     font-weight: bold;
     transition: color 150ms ease;
     display: none;
@@ -254,9 +259,9 @@ div:empty {
 /* Connector line between steps */
 .stepConnector {
     height: 2px;
-    width: 5rem;
+    width: 80px;
     transition: background-color 150ms ease;
-    margin-inline: 0.25rem;
+    margin-inline: 4px;
 }
 
 .stepConnectorActive {
@@ -279,8 +284,8 @@ div:empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 32px;
+    height: 32px;
     border-radius: 9999px;
     border: none;
     background-color: transparent;
@@ -291,8 +296,8 @@ div:empty {
 
 @media (min-width: 640px) {
     .closeButton {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -301,8 +306,8 @@ div:empty {
 }
 
 .iconClose {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 24px;
+    height: 24px;
     color: #4b5563;
 }
 
@@ -312,8 +317,8 @@ div:empty {
     }
 
     .stepCircle {
-        width: 1.5rem;
-        height: 1.5rem;
-        font-size: 0.885rem;
+        width: 24px;
+        height: 24px;
+        font-size: 14.16px;
     }
 }

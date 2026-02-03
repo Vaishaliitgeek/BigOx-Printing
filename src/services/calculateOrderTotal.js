@@ -9,14 +9,14 @@ export const PRICE_UNIT = {
 // Pricing Constants
 // ==============================
 
-export const TAG_DISCOUNTS = {
-    vip: 20, // 20%
-};
+// export const TAG_DISCOUNTS = {
+//     vip: 20, // 20%
+// };
 
-export const QUANTITY_DISCOUNTS = [
-    { min: 1, max: 5, percent: 5 },   // 5%
-    { min: 6, max: 10, percent: 10 }, // example future slab
-];
+// export const QUANTITY_DISCOUNTS = [
+//     { min: 1, max: 5, percent: 5 },   // 5%
+//     { min: 6, max: 10, percent: 10 }, // example future slab
+// ];
 
 // ==============================
 // Helper Utilities
@@ -60,8 +60,6 @@ export function resolveCustomerDiscount(customerTags = [], customerRules = []) {
 
     return maxDiscount; // percent
 }
-
-
 // ==============================
 // Resolve Quantity Discount
 // ==============================
@@ -93,8 +91,6 @@ export function calculateOrderPrice({
     quantityDiscountRules = [],
     Productprice,
 }) {
-
-    console.log("----------orderConfigcalculate", orderConfig)
     if (!orderConfig?.size) return 0;
 
     const {

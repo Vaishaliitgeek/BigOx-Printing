@@ -53,6 +53,7 @@
   padding: 10px;
 }
 
+
 .mounting-card-body {
   display: flex;
   flex-direction: column;
@@ -183,8 +184,8 @@
 .mounting-editor-image {
   width: 100%;
   height: 100%;
-  max-width: 300px;
-  max-height: 300px;
+  max-width: 500px;
+  max-height: 500px;
   object-fit: contain;
   pointer-events: none;
 }

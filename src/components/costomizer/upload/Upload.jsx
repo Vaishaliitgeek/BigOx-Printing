@@ -83,6 +83,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,JPEG,PNG, TIFF');
   const [uploadError, setUploadError] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
 
   const Sizes = template?.sizeOptions;
   // console.log("-------Sizes", Sizes)
@@ -237,6 +238,10 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
     setAllowedTypes(getAllowedTypes());
   }, [rules])
 
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked); // Toggle checkbox state
+  };
+
   return (
     <div className="step-upload">
       <div className="step-upload-header">
@@ -247,40 +252,10 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
         </p>
       </div>
 
-      {/* IF NO IMAGE → SHOW UPLOADER */}
-      {/* {!imageData && (
-        <div className="step-upload-upload-section">
-          <div
-            className="upload-dropzone"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <div className="upload-content">
-              <div className="upload-circle-icon">
-                <span className="upload-circle-icon-arrow">
-                  <FiUpload />
-                </span>
-              </div>
-              <div>
-                <p className="upload-text">
-                  Drag and drop your image here <span>or browse</span>
-                </p>
-                <p className="upload-subtext">JPG, PNG, TIFF · Max 1 GB</p>
-              </div>
-            </div>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".jpg,.jpeg,.png,.tif,.tiff"
-              onChange={handleFileSelect}
-              className="upload-input-hidden"
-            />
-          </div>
-        </div>
-      )} */}
 
       {!imageData && (
-        <div className="step-upload-upload-section">
+        <div className={`step-upload-upload-section ${!isChecked ? "disabled" : ""}`} >
           <div className="upload-dropzone">
             <div className="upload-content">
               <div className="upload-circle-icon">
@@ -290,9 +265,11 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
               </div>
               <div>
                 <p className="upload-text">
-                  Drag and drop your image here <span>or browse</span>
+                  Drag and drop your image here <span>or browse test55
+
+                  </span>
                 </p>
-                <p className="upload-subtext">{allowedTypes} · Max {rules?.fileConstraints?.maxFileSizeMB} MB</p>
+                <p className="upload-subtext">{allowedTypes}  Max {rules?.fileConstraints?.maxFileSizeMB} MB</p>
               </div>
             </div>
 
@@ -310,7 +287,22 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
 
       )}
 
+      {!imageData && (<div className="trademark-container">
 
+        <label htmlFor="trademark-check" className="bg-trade">
+          <input
+            type="checkbox"
+            id="trademark-check"
+            name="trademark-check"
+            required
+            onChange={handleCheckboxChange}
+            className="checkbox-input" // Optional for styling purposes
+          />
+          <p className="trademark-check-para">
+            I agree and confirm that I have the rights to use the logos, text, or trademarks.
+          </p>
+        </label>
+      </div>)}
 
       {/* IF IMAGE → SHOW PREVIEW & RESOLUTION GRID */}
       {imageData && (
@@ -413,6 +405,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
             <button
               type="button"
               className="btn-continue"
+              disabled={!imageData}
               onClick={() => {
                 handleNext();
                 // const sizeForPpi = Sizes?.[0] || PRINT_SIZES?.[0]; // baseline size
@@ -436,7 +429,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
                 //   },
                 // });
               }}
-              disabled={!imageData}
+            // disabled={!imageData}
             >
               CONTINUE TO SIZE &amp; CROP
             </button>

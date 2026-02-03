@@ -108,10 +108,10 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
                                                     currentStep === step.number ? styles.stepCircleCurrent :
                                                         styles.stepCircleUpcoming
                                             ].join(' ')}
-                                            // onClick={() => {
-                                            //     if (onStepClick) onStepClick(step.number);
-                                            // }}
-                                            style={{ cursor: onStepClick ? 'pointer' : 'default' }}
+                                        // onClick={() => {
+                                        //     if (onStepClick) onStepClick(step.number);
+                                        // }}
+                                        // style={{ cursor: onStepClick ? 'pointer' : 'default' }}
                                         >
                                             {step.completed ? (
                                                 <svg

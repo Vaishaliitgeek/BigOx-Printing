@@ -27,10 +27,10 @@ const NO_Mat_OPTION = {
   label: "No Mat",
 };
 
-const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
+const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, customerTags }) => {
 
   const urlParams = new URLSearchParams(window.location.search);
-  const productId = urlParams.get('productId');
+  const productId = urlParams.get('product_id');
   const Productprice = urlParams.get('price');
 
 
@@ -141,7 +141,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
       orderConfig: {
         ...orderConfig,
         quantity,
-        tags: ["wsgTestTag", "test_wholesale"],
+        tags: customerTags || [],
+
+        // tags: ["wsgtesttag", "test_wholesale"],
       },
       customerDiscountRules,
       quantityDiscountRules,
@@ -352,6 +354,8 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
               ` with ${selectedBorder.thickness}" ${selectedBorder.color || 'white'} border`
             } */}
           </p>
+
+
         </div>
 
         <div className="order-summary">
@@ -528,10 +532,18 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
                 type="number"
                 className="quantity-input"
                 value={quantity}
-                min={minQty}
+                // min={minQty}
                 max={maxQty}
                 step={stepQty}
-                onChange={(e) => handleQuantityChange(Number(e.target.value))}
+                onChange={(e) => {
+                  if (e.target.value <= maxQty && e.target.value >= minQty) {
+                    setQuantity(Number(e.target.value));
+
+                  }
+                  else {
+                    setQuantity(prev => Math.min(prev, minQty ));
+                  }
+                }}
               />
               <button
                 className={`quantity-button ${quantity >= maxQty ? "quantity-button-disabled" : ""}`}
@@ -663,11 +675,14 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack }) => {
 
                 try {
                   await cartHandler(setStatus, orderConfig, total, productId);
+
                   toast.success("Item added to cart successfully 🎉");
-                  window.location.reload();
+                  // window.location.reload();
+                  window.location.href = "https://www.bigoxprinting.com/cart";
+
                 } catch (err) {
                   toast.error(
-                    err?.message || "Something went wrong. Please try again."
+                    err?.response?.data?.message || err?.message || "Something went wrong. Please try again."
                   );
                   setCartError(err);
                 } finally {

@@ -28,6 +28,7 @@ import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
 import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
 import { ToastContainer } from "react-toastify";
+
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
@@ -46,10 +47,14 @@ const ALLSTEPS = ["UPLOAD", "sizeOptions", "paperOptions", "laminationOptions", 
 const MIN_STEP = STEPS.UPLOAD;
 const MAX_STEP = STEPS.FINISH;
 
-function App() {
-
+function App(props) {
+  console.log("---props", props)
 
   const [appSteps, setAppSteps] = useState(STEPS);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('product_id');
+
   // -----------------------------
   // Stepper / navigation state
   // -----------------------------
@@ -70,6 +75,7 @@ function App() {
   // -----------------------------
   const [rules, setRules] = useState(null);
   const [template, setTemplate] = useState(null);
+  // const navigate = useNavigate();
 
   // If you plan to use sizeOptions later, keep it.
   // Otherwise, remove it to reduce unused state.
@@ -139,12 +145,12 @@ function App() {
   const loadTemplates = useCallback(async () => {
 
     try {
-      const fetchTemplate = await getTemplateFromDb();
+      const fetchTemplate = await getTemplateFromDb(productId);
       // const currentTemplate = fetchTemplate[2];
       setTemplate(fetchTemplate);
-      // updateStepsWithValsetOrderConfig()
       setOrderConfig((prev) => ({ ...prev, templateName: fetchTemplate?.templateName }));
-      console.log("fetchTemplate :", fetchTemplate);
+      updateStepsWithValideData(fetchTemplate);
+      // console.log("fetchTemplate :", fetchTemplate);
     } catch (error) {
       console.error("Failed to load Template:", error);
       setRules(null); // safe fallback
@@ -156,8 +162,6 @@ function App() {
     loadTemplates();
   }, [loadRules, loadTemplates]);
 
-
-  console.log("----------------templatechech", template)
   // -----------------------------
   // Handlers for finish-step inputs
   // -----------------------------
@@ -186,7 +190,11 @@ function App() {
    */
   const handleBack = useCallback(() => {
     window.scrollTo(0, 0);
+
+    // window.history.back();
+
     setCurrentStep((prev) => Math.max(MIN_STEP, prev - 1));
+    // navigate(-1)
   }, []);
 
   /**
@@ -204,21 +212,24 @@ function App() {
   //   setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   // }, []);
   const handleNext = useCallback((payload = {}) => {
+    window.scrollTo(0, 0);
     setOrderConfig((prev) => ({
       ...prev,
       ...payload,
     }));
 
-    window.scrollTo(0, 0);
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
-  console.log("--------rulescheck", rules)
+
 
   // -----------------------------
   // Render
   // -----------------------------
   return (
     <div className="Appcontainer">
+
+      {/* <h1>{props?.customerTags}</h1> */}
+
       <Header
         currentStep={currentStep}
         onBack={handleBack}
@@ -287,6 +298,7 @@ function App() {
           orderConfig={orderConfig}
           setOrderConfig={setOrderConfig}
           handleBack={handleBack}
+          customerTags={props?.customerTags}
         />
       )}
 

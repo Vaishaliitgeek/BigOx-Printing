@@ -1,8 +1,9 @@
 import { apiConnecter } from "../utils/ApiConnector";
-// const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
-const BASE_URL = "https://gasoline-modern-parish-conservation.trycloudflare.com";
+// const BASE_URL = "https://kodak-shops-pledge-pct.trycloudflare.com";
+const BASE_URL = "https://seahorse-app-men9d.ondigitalocean.app";
 
-export const shop = "amjad-itgeeks.myshopify.com";
+// export const shop = "amjad-itgeeks.myshopify.com";
+export const shop = "ytkwkd-h0.myshopify.com";
 // const shop = "ytkwkd-h0.myshopify.com";
 // const shop = '';
 
@@ -146,9 +147,9 @@ export async function getTemplateFromDb(productId) {
       `${BASE_URL}/api/tamplates/getTamplatesByProductId`,
       null,
       null,
-      { shop, productId: `gid://shopify/Product/8759366385862` }
+      // { shop, productId: `gid://shopify/Product/8759366385862` }
 
-      // { shop, productId: `gid://shopify/Product/${productId}` }
+      { shop, productId: `gid://shopify/Product/${productId}` }
     );
     console.log(res.data.result);
     return res.data.result[0];
@@ -200,7 +201,9 @@ export async function uploadImageOnDropBox({ data, fileName, targetFolder }) {
     const res = await apiConnecter(
       "post",
       `${BASE_URL}/api/dropboxConfig/uploadImagesOnDropBoxByClientEnd?shop=${shop}&fileName=${encodeURIComponent(finalFileName)}&targetFolder=${encodeURIComponent(finalFolder)}`,
-      data
+      data,
+      null,
+      { shop }
     );
 
     return res.data.result.dropboxUrl;
@@ -215,6 +218,8 @@ export async function getDropboxFileNamingConfig(data) {
       "get",
       `${BASE_URL}/api/dropboxConfig/getDropboxConfigAndConnectedCheck`,
       data,
+      null,
+      { shop }
     );
     console.log(res.data.result);
     return res.data.result;
@@ -261,17 +266,39 @@ export async function getCommerceRulesCustomerDiscounts() {
 
 // CREATE RUNTIME VARIANT
 export async function createRuntimeVariant({ productId, dataPrice, availableQty, variantsArray }) {
-  const res = await apiConnecter(
-    "post",
-    `https://${shop}/apps/my-custom-path/runTimeVarintsCreation`,
+  try {
+    const response = await apiConnecter(
+      "POST",
+      `/apps/my-custom-path/orders/runTimeVarintsCreation`,
+      {
+        productId,
+        variantsArray
+      },
+      null,
+      null
+    );
 
-    {
-      productId,
-      variantsArray
-    },
-    null,
-    { shop }
-  );
 
-  return res.data?.result;
+
+
+    //   const response = await fetch(`/apps/my-custom-path/orders/runTimeVarintsCreation`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "X-Requested-With": "XMLHttpRequest",
+    //     },
+    //     body: JSON.stringify({ productId, variantsArray }),
+    //   });
+    //   if (!response.ok) {
+    //     const errorData = await response.json();
+    //     return { errors: errorData.errors || [{ message: "Network error" }] };
+    //   }
+
+    // const data = await response.json();
+    // alert(data, "sadsadsadsa")
+    return response?.data?.result;
+  } catch (error) {
+    console.error("Error fetching schools:", error);
+    return [];
+  }
 }

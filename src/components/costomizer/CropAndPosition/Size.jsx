@@ -28,7 +28,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
   const [cropHeightPx, setCropHeightPx] = useState(260);
   const [isCropping, setIsCropping] = useState(orderConfig?.isCropping ?? false);
-
+  const debouncedSetCompletedCrop = useRef(null);
   const initialZoomValue = 260; // Initial zoom value
 
 
@@ -234,10 +234,23 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   //   setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
   // }, [aspect, heightMax]);
 
+  // function onCropHeightSlider(val) {
+  //   const h = clamp(Number(val), 40, heightMax);
+  //   setCropHeightPx(h);
+  //   setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
+  // }
+
   function onCropHeightSlider(val) {
     const h = clamp(Number(val), 40, heightMax);
     setCropHeightPx(h);
-    setCrop(makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h));
+
+    const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
+    setCrop(newCrop);
+
+    clearTimeout(debouncedSetCompletedCrop.current);
+    debouncedSetCompletedCrop.current = setTimeout(() => {
+      setCompletedCrop(newCrop);
+    }, 60);
   }
 
   async function onDownload() {
@@ -331,6 +344,16 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
         <section className="left">
           <h2>Crop &amp; Position</h2>
           <div className="imageFrame">
+            {/* 
+            {(!isCropping || !selectedSizeId) && (
+              <div className="inlineHint">
+                <span className="inlineHintIcon">ⓘ</span>
+                Adjust the image Frame to continue
+              </div>
+            )} */}
+
+
+
             {imageSrc ? (
               <>
                 <ReactCrop
@@ -353,6 +376,11 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                   minWidth={40}
                   minHeight={40}
                 >
+                  {!isCropping && (
+                    <div className="imageOverlay">
+                      <p>Adjust image before continue</p>
+                    </div>
+                  )}
                   <img
                     src={imageSrc}
                     alt="to crop"

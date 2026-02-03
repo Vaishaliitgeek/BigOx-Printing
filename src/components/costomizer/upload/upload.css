@@ -385,3 +385,34 @@
   height: auto;
   width: 100%;
 }
+
+.trademark-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* margin-top: 20px; */
+  /* width: fit-content; */
+
+  margin: 10px 0 0;
+}
+
+.bg-trade {
+  display: flex;
+  width: fit-content;
+  background-color: #FDF9EE;
+  padding: 5px;
+  /* border: 2px solid black; */
+  margin: 20px 0 0;
+  cursor: pointer;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  /* Prevent interaction */
+}
+
+#trademark-check {
+  cursor: pointer;
+}
