@@ -202,8 +202,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
     }
 
     return {
-      padding: `${borderPx}px`,
-      backgroundColor: selectedBorder?.color || '#ffffff',
+      // padding: `${borderPx}px`,
+      border: `${borderPx}px solid ${selectedBorder?.color || '#ffffff'}`,
+      // backgroundColor: selectedBorder?.color || '#ffffff',
       boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
     };
   };
@@ -541,7 +542,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
                   }
                   else {
-                    setQuantity(prev => Math.min(prev, minQty ));
+                    setQuantity(prev => Math.min(prev, minQty));
                   }
                 }}
               />

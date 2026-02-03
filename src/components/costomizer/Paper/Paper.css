@@ -181,7 +181,7 @@
 }
 
 .paper-card-name {
-font-size: 15.2px;
+  font-size: 15.2px;
   font-weight: 600;
   color: #111827;
   /* gray-900 */
@@ -401,4 +401,8 @@ font-size: 15.2px;
 
 .editor-title {
   padding: 0 32px 16px;
+}
+
+.editor-title-right {
+  padding: 0 10px;
 }

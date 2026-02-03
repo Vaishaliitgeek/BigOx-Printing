@@ -7,7 +7,7 @@
   text-align: left;
   cursor: pointer;
   display: flex;
-  gap: 0.75rem;
+  gap: 25px;
   transition: box-shadow 150ms ease, transform 150ms ease,
     border-color 150ms ease, background-color 150ms ease;
 }
@@ -28,7 +28,7 @@
 .lamination-card-thumb {
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
 }
 
 .lamination-card-thumb img {
@@ -40,9 +40,9 @@
   object-fit: cover;
   margin: 0 auto;
   object-fit: cover;
-  max-height: 100px;
+  max-height: 60px;
   margin: 0 auto;
-  max-width: 100px;
+  max-width: 60px;
 }
 
 .lamination-grid {
@@ -189,8 +189,8 @@
 /* Skeleton wrapper – fixed size */
 .lamination-thumb-wrapper {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;

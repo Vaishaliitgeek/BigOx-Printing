@@ -4,7 +4,7 @@
   /* margin: 6rem auto 4rem; */
   margin: auto;
 
-  padding: 0 1rem;
+  padding: 0 16px;
   box-sizing: border-box;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -13,8 +13,8 @@
 /* Page header */
 .step-upload-header {
   text-align: center;
-  margin-bottom: 2rem;
-  padding-top: 1rem;
+  margin-bottom: 32px;
+  padding-top: 16px;
 }
 
 .step-upload-title {
@@ -28,8 +28,9 @@
 }
 
 .step-upload-subtitle {
-  font-size: 0.95rem;
+  font-size: 15.2px;
   color: #4b5563;
+  text-align: center;
 }
 
 /* ===========================
@@ -46,7 +47,7 @@
 .upload-dropzone {
   position: relative;
   border: 2px dashed #d1d5db;
-  border-radius: 0.75rem;
+  /* border-radius: 0.75rem; */
   background-color: #f3f4f6;
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
@@ -58,17 +59,17 @@
 }
 
 .upload-content {
-  padding: 3rem 2rem;
+  padding: 48px 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 16px;
 }
 
 /* Circle icon */
 .upload-circle-icon {
-  width: 3rem;
-  height: 3rem;
+  width: 48px;
+  height: 48px;
   border-radius: 9999px;
   background-color: #e0f2fe;
   display: flex;
@@ -77,24 +78,28 @@
 }
 
 .upload-circle-icon-arrow {
-  font-size: 1.5rem;
+  font-size: 24px;
   color: #2563eb;
 }
 
 .upload-text {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 500;
   color: #374151;
 }
 
 .upload-text span {
-  color: #b91c1c;
+  /* color: #b91c1c; */
+  /* text-decoration: underline; */
+  /* margin-bottom: 10px; */
   /* red accent like reference */
+  border-bottom: 2px solid #000;
 }
 
 .upload-subtext {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #6b7280;
+  text-align: center;
 }
 
 .upload-input-hidden {
@@ -114,9 +119,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1.4rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   border: 1px solid transparent;
@@ -136,8 +141,8 @@
 }
 
 .btn-sm {
-  padding: 0.35rem 0.9rem;
-  font-size: 0.8rem;
+  padding: 6px 14px;
+  font-size: 12.8px;
 }
 
 /* ===========================
@@ -157,7 +162,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 16px 24px;
   border-bottom: 1px solid #e5e7eb;
   background-color: #ffffff;
 }
@@ -165,16 +170,16 @@
 .upload-file-left {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 /* Square doc icon */
 .upload-file-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   background: #F5F5F5;
   color: #353535;
-  width: 3rem;
-  height: 3rem;
+  width: 48px;
+  height: 48px;
   /* border-radius: 0.5rem; */
 
   border: 1px solid #e5e7eb;
@@ -184,9 +189,9 @@
 }
 
 .upload-file-icon-inner {
-  width: 1.5rem;
-  height: 1.9rem;
-  border-radius: 0.2rem;
+  width: 24px;
+  height: 30px;
+  border-radius: 4px;
   border: 1px solid #9ca3af;
   position: relative;
 }
@@ -194,10 +199,10 @@
 .upload-file-icon-inner::after {
   content: "";
   position: absolute;
-  top: 0.35rem;
-  left: 0.4rem;
-  right: 0.4rem;
-  height: 0.12rem;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  height: 2px;
   border-radius: 9999px;
   background-color: #9ca3af;
 }
@@ -208,18 +213,18 @@
 }
 
 .upload-file-name {
-  font-size: 0.9rem;
+  font-size: 14.4px;
   font-weight: 500;
   color: #111827;
-  max-width: 26rem;
+  max-width: 416px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .upload-file-meta {
-  margin-top: 0.1rem;
-  font-size: 0.8rem;
+  margin-top: 2px;
+  font-size: 12.8px;
   color: #6b7280;
 }
 
@@ -229,7 +234,7 @@
   justify-content: center;
   align-items: center;
   background: transparent;
-  padding: 0.25rem;
+  padding: 4px;
   border-radius: 9999px;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -250,7 +255,7 @@
   background-color: #f7f1e5;
   /* beige */
   position: relative;
-  padding: 2.5rem 0;
+  padding: 40px 0;
   display: flex;
   justify-content: center;
 }
@@ -268,23 +273,23 @@
    =========================== */
 
 .resolution-section {
-  padding: 1.25rem 1.5rem 1.5rem;
+  padding: 20px 24px 24px;
   background-color: #ffffff;
   border-top: 1px solid #e5e7eb;
 }
 
 .resolution-title {
-  font-size: 0.9rem;
+  font-size: 14.4px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 0.9rem;
+  margin-bottom: 14.4px;
 }
 
 /* grid of size cards */
 .resolution-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 @media (min-width: 768px) {
@@ -303,20 +308,21 @@
   background-color: #ffffff;
   /* border-radius: 0.25rem; */
   border: 1px solid #e5e7eb;
-  padding: 0.75rem 0.5rem;
+  padding: 12px 8px;
   text-align: center;
 }
 
 .resolution-card-size {
   font-weight: 600;
   color: #111827;
-  font-size: 0.85rem;
-  margin-bottom: 0.25rem;
+  font-size: 13.6px;
+  margin-bottom: 4px;
 }
 
 /* Quality text colors */
 .quality-text {
-  font-size: 0.8rem;
+  font-size: 12.8px;
+
   font-weight: 600;
 }
 
@@ -338,11 +344,11 @@
 
 /* Recommendation note at bottom */
 .resolution-note {
-  margin-top: 0.9rem;
+  margin-top: 14.4px;
 }
 
 .resolution-note p {
-  font-size: 0.8rem;
+  font-size: 12.8px;
   color: #4b5563;
 }
 
@@ -356,21 +362,21 @@
    =========================== */
 
 .step-upload-footer {
-  margin-top: 1.5rem;
+  margin-top: 24px;
   text-align: right;
 }
 
 .btn-continue {
-  padding: 0.85rem 1.9rem;
+  padding: 14px 30px;
   border-radius: 9999px;
   border: none;
   background-color: #e11d26;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
   /* red */
   color: #ffffff;
-  font-size: 0.85rem;
+  font-size: 13.6px;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.48px;
   text-transform: uppercase;
   cursor: pointer;
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
@@ -415,4 +421,8 @@
 
 #trademark-check {
   cursor: pointer;
+}
+
+.trademark-check-para {
+  margin: 0 !important;
 }

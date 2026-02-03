@@ -169,6 +169,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   const handleChangeImage = async () => {
     setImageData(null);
     onImageUpload?.("", 0, 0);
+    setIsChecked(false);
     try {
       await clearCurrentImage();
     } catch (err) {
@@ -239,9 +240,22 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   }, [rules])
 
   const handleCheckboxChange = () => {
-    setIsChecked(!isChecked); // Toggle checkbox state
+    setIsChecked(!isChecked);
+    if (!isChecked) {
+      // Disable file input if checkbox is unchecked
+      fileInputRef.current.disabled = false;
+    } else {
+      // Enable file input only when checkbox is checked
+      fileInputRef.current.disabled = true;
+    }
   };
 
+  useEffect(() => {
+    // Disable file input if checkbox is unchecked initially
+    if (!isChecked) {
+      fileInputRef.current.disabled = true;
+    }
+  }, [isChecked]);
   return (
     <div className="step-upload">
       <div className="step-upload-header">
@@ -265,7 +279,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
               </div>
               <div>
                 <p className="upload-text">
-                  Drag and drop your image here <span>or browse test55
+                  Drag and drop your image here or  <span>browse
 
                   </span>
                 </p>
@@ -429,7 +443,6 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
                 //   },
                 // });
               }}
-            // disabled={!imageData}
             >
               CONTINUE TO SIZE &amp; CROP
             </button>
