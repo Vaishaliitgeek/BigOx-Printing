@@ -330,6 +330,7 @@ quality-gray {
   /* background-color: #ffffff; */
   /* border-radius: 0.5rem; */
   padding: 10px;
+  margin: 10px;
   margin-bottom: 24px;
   /* outline: 2px solid #000000; */
   background-color: #FDF9EE;
@@ -728,7 +729,7 @@ quality-gray {
 }
 
 .imageOverlay p {
-  font-size: 27px;
+  font-size: 20px;
   font-weight: Bold;
   color: white
 }

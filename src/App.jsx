@@ -51,6 +51,7 @@ function App(props) {
   console.log("---props", props)
 
   const [appSteps, setAppSteps] = useState(STEPS);
+  const [firstLoad, setFirstLoad] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('product_id');
@@ -160,6 +161,7 @@ function App(props) {
   useEffect(() => {
     loadRules();
     loadTemplates();
+    setFirstLoad(false);
   }, [loadRules, loadTemplates]);
 
   // -----------------------------
@@ -244,6 +246,8 @@ function App(props) {
           handleNext={handleNext}
           rules={rules}
           template={template}
+          firstLoad={firstLoad}
+        setFirstLoad={setFirstLoad}
         />
       )}
 

@@ -84,7 +84,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     const initialH = newHeightMax;
 
     setCropHeightPx(initialH);
-    setIsCropping(false);
+    setIsCropping(true);
 
     // Reset crop area to initial state
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, initialH);
@@ -389,7 +389,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                     crossOrigin="anonymous"
                     style={{
                       maxWidth: "900px",
-                      maxHeight: "600px",
+                      maxHeight: "500px",
                       width: "100%",
                       height: "100%",
                     }}

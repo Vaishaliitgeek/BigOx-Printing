@@ -77,7 +77,7 @@ async function clearCurrentImage() {
 
 // --- Component ---
 
-const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
+const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template }) => {
   // console.log("---rules", template)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
@@ -87,16 +87,25 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
 
   const Sizes = template?.sizeOptions;
   // console.log("-------Sizes", Sizes)
-
+  // Load agreement status from localStorage on mount (only once)
+  useEffect(() => {
+    const storedAgreement = localStorage.getItem("hasAgreed");
+    if (storedAgreement === "true") {
+      console.log("----------storedAgreement", storedAgreement)
+      setIsChecked(true);
+    }
+  }, []);
   // Load image from IndexedDB on mount
   useEffect(() => {
     (async () => {
+      if (firstLoad == false) return;
       try {
         const saved = await loadCurrentImage();
         if (saved) {
 
           setImageData(saved);
           onImageUpload?.(saved.url, saved.width, saved.height);
+          setFirstLoad(false);
         }
       } catch (err) {
         console.error("Error loading image from IndexedDB:", err);
@@ -107,6 +116,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
 
 
   const handleFileSelect = (e) => {
+    setFirstLoad(true);
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
@@ -169,7 +179,7 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   const handleChangeImage = async () => {
     setImageData(null);
     onImageUpload?.("", 0, 0);
-    setIsChecked(false);
+    // setIsChecked(false);
     try {
       await clearCurrentImage();
     } catch (err) {
@@ -240,22 +250,23 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
   }, [rules])
 
   const handleCheckboxChange = () => {
-    setIsChecked(!isChecked);
-    if (!isChecked) {
-      // Disable file input if checkbox is unchecked
-      fileInputRef.current.disabled = false;
+    const newCheckedState = !isChecked;
+    setIsChecked(newCheckedState);
+
+    // Save to localStorage
+    if (newCheckedState) {
+      localStorage.setItem("hasAgreed", "true");
     } else {
-      // Enable file input only when checkbox is checked
-      fileInputRef.current.disabled = true;
+      localStorage.removeItem("hasAgreed");
     }
   };
 
-  useEffect(() => {
-    // Disable file input if checkbox is unchecked initially
-    if (!isChecked) {
-      fileInputRef.current.disabled = true;
-    }
-  }, [isChecked]);
+  // useEffect(() => {
+  //   // Disable file input if checkbox is unchecked initially
+  //   if (!isChecked) {
+  //     fileInputRef.current.disabled = true;
+  //   }
+  // }, [isChecked]);
   return (
     <div className="step-upload">
       <div className="step-upload-header">
@@ -304,8 +315,10 @@ const StepUpload = ({ onImageUpload, handleNext, rules, template }) => {
       {!imageData && (<div className="trademark-container">
 
         <label htmlFor="trademark-check" className="bg-trade">
+
           <input
             type="checkbox"
+            checked={isChecked}
             id="trademark-check"
             name="trademark-check"
             required

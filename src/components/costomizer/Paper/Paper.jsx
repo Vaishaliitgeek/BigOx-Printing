@@ -8,19 +8,17 @@ import { loadCropImageFromDb } from '../../../services/indexDb';
 
 const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
-  // only show thiose paper whose status is true 
+  // only show those paper whose status is true 
   const PAPERS = useMemo(() => {
     return (template?.paperOptions || []).filter(
       (paper) => paper.status === true
     );
   }, [template?.paperOptions]);
 
-  // console.log("--paper", PAPERS)
-
   const [imageSrc, setImageSrc] = useState(null);
   const [selectedPaperId, setSelectedPaperId] = useState(orderConfig?.paper?.id ?? null);
-
-
+  const [truncatedDescriptions, setTruncatedDescriptions] = useState({});
+  const descriptionRefs = useRef({});
 
   // Load image from IndexedDB
   useEffect(() => {
@@ -49,10 +47,6 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
     () => PAPERS?.find((paper) => paper._id === selectedPaperId) ?? PAPERS?.[0],
     [PAPERS, selectedPaperId]
   );
-  // const selectedPaper = PAPERS?.find(
-  //   (paper) => paper._id === selectedPaperId
-  // );
-
 
   const [paperImageLoadedMap, setPaperImageLoadedMap] = useState({});
 
@@ -62,6 +56,18 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
       [id]: true,
     }));
   };
+
+  // Check truncation after papers load
+  useEffect(() => {
+    const newTruncated = {};
+    PAPERS?.forEach((paper) => {
+      const element = descriptionRefs.current[paper._id];
+      if (element) {
+        newTruncated[paper._id] = element.scrollWidth > element.clientWidth;
+      }
+    });
+    setTruncatedDescriptions(newTruncated);
+  }, [PAPERS]);
 
 
   return (
@@ -103,10 +109,6 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                 )}
                 <p className='selected-size'>{orderConfig?.size?.width} X {orderConfig?.size?.height}"  print</p>
               </div>
-
-              {/* <div className="editor-size-label">
-                {selectedPaper ? selectedPaper.name : 'Select a paper'}
-              </div> */}
             </div>
 
           </div>
@@ -129,30 +131,6 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                   className={`paper-card ${selectedPaperId === paper._id ? "paper-card-selected" : ""
                     }`}
                 >
-                  {/* Thumbnail area */}
-                  {/* <div className="paper-card-thumb">
-                   
-                    <img src={paper?.thumbnailUrl}></img>
-                    <div className="paper-card-radio">
-                      {selectedPaperId === paper._id && (
-                        <div className="paper-card-radio-outer">
-                          <svg
-                            className="checkIcon"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  </div> */}
                   <div className="paper-card-thumb">
                     {/* Skeleton (always rendered) */}
                     <div
@@ -205,6 +183,7 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
                         {/* Tooltip */}
                         <div className="tooltip-content">
+                          <p className='bold'>Additional Notes:</p>
                           {paper.AdditionalNotes || "No Info"}
                         </div>
                       </div>
@@ -221,7 +200,24 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
                   </div>
 
-                  <p className="paper-card-description">{paper.shortDescription}</p>
+                  <div className="paper-card-description-wrapper">
+                    <p
+                      className="paper-card-description"
+                      ref={(el) => {
+                        if (el) {
+                          descriptionRefs.current[paper._id] = el;
+                        }
+                      }}
+                    >
+                      {paper.shortDescription}
+                    </p>
+                    {truncatedDescriptions[paper._id] && paper.shortDescription && (
+                      <div className="paper-card-description-tooltip">
+                        <p className='bold'>Short Desciption:</p>
+                        {paper.shortDescription}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="paper-card-price-row">
                     <span
@@ -233,8 +229,6 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                       }
                     >
 
-                      {/* {Math.abs(paper.priceDeltaMinor)}
-                      {paper.priceDeltaMinor > 0 ? ' %' : ''} */}
                       +{Math.abs(paper.priceDeltaMinor)}
                       {paper.priceDeltaMinor > 0 ? '%' : ''}
                     </span>
@@ -247,7 +241,6 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
               <button
                 className="footer-btn footer-btn-outline"
                 onClick={() => handleBack()}
-              // disabled={currentStep === 1}
               >
                 Back
               </button>
@@ -267,14 +260,10 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                       additionalNotes: selectedPaper.AdditionalNotes,
                     },
                   })}
-              // onClick={handleContinue}
-              // disabled={!canContinue()}
               >
                 Continue
-                {/* {currentStep === 4 ? "Add to Cart" : "Continue"} */}
               </button>
             </div>
-            {/* Action Buttons */}
           </div>
         </div>
       </div>
@@ -284,31 +273,3 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 };
 
 export default Paper;
-
-
-
-// const FooterBar = ({ currentStep, handleBack, handleContinue, canContinue }) => {
-//   currentStep = 3; // Paper step
-//   return (
-//     <div className="footer-bar">
-//       <div className="footer-inner">
-//         <button
-//           className="footer-btn footer-btn-outline"
-//           onClick={() => handleBack()}
-//         // disabled={currentStep === 1}
-//         >
-//           Back
-//         </button>
-
-//         <button
-//           className="footer-btn footer-btn-primary"
-//           onClick={() => hanndleNext()}
-//         // onClick={handleContinue}
-//         // disabled={!canContinue()}
-//         >
-//           {currentStep === 4 ? "Add to Cart" : "Continue"}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
