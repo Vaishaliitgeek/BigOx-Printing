@@ -534,18 +534,10 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
                 type="number"
                 className="quantity-input"
                 value={quantity}
-                // min={minQty}
+                min={minQty}
                 max={maxQty}
                 step={stepQty}
-                onChange={(e) => {
-                  if (e.target.value <= maxQty && e.target.value >= minQty) {
-                    setQuantity(Number(e.target.value));
-
-                  }
-                  else {
-                    setQuantity(prev => Math.min(prev, minQty));
-                  }
-                }}
+                onChange={(e) => handleQuantityChange(Number(e.target.value))}
               />
               <button
                 className={`quantity-button ${quantity >= maxQty ? "quantity-button-disabled" : ""}`}

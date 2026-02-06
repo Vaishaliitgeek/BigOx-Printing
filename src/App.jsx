@@ -8,7 +8,7 @@
  * 4) Finish / Summary
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import "./App.css";
 
 // Data (defaults)
@@ -173,6 +173,10 @@ function App(props) {
     setQuantity(newQuantity);
   }, []);
 
+
+  useEffect(() => {
+    console.log("-------firstLoad", firstLoad)
+  }, [firstLoad])
   // -----------------------------
   // Navigation helpers
   // -----------------------------
@@ -234,8 +238,8 @@ function App(props) {
 
       <Header
         currentStep={currentStep}
-        onBack={handleBack}
-        onClose={goBack}
+        onBack={goBack}
+        onClose={handleClose}
         appSteps={appSteps}
         onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />

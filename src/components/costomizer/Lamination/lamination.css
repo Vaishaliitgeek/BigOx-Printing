@@ -45,6 +45,7 @@
   max-width: 60px;
 }
 
+
 .lamination-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -180,7 +181,7 @@
   color: #111;
   font-size: 12px;
   padding: 6px 10px;
-  border-radius: 7px;
+  border-radius: 8px;
   font-weight: 500;
 }
 

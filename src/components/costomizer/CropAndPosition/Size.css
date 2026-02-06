@@ -342,6 +342,7 @@ quality-gray {
   margin: 0 0 9px !important;
   color: #111827;
   margin-bottom: 12px;
+  font-size: 14px;
 }
 
 .editor-guide-list {
@@ -548,7 +549,7 @@ quality-gray {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 0 15px;
+  /* padding: 0 15px; */
 }
 
 .label {

@@ -79,14 +79,12 @@ async function clearCurrentImage() {
 // --- Component ---
 
 const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template }) => {
-
-  // console.log("---rules", rules)
+  // console.log("---rules", template)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,JPEG,PNG, TIFF');
   const [uploadError, setUploadError] = useState("");
   const [isChecked, setIsChecked] = useState(false);
-
   const [recommendedPPI, setRecommendedPPI] = useState(0);
 
   const Sizes = template?.sizeOptions;
@@ -95,27 +93,47 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   useEffect(() => {
     const storedAgreement = localStorage.getItem("hasAgreed");
     if (storedAgreement === "true") {
-      // console.log("----------storedAgreement", storedAgreement)
+      console.log("----------storedAgreement", storedAgreement)
       setIsChecked(true);
     }
   }, []);
-  // Load image from IndexedDB on mount
+  // // Load image from IndexedDB on mount
+  // useEffect(() => {
+  //   (async () => {
+  //     if (firstLoad == false) return;
+  //     try {
+  //       const saved = await loadCurrentImage();
+  //       if (saved) {
+
+  //         setImageData(saved);
+  //         onImageUpload?.(saved.url, saved.width, saved.height);
+  //         setFirstLoad(false);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error loading image from IndexedDB:", err);
+  //     }
+  //   })();
+  // }, [onImageUpload]);
+
+  // Load image from IndexedDB on mount or whenever navigating back to the upload step
+  // Load image from IndexedDB on mount or when navigating back to the upload step
   useEffect(() => {
-    (async () => {
-      if (firstLoad == false) return;
+    const loadImage = async () => {
       try {
         const saved = await loadCurrentImage();
         if (saved) {
-
-          setImageData(saved);
+          setImageData(saved); // Only update if image exists in IndexedDB
           onImageUpload?.(saved.url, saved.width, saved.height);
-          setFirstLoad(false);
         }
       } catch (err) {
         console.error("Error loading image from IndexedDB:", err);
       }
-    })();
-  }, [onImageUpload]);
+    };
+
+    if (firstLoad) {
+      loadImage();  // Load image only once when app first loads or if firstLoad flag is true
+    }
+  }, [onImageUpload, firstLoad]);  // Re-run when firstLoad changes
 
 
 
@@ -264,7 +282,6 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
       localStorage.removeItem("hasAgreed");
     }
   };
-
 
   useEffect(() => {
     const maxPPI = getMaxPPI(rules?.ppiBandColors);

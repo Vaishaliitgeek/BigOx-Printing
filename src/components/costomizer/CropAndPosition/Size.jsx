@@ -29,6 +29,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   const [cropHeightPx, setCropHeightPx] = useState(260);
   const [isCropping, setIsCropping] = useState(orderConfig?.isCropping ?? false);
   const debouncedSetCompletedCrop = useRef(null);
+  const hasRestoredCrop = useRef(false);
   const initialZoomValue = 260; // Initial zoom value
 
 
@@ -193,18 +194,20 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
       // Restore exact saved crop (pixel-based, matches original image)
       const savedCrop = {
         ...orderConfig.crop,
-        unit: "px", // Ensure unit is px
+        unit: "px",
       };
       setCrop(savedCrop);
       setCompletedCrop(savedCrop);
-      setCropHeightPx(savedCrop.height); // Restores zoom level exactly
-      setIsCropping(true); // ✅ Add this line - mark that cropping is active
+      setCropHeightPx(savedCrop.height);
+      setIsCropping(true);
+      hasRestoredCrop.current = true; // ✅ Mark that we just restored
     } else {
       // First-time or no saved crop → initial centered full-fit
       const initialH = Math.min(heightMax || h, h);
       setCropHeightPx(initialH);
       const c = makeCenteredCropPx(w, h, aspect, initialH);
       setCrop(c);
+      hasRestoredCrop.current = false; // ✅ No restoration happened
     }
   }
 
@@ -212,18 +215,24 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     setCrop(_);
   };
 
+  // ✅ Updated useEffect - only skip ONCE after restoration
   useEffect(() => {
     if (!displayDims.w || !displayDims.h) return;
 
-    // ✅ Don't reset crop if we're restoring from orderConfig
-    if (orderConfig?.crop && orderConfig.crop.width > 0) {
-      return; // Skip automatic centering when restoring
+    // Skip only on the first aspect change after restoring
+    if (hasRestoredCrop.current) {
+      hasRestoredCrop.current = false; // ✅ Reset flag immediately
+      return;
     }
 
     const h = clamp(cropHeightPx, 40, heightMax);
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
     setCrop(newCrop);
-  }, [aspect, heightMax, orderConfig]);
+    // setCompletedCrop(newCrop);  // ✅ Also update completedCrop
+  }, [aspect, heightMax]);
+
+  // ... rest of your code remains the same ...
+
 
   // useEffect(() => {
   //   if (!displayDims.w || !displayDims.h) return;

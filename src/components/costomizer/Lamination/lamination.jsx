@@ -228,7 +228,6 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                                 </div>
                                             }
                                         </div>
-                                        {/* value.charAt(0).toUpperCase() + value.slice(1); */}
                                         {
                                             !isNoLamination && <div className="paper-card-tags">
                                                 <span className="lamination-tag">{Lamination.finish.charAt(0).toUpperCase() + Lamination.finish.slice(1)}</span>

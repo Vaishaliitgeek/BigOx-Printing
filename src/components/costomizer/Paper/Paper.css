@@ -115,7 +115,7 @@
   /* max-width: 250px; */
   height: 100%;
   max-height: 150px;
-  object-fit: cover;
+  object-fit: contain;
   margin: 0 auto;
 }
 
@@ -130,8 +130,8 @@
 .paper-card-radio {
   position: absolute;
   top: 8px;
-  right: 8px;
-  z-index: 999;
+  right: 10px;
+  z-index: 20;
 }
 
 .paper-card-radio-outer {
@@ -196,7 +196,7 @@
 
 .paper-tag {
   font-size: 12px;
-  padding: 4px 8px;
+  padding: 0px 8px;
   /* border-radius: 9999px; */
   border: 1px solid #e5e7eb;
 
@@ -386,7 +386,7 @@
 .editor-right-paper {
   display: flex;
   flex-direction: column;
-  /* height: 100vh; */
+  height: 100vh;
   /* full viewport height */
   overflow: hidden;
   /* prevent page scroll */
@@ -406,7 +406,6 @@
 .editor-title-right {
   padding: 0 10px;
 }
-
 
 /* Tooltip for short description */
 .paper-card-description-wrapper {
