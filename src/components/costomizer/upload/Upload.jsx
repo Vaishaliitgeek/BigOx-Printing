@@ -7,6 +7,7 @@ import {
   getQualityLevel,
   getQualityColor,
   getQualityInfoByPPI,
+  getMaxPPI,
 } from "../../../pages/printData.js";
 import { FiUpload, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
@@ -78,12 +79,15 @@ async function clearCurrentImage() {
 // --- Component ---
 
 const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template }) => {
-  // console.log("---rules", template)
+
+  // console.log("---rules", rules)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,JPEG,PNG, TIFF');
   const [uploadError, setUploadError] = useState("");
   const [isChecked, setIsChecked] = useState(false);
+
+  const [recommendedPPI, setRecommendedPPI] = useState(0);
 
   const Sizes = template?.sizeOptions;
   // console.log("-------Sizes", Sizes)
@@ -91,7 +95,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   useEffect(() => {
     const storedAgreement = localStorage.getItem("hasAgreed");
     if (storedAgreement === "true") {
-      console.log("----------storedAgreement", storedAgreement)
+      // console.log("----------storedAgreement", storedAgreement)
       setIsChecked(true);
     }
   }, []);
@@ -261,6 +265,12 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
     }
   };
 
+
+  useEffect(() => {
+    const maxPPI = getMaxPPI(rules?.ppiBandColors);
+    setRecommendedPPI(maxPPI);
+  }, [rules]);
+
   // useEffect(() => {
   //   // Disable file input if checkbox is unchecked initially
   //   if (!isChecked) {
@@ -413,7 +423,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
               <div className="resolution-note">
                 <p>
                   <span className="resolution-note-strong">
-                    We recommend ≥180 PPI
+                    We recommend ≥{recommendedPPI} PPI
                   </span>{" "}
                   for best print quality. You'll be able to select appropriate
                   sizes in the next step.

@@ -131,7 +131,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     return sizeOptions.map((item) => {
       const res = calculatePPI(cropWpx, cropHpx, item.w, item.h, rotation);
       const ppi = res?.PPI ?? 0;
-      const disabled = ppi < 150;
+      const disabled = ppi < 300;
       const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
 
       return {
@@ -185,7 +185,6 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   function onImageLoad(e) {
     const img = e.currentTarget;
     imgRef.current = img;
-
     const w = img.width;
     const h = img.height;
     setDisplayDims({ w, h });
@@ -194,11 +193,12 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
       // Restore exact saved crop (pixel-based, matches original image)
       const savedCrop = {
         ...orderConfig.crop,
-        unit: "px",  // Ensure unit is px
+        unit: "px", // Ensure unit is px
       };
       setCrop(savedCrop);
       setCompletedCrop(savedCrop);
-      setCropHeightPx(savedCrop.height);  // Restores zoom level exactly
+      setCropHeightPx(savedCrop.height); // Restores zoom level exactly
+      setIsCropping(true); // ✅ Add this line - mark that cropping is active
     } else {
       // First-time or no saved crop → initial centered full-fit
       const initialH = Math.min(heightMax || h, h);
@@ -206,27 +206,24 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
       const c = makeCenteredCropPx(w, h, aspect, initialH);
       setCrop(c);
     }
-
-    // const initialH = Math.min(heightMax || h, h) * 1;
-    // setCropHeightPx(initialH);
-
-    // const c = makeCenteredCropPx(w, h, aspect, initialH);
-    // setCrop(c);
   }
 
   const onCropChange = (_, percentCrop) => {
     setCrop(_);
   };
 
-  // If aspect changes (size selected/rotation), rebuild crop centered
   useEffect(() => {
     if (!displayDims.w || !displayDims.h) return;
+
+    // ✅ Don't reset crop if we're restoring from orderConfig
+    if (orderConfig?.crop && orderConfig.crop.width > 0) {
+      return; // Skip automatic centering when restoring
+    }
+
     const h = clamp(cropHeightPx, 40, heightMax);
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
     setCrop(newCrop);
-    // setCompletedCrop(newCrop); // ✅ Update completedCrop when aspect changes
-  }, [aspect, heightMax]);
-
+  }, [aspect, heightMax, orderConfig]);
 
   // useEffect(() => {
   //   if (!displayDims.w || !displayDims.h) return;
@@ -340,7 +337,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
 
   return (
     <div className="page">
-      <main className="content">
+      <main className="content-paper">
         <section className="left">
           <h2>Crop &amp; Position</h2>
           <div className="imageFrame">
@@ -414,7 +411,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                           onChange={(e) => onCropHeightSlider(e.target.value)}
                           className="range"
                           id="zoom"
-                          style={{ accentColor: "#CE1312" }}
+                          style={{ accentColor: "#CE1312", cursor: 'pointer' }}
                         />
                       </div>
                       <button onClick={handleReset} className="editorResetBtn">
@@ -423,10 +420,10 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                     </div>
                   </div>
 
-                  <div className="hint">
+                  {/* <div className="hint">
                     Tip: drag the crop rectangle to position it. Selecting a new size
                     locks the ratio.
-                  </div>
+                  </div> */}
                 </div>
               </>
             ) : (
@@ -476,7 +473,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
 
           {/* Print Quality Guide */}
           <div className="editor-guide">
-            <h5 className="editor-guide-title">Print Quality Guide</h5>
+            <h4 className="editor-guide-title">Print Quality Guide</h4>
             <div className="editor-guide-list">
               {rules?.ppiBandColors?.map((band, index) => (
                 <div key={index} className="editor-guide-item">

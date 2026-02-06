@@ -402,6 +402,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
       </div>
 
       <div className='right-section'>
+        <h2>Mat, Border & Quantity</h2>
 
         {showTabs && (
 
@@ -651,8 +652,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
           </div> */}
           <div className="footer-inner">
             <button
-              className="footer-btn footer-btn-outline"
+              className={`footer-btn footer-btn-outline ${isAddingToCart ? "btn-disabled" : ""}`}
               onClick={() => handleBack()}
+              disabled={isAddingToCart}
             // onClick={() => handleBack()}
             >
               Back

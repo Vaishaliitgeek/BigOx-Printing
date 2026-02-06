@@ -194,9 +194,9 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
                   <div className="paper-card-tags">
                     <span className="paper-tag"> {paper.finish?.charAt(0).toUpperCase() + paper.finish?.slice(1)}</span>
-                    <span className="paper-tag paper-tag-outline">
+                    {/* <span className="paper-tag paper-tag-outline">
                       {paper.weight || "22gsm"}
-                    </span>
+                    </span> */}
 
                   </div>
 

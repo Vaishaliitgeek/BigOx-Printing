@@ -28,7 +28,6 @@ import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
 import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
 import { ToastContainer } from "react-toastify";
-
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
@@ -51,7 +50,6 @@ function App(props) {
   console.log("---props", props)
 
   const [appSteps, setAppSteps] = useState(STEPS);
-  const [firstLoad, setFirstLoad] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('product_id');
@@ -76,7 +74,7 @@ function App(props) {
   // -----------------------------
   const [rules, setRules] = useState(null);
   const [template, setTemplate] = useState(null);
-  // const navigate = useNavigate();
+  const [firstLoad, setFirstLoad] = useState(false);
 
   // If you plan to use sizeOptions later, keep it.
   // Otherwise, remove it to reduce unused state.
@@ -192,12 +190,14 @@ function App(props) {
    */
   const handleBack = useCallback(() => {
     window.scrollTo(0, 0);
-
     // window.history.back();
-
     setCurrentStep((prev) => Math.max(MIN_STEP, prev - 1));
     // navigate(-1)
   }, []);
+
+  const goBack = useCallback(() => {
+    window.history.back();
+  }, [])
 
   /**
    * Close/reset flow.
@@ -235,7 +235,7 @@ function App(props) {
       <Header
         currentStep={currentStep}
         onBack={handleBack}
-        onClose={handleClose}
+        onClose={goBack}
         appSteps={appSteps}
         onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />
@@ -247,7 +247,7 @@ function App(props) {
           rules={rules}
           template={template}
           firstLoad={firstLoad}
-        setFirstLoad={setFirstLoad}
+          setFirstLoad={setFirstLoad}
         />
       )}
 

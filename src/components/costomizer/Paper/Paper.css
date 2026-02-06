@@ -249,7 +249,7 @@
   /* position: fixed; */
   bottom: 0;
   /* left: 0; */
-  margin-top: 24px;
+  /* margin-top: 24px; */
   z-index: 999;
 }
 
@@ -386,7 +386,7 @@
 .editor-right-paper {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  /* height: 100vh; */
   /* full viewport height */
   overflow: hidden;
   /* prevent page scroll */

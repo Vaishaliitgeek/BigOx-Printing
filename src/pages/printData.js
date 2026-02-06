@@ -126,7 +126,6 @@ export function calculatePPI(
   printHeight,
   isRotated = false,
 ) {
-  console.log("isRotated==========", isRotated)
   const imageWidthInches = toInches(imageWidth);
   const imageHeightInches = toInches(imageHeight);
   const PPI = Math.min(imageHeightInches, imageWidthInches);
@@ -205,4 +204,11 @@ export function getQualityInfoByPPI(ppi, ppiBandColors = []) {
       badgeLabel: 'Warning',
     };
 }
+
+
+export const getMaxPPI = (ppiBandColors) => {
+
+  const excellentQuality = ppiBandColors?.find((band) => band.qualityLabel === "Excellent");
+  return excellentQuality ? excellentQuality.minPPI : 180; // Default to 180 if not found
+};
 
