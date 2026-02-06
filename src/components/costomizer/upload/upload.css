@@ -298,9 +298,11 @@
   .resolution-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
 
-  .upload-text {
-    font-size: 15px;
+@media (max-width: 400px) {
+  .upload-file-icon {
+    display: none;
   }
 }
 
@@ -312,12 +314,6 @@
 
   .bg-trade {
     gap: 20px;
-  }
-}
-
-@media (max-width: 400px) {
-  .upload-file-icon {
-    display: none;
   }
 }
 

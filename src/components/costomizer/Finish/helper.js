@@ -276,7 +276,7 @@ async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
 
 // extract varinat id
 function extractVariantId(runtimeResult, setStatus) {
-
+ 
 
   const savedVariants = runtimeResult               // ← added [0]
     ?.result
@@ -399,7 +399,7 @@ export async function cartHandler(setStatus, orderConfig, total, productId) {
     // ---------------------------------------------
     const targetFolder = folderTemplate
       ? resolveTemplate(folderTemplate, tokenMap)
-      : `default_${Date.now()}`;
+      : "default";
 
     const fileName = fileTemplate
       ? resolveTemplate(fileTemplate, tokenMap).replace(/\//g, "_") // Replace slashes with underscores

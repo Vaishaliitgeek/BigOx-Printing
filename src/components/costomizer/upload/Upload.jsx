@@ -145,37 +145,29 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
+      // console.log("---------img", img)
       img.onload = async () => {
-        // Perform the validation check first
-        const validation = validateImageFile(file, img.width, img.height, rules);
+
+
+        const validation = validateImageFile(
+          file,
+          img.width,
+          img.height,
+          rules
+        );
 
         if (!validation.valid) {
           toast.warning(validation.message, {
             toastId: "image-upload-warning", // prevents duplicate toasts
           });
-
-          // Reset file input so the user can select a new file
+          // setUploadError(validation?.message);
+          // console.log("-----uplll", uploadError)
+          // alert(validation.message); // or Polaris Toast
           e.target.value = ""; // reset file input
-
-          // Clear the current image state
-          setImageData(null);
-
-          // Don't store the invalid image to IndexedDB
-          try {
-            await clearCurrentImage(); // Ensure that no invalid image is stored in IndexedDB
-          } catch (err) {
-            console.error("Error clearing image from IndexedDB:", err);
-          }
-
-          // If the upload fails, load the previously saved image from IndexedDB
-          const saved = await loadCurrentImage();
-          if (saved) {
-            setImageData(saved); // Show previously saved image if any
-            onImageUpload?.(saved.url, saved.width, saved.height); // Ensure image is passed if needed
-          }
-
           return;
         }
+
+
 
         const url = event.target.result;
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
@@ -191,23 +183,20 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
           isSample: false,
         };
 
-        // Now that validation passed, update the UI and store the image in IndexedDB
         setImageData(imageObj);
 
         try {
-          await saveCurrentImage(imageObj); // Save the new image to IndexedDB
+          await saveCurrentImage(imageObj);
         } catch (err) {
           console.error("Error saving image to IndexedDB:", err);
         }
 
-        // Notify the parent component if needed
-        onImageUpload?.(url, img.width, img.height);
+        // onImageUpload?.(url, img.width, img.height);
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   };
-
   const handleChangeImage = async () => {
     setImageData(null);
     onImageUpload?.("", 0, 0);

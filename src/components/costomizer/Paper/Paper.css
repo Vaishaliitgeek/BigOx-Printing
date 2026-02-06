@@ -53,7 +53,7 @@
   margin-bottom: 24px;
   max-height: 500px;
   overflow-y: auto;
-  padding: 0 32px;
+  padding: 0 25px;
   overflow-x: hidden;
 }
 
@@ -268,7 +268,7 @@
 .footer-btn {
   flex: 1;
   height: 44px;
-  width: 280px;
+  width: 275px;
   border-radius: 999px;
   /* pill shape */
   font-size: 14px;
@@ -463,4 +463,12 @@
   font-weight: bold;
   margin: 0;
   color: #d51c1c;
+}
+
+/* .editor-right-paper .editor-title {
+  padding: 0 10px;
+} */
+
+.editor-right-paper .editor-title {
+  padding: 0 32px;
 }

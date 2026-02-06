@@ -119,9 +119,9 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
               <h2 className="editor-title-right">
                 Select Paper
               </h2>
-              <p>
+              {/* <p>
                 Choose from our collection of museum-grade fine art papersthumbnailUrl
-              </p>
+              </p> */}
             </div>
             <div className="paper-grid">
               {PAPERS?.map((paper) => (

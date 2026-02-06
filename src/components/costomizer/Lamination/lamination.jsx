@@ -223,7 +223,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                                 <div className="tooltip-wrapper">
                                                     <TooltipHoverIcon />
                                                     <div className="tooltip-content">
-                                                        {Lamination.durabilityAndCleaningNotes || "No Info"}
+                                                        {Lamination.AdditionalNotes || "No Info"}
                                                     </div>
                                                 </div>
                                             }
@@ -236,7 +236,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                         <span className="lamination-card-description">{Lamination.durabilityAndCleaningNotes}</span>
 
                                         {/* Feature pills */}
-                                        {Lamination.shortDescription && (
+                                        {/* {Lamination.shortDescription && (
                                             <div className="lamination-features">
                                                 {Lamination.shortDescription
                                                     .split(",")                // split by comma
@@ -248,7 +248,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                                         </span>
                                                     ))}
                                             </div>
-                                        )}
+                                        )} */}
 
 
                                         {
