@@ -205,3 +205,14 @@ p {
     visibility: visible;
     opacity: 1;
 }
+
+
+@media(max-width:800px) {
+    .mounting-card-body .tooltip-wrapper {
+        margin-right: 19px !important;
+    }
+
+    .tooltip-wrapper {
+        margin-right: 20px;
+    }
+}

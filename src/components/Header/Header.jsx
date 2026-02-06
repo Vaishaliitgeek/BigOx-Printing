@@ -91,7 +91,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
                     >
                         {/* <FaAngleLeft className={styles.icon} /> */}
                         <FaArrowLeft className={styles.icon} />
-                        {/* <span className={styles.backTextDesktop}>Back to Product</span> */}
+                        <span className={styles.backTextDesktop}>Back to Product</span>
                         <span className={styles.backTextMobile}></span>
                     </button>
 

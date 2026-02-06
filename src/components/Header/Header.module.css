@@ -16,7 +16,7 @@ div:empty {
 /* Container (center + max width) */
 .headerContainer {
     max-width: 1120px;
-    margin: 0 auto;
+    margin: 10px auto;
     padding-inline: 12px;
 }
 
@@ -46,8 +46,8 @@ div:empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
-    width: 40px;
+    /* height: 40px;
+    width: 40px; */
     gap: 4px;
     font-size: 14px;
     font-weight: 500;
@@ -61,14 +61,21 @@ div:empty {
 }
 
 .backButton:hover {
-    background-color: #f3f4f6;
+    color: #e11d26;
 }
+
+/* .backButton:hover {
+    background-color: #f3f4f6;
+} */
 
 @media (max-width: 768px) {
     .backButton {
         padding: 0 !important;
     }
 
+    .header {
+        height: 70px;
+    }
 }
 
 @media (min-width: 640px) {
@@ -77,9 +84,9 @@ div:empty {
     }
 }
 
-.backButton:hover {
+/* .backButton:hover {
     color: #111827;
-}
+} */
 
 /* Icon base */
 .icon {

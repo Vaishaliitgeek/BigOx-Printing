@@ -227,7 +227,7 @@ function App(props) {
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
 
-
+  console.log("=======ord", orderConfig)
   // -----------------------------
   // Render
   // -----------------------------

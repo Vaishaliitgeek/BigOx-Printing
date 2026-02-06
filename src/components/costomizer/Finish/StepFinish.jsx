@@ -562,17 +562,12 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
               <span className="breakdown-value">${Number(percentBasePrice).toFixed(2)}</span>
             </div>
-
-
-
-
-
             {/* size */}
             {hasSizeOptions && orderConfig?.size?.label && (
 
               <div className="breakdown-row">
 
-                <span className="breakdown-label">Size ({orderConfig?.size?.label || "16×20\""})</span>
+                <span className="breakdown-label">Size {orderConfig?.size?.label ? `(${orderConfig?.size?.label})` : ''}</span>
                 <span className="breakdown-value">+${orderConfig?.size?.price}</span>
               </div>
 
@@ -580,36 +575,10 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
             }
 
-            {/* border */}
-            {hasBorderOptions && (
-
-              <div className="breakdown-row">
-                <span className="breakdown-label">Border</span>
-                <span className="breakdown-value">  {formatPercentWithPrice(orderConfig?.border?.priceDeltaMinor)}</span>
-              </div>
-
-            )}
-
-            {hasMatOptions && (
-              <div className="breakdown-row">
-                <span className="breakdown-label">Mat</span>
-                <span className="breakdown-value">+${orderConfig?.mat?.price || 0}</span>
-              </div>
-
-            )}
-
-            {hasLaminationOptions && (
-              <div className="breakdown-row">
-                <span className="breakdown-label">Lamination</span>
-                <span className="breakdown-value"> {formatPercentWithPrice(orderConfig?.lamination?.priceDeltaMinor)}</span>
-              </div>
-
-            )}
-
             {hasPaperOptions && (
 
               <div className="breakdown-row">
-                <span className="breakdown-label">Paper upgrade</span>
+                <span className="breakdown-label">Paper upgrade {orderConfig?.paper?.name ? `(${orderConfig?.paper?.name})` : ''} </span>
                 <span className="breakdown-value"> {formatPercentWithPrice(orderConfig?.paper?.priceDeltaMinor)}</span>
               </div>
             )
@@ -619,10 +588,48 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
             {hasMountingOptions && (
 
               <div className="breakdown-row">
-                <span className="breakdown-label">Mounting</span>
+                <span className="breakdown-label">Mounting {orderConfig?.mounting?.name ? `(${orderConfig?.mounting?.name})` : ''}</span>
                 <span className="breakdown-value">+${orderConfig?.mounting?.price || 0}</span>
               </div>
             )}
+
+
+            {hasLaminationOptions && (
+              <div className="breakdown-row">
+
+                <span className="breakdown-label">Lamination  {orderConfig?.lamination?.name ? `(${orderConfig?.lamination?.name})` : ''}</span>
+                <span className="breakdown-value"> {formatPercentWithPrice(orderConfig?.lamination?.priceDeltaMinor)}</span>
+              </div>
+
+            )}
+
+
+
+
+            {/* border */}
+            {hasBorderOptions && (
+
+              <div className="breakdown-row">
+                <span className="breakdown-label">
+
+                  Border   {orderConfig?.border?.thickness ? `("${orderConfig?.border?.thickness}")` : ''}
+                </span>
+
+                <span className="breakdown-value">  {formatPercentWithPrice(orderConfig?.border?.priceDeltaMinor)}</span>
+              </div>
+
+            )}
+
+            {hasMatOptions && (
+              <div className="breakdown-row">
+                <span className="breakdown-label">Mat  {orderConfig?.mat?.name ? `(${orderConfig?.mat?.name})` : ''}</span>
+                <span className="breakdown-value">+${orderConfig?.mat?.price || 0}</span>
+              </div>
+
+            )}
+
+
+
 
 
             <div className="breakdown-row">

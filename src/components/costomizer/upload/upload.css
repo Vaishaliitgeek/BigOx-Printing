@@ -298,6 +298,21 @@
   .resolution-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .upload-text {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .upload-text {
+    font-size: 15px;
+  }
+
+  .bg-trade {
+    gap: 20px;
+  }
 }
 
 @media (max-width: 400px) {

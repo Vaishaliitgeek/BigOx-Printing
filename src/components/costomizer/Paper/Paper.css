@@ -309,10 +309,14 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 720px) {
   .footer-bar {
     width: 100%;
     position: unset;
+  }
+
+  .lamination-card-body {
+    width: 80%;
   }
 }
 
