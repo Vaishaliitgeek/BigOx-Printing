@@ -50,7 +50,7 @@
   /* Set a max-height to control the scrollable area */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px;
+  padding: 1px 10px;
 }
 
 
@@ -122,6 +122,13 @@
 
 .mounting-card-description-bestfor {
   color: #000000;
+}
+
+.mounting-card-shortdescription {
+  font-size: 12px;
+  line-height: 2;
+  letter-spacing: 0px;
+  color: rgba(82, 82, 82, 1);
 }
 
 .mounting-wrappper-text {
@@ -265,4 +272,3 @@
 .mounting-card-body .tooltip-wrapper {
   margin-right: 10px;
 }
-

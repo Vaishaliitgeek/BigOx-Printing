@@ -56,8 +56,8 @@
   /* Set a max-height to control the scrollable area */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 10px;
-  /* Enable vertical scrolling */
+  padding: 1px 10px
+    /* Enable vertical scrolling */
 }
 
 .lamination-card-body {
