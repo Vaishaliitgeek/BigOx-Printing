@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import './stepFinish.css'
-import { getCommerceRulesCustomerDiscounts, getCommerceRulesQuantityAndDiscounts, getCommerceRulesQuantityAndLimits } from '../../../services/services';
+// import { getCommerceRulesCustomerDiscounts, getCommerceRulesQuantityAndDiscounts, getCommerceRulesQuantityAndLimits } from '../../../services/services';
 import { loadCropImageFromDb } from '../../../services/indexDb';
 import { cartHandler } from './helper';
 import { calculateOrderPrice } from '../../../services/calculateOrderTotal';
@@ -27,7 +27,9 @@ const NO_Mat_OPTION = {
   label: "No Mat",
 };
 
-const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, customerTags }) => {
+const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, customerTags, commerceRules, rulesError, rulesLoading }) => {
+
+
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('product_id');
@@ -49,9 +51,21 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
   const [imageSrc, setImageSrc] = useState(null);
   const [activeTab, setActiveTab] = useState("Mat");
   const [activeMat, setActiveMat] = useState(NO_Mat_OPTION);
-  const [quantityAndLimits, setquantityAndLimits] = useState([]);
+
+  // api discount data
+  // const [quantityAndLimits, setquantityAndLimits] = useState([]);
+  // const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
+  // const [quantityDiscountRules, setQuantityDiscountRules] = useState([]);
+  const customerDiscountRules = commerceRules?.customerDiscountRules || [];
+  const quantityDiscountRules = commerceRules?.quantityDiscountRules || [];
+  const quantityAndLimits = commerceRules?.quantityAndLimits || [];
+
+
+
   const [status, setStatus] = useState("start");
   const [borderPx, setBorderPx] = useState(0);
+
+
   const showTabs = hasMatOptions && hasBorderOptions;
   // check that this option exist or not 
   const hasPaperOptions =
@@ -69,9 +83,6 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
   // console.log("-orderConfig", orderConfig)
-  // api discount data
-  const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
-  const [quantityDiscountRules, setQuantityDiscountRules] = useState([]);
 
 
   // loading states
@@ -107,10 +118,10 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
 
-  const fetchData = async () => {
-    const data = await getCommerceRulesQuantityAndLimits();
-    setquantityAndLimits(data);
-  };
+  // const fetchData = async () => {
+  //   const data = await getCommerceRulesQuantityAndLimits();
+  //   setquantityAndLimits(data);
+  // };
 
   const handleQuantityChange = (value) => {
     if (isNaN(value)) return;
@@ -133,10 +144,11 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
   const total = useMemo(() => {
-    if (!customerDiscountRules.length || !quantityDiscountRules.length) {
-      return 0;
-    }
+    // if (!customerDiscountRules.length || !quantityDiscountRules.length) {
+    //   return 0;
+    // }
 
+    if (rulesLoading) return 0; // or return null and show "--" in UI   
     return calculateOrderPrice({
       orderConfig: {
         ...orderConfig,
@@ -155,7 +167,39 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
     customerDiscountRules,
     quantityDiscountRules,
   ]);
-  console.log("----totalls", total)
+  console.log("----totalls", quantityDiscountRules)
+
+
+  const normalizedQuantityDiscountRows = useMemo(() => {
+    if (!Array.isArray(quantityDiscountRules)) return [];
+
+    return [...quantityDiscountRules]
+      .map((row) => {
+        const minQty = Number(row?.minQty);
+        const rawMax = row?.maxQty;
+        const maxQty =
+          rawMax === null || rawMax === undefined ? Infinity : Number(rawMax);
+
+        return {
+          ...row,
+          minQty: Number.isFinite(minQty) ? minQty : 0,
+          maxQty: Number.isFinite(maxQty) ? maxQty : Infinity,
+          discountPercent: Number(row?.discountPercent) || 0,
+        };
+      })
+      .filter((row) => row.minQty > 0)
+      .sort((a, b) => a.minQty - b.minQty);
+  }, [quantityDiscountRules]);
+
+  const isQtyInRange = (qty, row) =>
+    qty >= row.minQty && (row.maxQty === Infinity || qty <= row.maxQty);
+
+  const getRangeLabel = (row) => {
+    if (row.maxQty === Infinity) return `${row.minQty}+`;
+    if (row.minQty === row.maxQty) return `${row.minQty}`;
+    return `${row.minQty} - ${row.maxQty}`;
+  };
+
 
   // ✅ CORRECT APPROACH: Calculate border in pixels based on actual image size
   const calculateBorderPx = () => {
@@ -224,9 +268,9 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
     })();
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     if (quantityRule?.defaultQuantity) {
@@ -296,15 +340,15 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
   // useeffect for discount csaal
-  useEffect(() => {
-    (async () => {
-      const customerRes = await getCommerceRulesCustomerDiscounts();
-      const quantityRes = await getCommerceRulesQuantityAndDiscounts();
+  // useEffect(() => {
+  //   (async () => {
+  //     const customerRes = await getCommerceRulesCustomerDiscounts();
+  //     const quantityRes = await getCommerceRulesQuantityAndDiscounts();
 
-      setCustomerDiscountRules(customerRes?.[0]?.customerTiers ? customerRes : []);
-      setQuantityDiscountRules(quantityRes?.[0]?.discountTiers || []);
-    })();
-  }, []);
+  //     setCustomerDiscountRules(customerRes?.[0]?.customerTiers ? customerRes : []);
+  //     setQuantityDiscountRules(quantityRes?.[0]?.discountTiers || []);
+  //   })();
+  // }, []);
 
 
   const [matImageLoadedMap, setMatImageLoadedMap] = useState({});
@@ -550,6 +594,52 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
             </div>
           </div>
           {validationMsg && <p className="quantity-warning">{validationMsg}</p>}
+
+
+          <div className="quantity-discount-section">
+            <h3 className="quantity-discount-title">Quantity Discount Table</h3>
+
+            <div className="quantity-discount-table-wrap">
+              {rulesLoading ? (
+                <div className="quantity-discount-loading">
+                  <span className="table-spinner" />
+                  <span>Loading discounts...</span>
+                </div>
+              ) : rulesError ? (
+                <div className="quantity-discount-error">{rulesError}</div>
+              ) : (
+                <table className="quantity-discount-table">
+                  <thead>
+                    <tr>
+                      <th>Qty Range</th>
+                      <th>Discount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {normalizedQuantityDiscountRows.length ? (
+                      normalizedQuantityDiscountRows.map((row) => {
+                        const active = isQtyInRange(quantity, row);
+
+                        return (
+                          <tr key={row._id || `${row.minQty}-${row.maxQty}`} className={active ? 'active-discount-row' : ''}>
+                            <td>{getRangeLabel(row)}</td>
+                            <td>{row.discountPercent}%</td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={2} className="no-discount-row">No discount tiers available</td>
+                      </tr>
+                    )}
+                  </tbody>
+
+                </table>
+              )}
+            </div>
+          </div>
+
+
 
           <div className="price-breakdown">
             <h3 className="breakdown-title">Price Breakdown</h3>

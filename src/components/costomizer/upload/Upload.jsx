@@ -89,9 +89,9 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
 
   const Sizes = template?.sizeOptions;
   // console.log("-------Sizes", Sizes)
-  // Load agreement status from localStorage on mount (only once)
+  // Load agreement status from sessionStorage on mount (only once)
   useEffect(() => {
-    const storedAgreement = localStorage.getItem("hasAgreed");
+    const storedAgreement = sessionStorage.getItem("hasAgreed");
     if (storedAgreement === "true") {
       console.log("----------storedAgreement", storedAgreement)
       setIsChecked(true);
@@ -274,11 +274,11 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
     const newCheckedState = !isChecked;
     setIsChecked(newCheckedState);
 
-    // Save to localStorage
+    // Save to sessionStorage
     if (newCheckedState) {
-      localStorage.setItem("hasAgreed", "true");
+      sessionStorage.setItem("hasAgreed", "true");
     } else {
-      localStorage.removeItem("hasAgreed");
+      sessionStorage.removeItem("hasAgreed");
     }
   };
 

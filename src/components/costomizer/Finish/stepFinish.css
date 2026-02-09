@@ -227,10 +227,10 @@
   -moz-appearance: textfield;
 }
 
-.quantity-input:focus {
+/* .quantity-input:focus {
   outline: none;
   border-color: #1a1a1a;
-}
+} */
 
 .quantity-limit {
   font-size: 14px;
@@ -341,7 +341,7 @@
   flex: 1;
   border-radius: 22px;
   padding: 7px 5px 7px 5px;
-  height: 26px;
+  height: 30px;
 }
 
 .tab-option {
@@ -512,7 +512,6 @@
 
 .cartIcon {
   font-size: 20px;
-  padding-top: 4px;
 }
 
 
@@ -573,4 +572,66 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+/* Quantity Discount Table */
+.quantity-discount-section {
+  margin-bottom: 18px;
+}
+
+.quantity-discount-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #1a1a1a;
+}
+
+.quantity-discount-table-wrap {
+  border: 1px solid rgba(229, 229, 229, 1);
+  background: #fff;
+  overflow: hidden;
+}
+
+.quantity-discount-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.quantity-discount-table th,
+.quantity-discount-table td {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  border: none !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.quantity-discount-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #fafafa;
+}
+
+.quantity-discount-table td:last-child,
+.quantity-discount-table th:last-child {
+  text-align: right;
+}
+
+.quantity-discount-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Highlight currently selected quantity range */
+.active-discount-row td {
+  background: #fdf9ee;
+  font-weight: 600;
+}
+
+.no-discount-row {
+  text-align: center;
+  color: #777;
+  padding: 14px 12px;
 }

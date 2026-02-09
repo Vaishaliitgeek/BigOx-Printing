@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import './Paper.css';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 import { loadCropImageFromDb } from '../../../services/indexDb';
-
+import { getDeltaAmount } from '../../../utils/PercentFormatter';
 
 // --- Component ---
 
 const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
-
+  const urlParams = new URLSearchParams(window.location.search);
+  const Productprice = urlParams.get('price');
   // only show those paper whose status is true 
   const PAPERS = useMemo(() => {
     return (template?.paperOptions || []).filter(
@@ -231,6 +232,7 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
                       +{Math.abs(paper.priceDeltaMinor)}
                       {paper.priceDeltaMinor > 0 ? '%' : ''}
+                      <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(Productprice, paper.priceDeltaMinor)})</span>
                     </span>
                   </div>
 

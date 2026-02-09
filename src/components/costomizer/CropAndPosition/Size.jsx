@@ -228,7 +228,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     const h = clamp(cropHeightPx, 40, heightMax);
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
     setCrop(newCrop);
-    // setCompletedCrop(newCrop); // ✅ Also update completedCrop
+    setCompletedCrop(newCrop); // ✅ Also update completedCrop
   }, [aspect, heightMax]);
 
   // ... rest of your code remains the same ...
@@ -382,11 +382,11 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                   minWidth={40}
                   minHeight={40}
                 >
-                  {!isCropping && (
+                  {/* {!isCropping && (
                     <div className="imageOverlay">
                       <p>Adjust image before continue</p>
                     </div>
-                  )}
+                  )} */}
                   <img
                     src={imageSrc}
                     alt="to crop"
@@ -518,7 +518,9 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
               <button
                 className="footer-btn footer-btn-primary"
                 onClick={() => onDownload()}
-                disabled={!isCropping || !selectedSizeId}
+                // disabled={!isCropping || !selectedSizeId}
+                disabled={!selectedSizeId}
+
               >
                 Continue
               </button>

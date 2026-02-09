@@ -267,7 +267,7 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
 
                                         {mounting?.AdditionalNotes && (
                                             <span>
-                                                <span className='mounting-card-description'> Best For : </span>
+                                                <span className='mounting-card-description-span'> Best For : </span>
                                                 <span className="mounting-card-description-bestfor mounting-card-shortdescription">{mounting?.shortDescription}</span>
                                             </span>
                                         )}

@@ -28,6 +28,13 @@ import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
 import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
 import { ToastContainer } from "react-toastify";
+
+// import {
+//   getCommerceRulesCustomerDiscounts,
+//   getCommerceRulesQuantityAndDiscounts,
+//   getCommerceRulesQuantityAndLimits,
+// } from '../../../services/services';
+import { getCommerceRulesCustomerDiscounts, getCommerceRulesQuantityAndDiscounts, getCommerceRulesQuantityAndLimits } from "./services/services.js";
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
@@ -40,6 +47,17 @@ const STEPS = {
   FINISH: 6,
 };
 
+
+const normalizeQuantityDiscounts = (res) => {
+  // supports both shapes:
+  // 1) [{ discountTiers: [...] }]
+  // 2) [...]
+  if (Array.isArray(res?.[0]?.discountTiers)) return res[0].discountTiers;
+  if (Array.isArray(res)) return res;
+  return [];
+};
+
+
 const ALLSTEPS = ["UPLOAD", "sizeOptions", "paperOptions", "laminationOptions", "mountingOptions", "FINISH",];
 
 
@@ -50,6 +68,14 @@ function App(props) {
   console.log("---props", props)
 
   const [appSteps, setAppSteps] = useState(STEPS);
+  const [commerceRules, setCommerceRules] = useState({
+    customerDiscountRules: [],
+    quantityDiscountRules: [],
+    quantityAndLimits: [],
+  });
+
+  const [rulesLoading, setRulesLoading] = useState(true);
+  const [rulesError, setRulesError] = useState('');
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('product_id');
@@ -126,6 +152,7 @@ function App(props) {
   }
 
 
+
   /**
    * Loads validation rules from the backend once on mount.
    * Wrapped in useCallback so it has stable identity and keeps lint happy.
@@ -174,9 +201,44 @@ function App(props) {
   }, []);
 
 
+  // useEffect(() => {
+  //   console.log("-------firstLoad", firstLoad)
+  // }, [firstLoad])
+
+
   useEffect(() => {
-    console.log("-------firstLoad", firstLoad)
-  }, [firstLoad])
+    let alive = true;
+
+    (async () => {
+      setRulesLoading(true);
+      setRulesError('');
+      try {
+        const [customerRes, quantityRes, limitsRes] = await Promise.all([
+          getCommerceRulesCustomerDiscounts(),
+          getCommerceRulesQuantityAndDiscounts(),
+          getCommerceRulesQuantityAndLimits(),
+        ]);
+
+        if (!alive) return;
+
+        setCommerceRules({
+          customerDiscountRules: Array.isArray(customerRes) ? customerRes : [],
+          quantityDiscountRules: normalizeQuantityDiscounts(quantityRes),
+          quantityAndLimits: Array.isArray(limitsRes) ? limitsRes : [],
+        });
+      } catch (e) {
+        if (!alive) return;
+        setRulesError('Failed to load pricing rules');
+      } finally {
+        if (alive) setRulesLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   // -----------------------------
   // Navigation helpers
   // -----------------------------
@@ -231,6 +293,12 @@ function App(props) {
   // -----------------------------
   // Render
   // -----------------------------
+
+  useEffect(() => {
+    const customerRes = getCommerceRulesCustomerDiscounts();
+    const quantityRes = getCommerceRulesQuantityAndDiscounts();
+  }, []);
+
   return (
     <div className="Appcontainer">
 
@@ -307,6 +375,9 @@ function App(props) {
           setOrderConfig={setOrderConfig}
           handleBack={handleBack}
           customerTags={props?.customerTags}
+          commerceRules={commerceRules}
+          rulesLoading={rulesLoading}
+          rulesError={rulesError}
         />
       )}
 

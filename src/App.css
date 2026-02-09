@@ -131,7 +131,7 @@ p {
 .tooltip-content {
     position: absolute;
     bottom: 120%;
-    left: -140%;
+    left: -169%;
     transform: translateX(-50%);
     background: #fff;
 

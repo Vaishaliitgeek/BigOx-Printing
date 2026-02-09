@@ -3,6 +3,8 @@ import './lamination.css';
 import { getLaminationOptions } from '../../../services/services';
 import { TooltipHoverIcon } from '../../../utils/CustomIcon';
 import { loadCropImageFromDb } from '../../../services/indexDb';
+import { getDeltaAmount } from '../../../utils/PercentFormatter';
+// import { getDeltaAmount } from '../../../utils/PercentFormateer';
 
 
 
@@ -20,7 +22,8 @@ const NO_LAMINATION_OPTION = {
 
 const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
 
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const Productprice = urlParams.get('price');
     const [laminationData, setLaminationData] = useState([]);
 
     const [imageSrc, setImageSrc] = useState(null);
@@ -264,6 +267,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                                 >
                                                     +{Math.abs(Lamination.priceDeltaMinor)}
                                                     {Lamination.priceDeltaMinor > 0 ? ' %' : ''}
+                                                    <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(Productprice, Lamination.priceDeltaMinor)})</span>
                                                 </span>
 
                                             </div>

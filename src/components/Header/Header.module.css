@@ -75,7 +75,7 @@ div:empty {
     }
 
     .header {
-        height: 80px;
+        height: 70px;
     }
 }
 
@@ -287,19 +287,12 @@ div:empty {
     background-color: #d1d5db;
 }
 
-@media (max-width: 900px) {
+/* @media (max-width: 640px) {
     .stepConnector {
-        width: 40px;
+        width: 5rem;
         margin-inline: 0.5rem;
     }
-}
-
-@media (max-width: 640px) {
-    .stepConnector {
-        width: 2rem;
-        margin-inline: 0.5rem;
-    }
-}
+} */
 
 /* Right: close button */
 .closeButton {
@@ -337,11 +330,6 @@ div:empty {
 @media (max-width: 400px) {
     .stepLabel {
         display: none;
-    }
-
-    .stepConnector {
-        width: 20px;
-        margin-inline: 0.5rem;
     }
 
     .stepCircle {
