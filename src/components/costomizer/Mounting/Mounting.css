@@ -57,7 +57,7 @@
 .mounting-card-body {
   display: flex;
   flex-direction: column;
-  width: 85%;
+  width: 82%;
   gap: 5px;
 }
 

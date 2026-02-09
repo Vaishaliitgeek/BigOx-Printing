@@ -115,7 +115,7 @@
   /* max-width: 250px; */
   height: 100%;
   max-height: 150px;
-  object-fit: contain;
+  object-fit: fill;
   margin: 0 auto;
 }
 
@@ -172,6 +172,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  margin-top: 5px;
 }
 
 .paper-card-name-row {
@@ -255,7 +256,7 @@
 
 /* Centered inner container */
 .footer-inner {
-  max-width: 1120px;
+  max-width: 100%;
   /* similar to container mx-auto */
   margin: 0 auto;
   display: flex;
@@ -325,6 +326,7 @@
   .footer-bar {
     width: 80%;
     position: unset;
+    align-self: center;
   }
 
   .footer-inner {

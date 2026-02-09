@@ -63,7 +63,7 @@
 .lamination-card-body {
   display: flex;
   flex-direction: column;
-  width: 75%;
+  width: 80%;
   gap: 5px;
 }
 
