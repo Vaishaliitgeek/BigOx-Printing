@@ -295,7 +295,26 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   // }, [isChecked]);
   return (
     <div className="step-upload">
-      <div className="step-upload-header">
+
+      {!imageData && (<div className="trademark-container">
+
+        <label htmlFor="trademark-check" className="bg-trade">
+
+          <input
+            type="checkbox"
+            checked={isChecked}
+            id="trademark-check"
+            name="trademark-check"
+            required
+            onChange={handleCheckboxChange}
+            className="checkbox-input" // Optional for styling purposes
+          />
+          <p className="trademark-check-para">
+            I agree and confirm that I have the rights to use the logos, text, or trademarks.
+          </p>
+        </label>
+      </div>)}
+      <div className={`step-upload-header  ${!isChecked ? "disabled" : ""}`}>
         <h2 className="step-upload-title">Upload Your Image</h2>
         <p className="">
           {allowedTypes} up to {rules?.fileConstraints?.maxFileSizeMB} MB. We'll check the resolution for your
@@ -338,24 +357,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
 
       )}
 
-      {!imageData && (<div className="trademark-container">
 
-        <label htmlFor="trademark-check" className="bg-trade">
-
-          <input
-            type="checkbox"
-            checked={isChecked}
-            id="trademark-check"
-            name="trademark-check"
-            required
-            onChange={handleCheckboxChange}
-            className="checkbox-input" // Optional for styling purposes
-          />
-          <p className="trademark-check-para">
-            I agree and confirm that I have the rights to use the logos, text, or trademarks.
-          </p>
-        </label>
-      </div>)}
 
       {/* IF IMAGE → SHOW PREVIEW & RESOLUTION GRID */}
       {imageData && (
