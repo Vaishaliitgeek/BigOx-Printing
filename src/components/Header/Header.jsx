@@ -1,83 +1,94 @@
-import React, { useEffect, useState } from 'react';
-import styles from './Header.module.css'; // Import the CSS module
+import React, { useEffect, useMemo, useState } from 'react';
+import styles from './Header.module.css';
 import { RxCross2 } from "react-icons/rx";
-import { FaAngleLeft, FaArrowLeft } from "react-icons/fa6";
-import StepIndicator from './StepIndicator';
+import { FaArrowLeft } from "react-icons/fa6";
 
+const MASTER_STEPS = [
+    { key: "UPLOAD", number: 1, label: "Upload" },
+    { key: "sizeOptions", number: 2, label: "Size & Crop" },
+    { key: "paperOptions", number: 3, label: "Paper" },
+    { key: "laminationOptions", number: 4, label: "Lamination" },
+    { key: "mountingOptions", number: 5, label: "Mounting" },
+    { key: "FINISH", number: 6, label: "Finish" },
+];
 
-const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => {
+const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps, onDownload }) => {
+    // Responsive (updates on resize)
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 1024);
 
-    const allSteps = [
-        { key: "UPLOAD", number: 1, label: 'Upload', completed: currentStep > 1 },
-        { key: "sizeOptions", number: 2, label: 'Size & Crop', completed: currentStep > 2 },
-        { key: "paperOptions", number: 3, label: 'Paper', completed: currentStep > 3 },
-        { key: "laminationOptions", number: 4, label: 'Lamination', completed: currentStep > 4 },
-        { key: "mountingOptions", number: 5, label: 'Mounting', completed: currentStep > 5 },
-        { key: "FINISH", number: 6, label: 'Finish', completed: currentStep >= 6 },
-    ];
+    useEffect(() => {
+        const onResize = () => setIsMobile(window.innerWidth <= 1024);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
 
-    const isMobile = window.innerWidth <= 1024;
+    /**
+     * Highest step ever reached in current session of this component.
+     * This is the key to "don't uncheck when previewing older steps".
+     */
+    const [maxReachedStep, setMaxReachedStep] = useState(currentStep);
 
-    const [steps, setSteps] = useState(allSteps)
+    useEffect(() => {
+        setMaxReachedStep((prev) => Math.max(prev, currentStep));
+    }, [currentStep]);
 
+    // Build steps from appSteps mapping + maxReachedStep state
+    const steps = useMemo(() => {
+        const filtered = [];
 
-    function getFilteredSteps() {
-        // Initialize an array to hold the filtered steps
-        const filteredSteps = [];
+        for (const step of MASTER_STEPS) {
+            const raw = appSteps?.[step.key];
+            const stepNumber = Number(raw);
 
-        // Log the current app steps for debugging purposes
-        // console.log("appSteps", appSteps);
+            // Skip steps not present in appSteps
+            if (!Number.isFinite(stepNumber) || stepNumber <= 0) continue;
 
-        // Loop through all steps to process each step
-        allSteps.forEach((step) => {
-            // Get the step count from the appSteps object using the step's key
-            const stepCount = appSteps[step.key];
+            const isCurrent = stepNumber === currentStep;
+            const isVisited = stepNumber <= maxReachedStep;
 
-            // Check if the step count exists (is truthy)
-            if (stepCount) {
-                // Create an object for the current step with its details
-                const stepObj = {
-                    number: stepCount,  // Store the step number
-                    label: step.label,  // Store the step label
-                    completed: currentStep > stepCount,  // Mark as completed if currentStep is greater than stepCount
-                };
+            filtered.push({
+                number: stepNumber,
+                label: step.label,
+                isCurrent,
+                isVisited,
+                completed: isVisited && !isCurrent, // stays checked even if user goes back
+                clickable: isVisited,               // all visited steps clickable
+            });
+        }
 
-                // Add the step object to the filtered steps array
-                filteredSteps.push(stepObj);
-            }
-        });
+        return filtered.sort((a, b) => a.number - b.number);
+    }, [appSteps, currentStep, maxReachedStep]);
 
-        // Update the state with the filtered steps
-        setSteps(filteredSteps);
+    const canNavigateToStep = (stepNumber) => {
+        return steps.some((s) => s.number === stepNumber && s.clickable);
+    };
 
-        // Log the filtered steps for debugging purposes
-        // console.log("filteredSteps", filteredSteps);
-    }
+    const handleStepNav = (stepNumber) => {
+        if (!onStepClick) return;
+        if (!canNavigateToStep(stepNumber)) return;
+        onStepClick(stepNumber);
+    };
 
+    function getVisibleSteps(all, current, mobile) {
+        if (!mobile) return all;
+        if (!all.length) return all;
 
-    function getVisibleSteps(allSteps, currentStep, isMobile) {
-        if (!isMobile) return allSteps; // Desktop → show all
+        const currentIndex = all.findIndex((step) => step.number === current);
 
-        const currentIndex = allSteps.findIndex(
-            (step) => step.number === currentStep
-        );
+        // Fallback if current step isn't in filtered list
+        if (currentIndex === -1) return all.slice(0, 4);
 
         let start = Math.max(0, currentIndex - 1);
         let end = start + 4;
 
-        // Adjust if overflow
-        if (end > allSteps.length) {
-            end = allSteps.length;
+        if (end > all.length) {
+            end = all.length;
             start = Math.max(0, end - 4);
         }
 
-        return allSteps.slice(start, end);
+        return all.slice(start, end);
     }
 
-
-    useEffect(() => {
-        getFilteredSteps();
-    }, [appSteps, currentStep])
     const visibleSteps = getVisibleSteps(steps, currentStep, isMobile);
 
     return (
@@ -85,11 +96,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
             <div className={styles.headerContainer}>
                 <div className={styles.headerInner}>
                     {/* Left: Back to Product */}
-                    <button
-                        className={styles.backButton}
-                        onClick={onBack} // use handler from App
-                    >
-                        {/* <FaAngleLeft className={styles.icon} /> */}
+                    <button className={styles.backButton} onClick={onBack}>
                         <FaArrowLeft className={styles.icon} />
                         <span className={styles.backTextDesktop}>Back to Product</span>
                         <span className={styles.backTextMobile}></span>
@@ -97,68 +104,88 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps }) => 
 
                     {/* Center: Stepper */}
                     <div className={styles.stepper}>
-                        {visibleSteps.map((step, index) => (
-                            <React.Fragment key={step.number}>
-                                <div className={styles.stepWrapper}>
-                                    <div className={styles.step}>
+                        {visibleSteps.map((step, index) => {
+                            const isClickable = step.clickable && !!onStepClick;
+                            const nextStep = visibleSteps[index + 1];
+
+                            return (
+                                <React.Fragment key={step.number}>
+                                    <div className={styles.stepWrapper}>
                                         <div
-                                            className={[
-                                                styles.stepCircle,
-                                                step.completed ? styles.stepCircleCompleted :
-                                                    currentStep === step.number ? styles.stepCircleCurrent :
-                                                        styles.stepCircleUpcoming
-                                            ].join(' ')}
-                                        // onClick={() => {
-                                        //     if (onStepClick) onStepClick(step.number);
-                                        // }}
-                                        // style={{ cursor: onStepClick ? 'pointer' : 'default' }}
+                                            className={`${styles.step} ${isClickable ? styles.stepClickable : styles.stepDisabled}`}
+                                            onClick={() => {
+                                                //  handleStepNav(step.number);
+                                                onDownload({ goNext: false, step: step.number })
+                                            }}
+                                            role={isClickable ? "button" : undefined}
+                                            tabIndex={isClickable ? 0 : -1}
+                                            aria-current={step.isCurrent ? "step" : undefined}
+                                            onKeyDown={(e) => {
+                                                if (!isClickable) return;
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault();
+                                                    handleStepNav(step.number);
+                                                }
+                                            }}
                                         >
-                                            {step.completed ? (
-                                                <svg
-                                                    className={styles.checkIcon}
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={3}
-                                                        d="M5 13l4 4L19 7"
-                                                    />
-                                                </svg>
-                                            ) : (
-                                                step.number
-                                            )}
+                                            <div
+                                                className={[
+                                                    styles.stepCircle,
+                                                    step.completed
+                                                        ? styles.stepCircleCompleted
+                                                        : step.isCurrent
+                                                            ? styles.stepCircleCurrent
+                                                            : styles.stepCircleUpcoming,
+                                                ].join(" ")}
+                                            >
+                                                {step.completed ? (
+                                                    <svg
+                                                        className={styles.checkIcon}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={3}
+                                                            d="M5 13l4 4L19 7"
+                                                        />
+                                                    </svg>
+                                                ) : (
+                                                    step.number
+                                                )}
+                                            </div>
+
+                                            <span
+                                                className={[
+                                                    styles.stepLabel,
+                                                    step.isVisited ? styles.stepLabelActive : styles.stepLabelInactive,
+                                                ].join(" ")}
+                                            >
+                                                {step.label}
+                                            </span>
                                         </div>
 
-                                        <span
-                                            className={[
-                                                styles.stepLabel,
-                                                currentStep >= step.number ? styles.stepLabelActive : styles.stepLabelInactive
-                                            ].join(' ')}
-                                        >
-                                            {step.label}
-                                        </span>
+                                        {index < visibleSteps.length - 1 && (
+                                            <div
+                                                className={[
+                                                    styles.stepConnector,
+                                                    // keep connector active based on max reached history (not current preview step)
+                                                    nextStep && nextStep.number <= maxReachedStep
+                                                        ? styles.stepConnectorActive
+                                                        : styles.stepConnectorInactive,
+                                                ].join(" ")}
+                                            />
+                                        )}
                                     </div>
-                                    {index < visibleSteps.length - 1 && (
-                                        <div
-                                            className={[
-                                                styles.stepConnector,
-                                                currentStep > step.number + 1 ? styles.stepConnectorActive : styles.stepConnectorInactive
-                                            ].join(' ')}
-                                        />
-                                    )}
-                                </div>
-                            </React.Fragment>
-                        ))}
+                                </React.Fragment>
+                            );
+                        })}
                     </div>
-                    {/* <StepIndicator  currentStep={currentStep} steps={steps}></StepIndicator> */}
-                    {/* Right: Close Button */}
-                    <button
-                        className={styles.closeButton}
-                        onClick={onClose} // use handler from App
-                    >
+
+                    {/* Right: Close */}
+                    <button className={styles.closeButton} onClick={onClose}>
                         <RxCross2 className={styles.iconClose} />
                     </button>
                 </div>

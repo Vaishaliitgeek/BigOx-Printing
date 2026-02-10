@@ -15,6 +15,11 @@ import { getDateTokens, resolveTemplate } from "../../../utils/dropboxTemplate.j
 import ExifReader from "exifreader";
 import { dismissToast, showError, showProgress, showSuccess } from '../../../Components/toastHelper.jsx';
 
+
+
+
+
+
 async function getMetaData(file) {
   const tags = await ExifReader.load(file);
 
@@ -167,37 +172,30 @@ async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
 async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
   try {
     const originalImage = await loadImageFromDb();
-    setStatus("image one is being uploading");
-    const { originalImageCloudUrl, metadata } = await uploadFileMaker(originalImage, false, {
-      ...dropboxMeta,
-      fileName: `${dropboxMeta.fileName}_original`,
-    });
-    console.log("Original Image Cloud URL:", originalImageCloudUrl);
-    // console.log("----metadata", metadata)
+    setStatus("image is being uploaded");
 
-    // ------------------------------------------------------------------
-    //  Load cropped image from IndexedDB
-    // ------------------------------------------------------------------
-    const croppedImageBlob = await loadCropImageFromDb();
+    // Parallelize the upload process for both original and cropped images
+    const uploadPromises = [
+      uploadFileMaker(originalImage, false, { ...dropboxMeta, fileName: `${dropboxMeta.fileName}_original` }),
+      loadCropImageFromDb().then(croppedImageBlob =>
+        uploadFileMaker(croppedImageBlob, true, { ...dropboxMeta, fileName: `${dropboxMeta.fileName}_cropped` })
+      )
+    ];
 
-    setStatus("image two is being uploading");
+    const [originalData, croppedData] = await Promise.all(uploadPromises);
 
-    const { originalImageCloudUrl: croppedImageCloudUrl, metadata: cropMetadata } = await uploadFileMaker(croppedImageBlob, true, {
-      ...dropboxMeta,
-      fileName: `${dropboxMeta.fileName}_cropped`,
-    });;
-
-    // console.log("Cropped Image Cloud URL:", croppedImageCloudUrl, cropMetadata);
-
-    return { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata };
-  }
-  catch (error) {
-    // toast.error("Image processing failed");
+    return {
+      originalImageCloudUrl: originalData.originalImageCloudUrl,
+      croppedImageCloudUrl: croppedData.originalImageCloudUrl,
+      metadata: originalData.metadata,
+      cropMetadata: croppedData.metadata
+    };
+  } catch (error) {
     showError("cart-flow", "Image processing failed");
-
     throw error;
   }
 }
+
 
 
 // export async function cartHandler() {
@@ -276,13 +274,13 @@ async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
 
 // extract varinat id
 function extractVariantId(runtimeResult, setStatus) {
- 
+
 
   const savedVariants = runtimeResult               // ← added [0]
     ?.result
     ?.savedVariants;
 
-  // setStatus(savedVariants);
+  setStatus("Preparing variant ");
   if (!Array.isArray(savedVariants) || savedVariants.length === 0) {
     throw new Error("No saved variants found.");
   }
@@ -359,44 +357,30 @@ function getNumericVariantId(gid) {
 }
 
 
-
-export async function cartHandler(setStatus, orderConfig, total, productId) {
-  // ---------------------------------------------
-  // 1. Fetch Dropbox config
-  // ---------------------------------------------
+export async function cartHandler(setStatus, orderConfig, total, productId, signal) {
+  // Constants for toast notifications
   const TOAST_MAIN = "cart-flow";
   const TOAST_VARIANT = "runtime-variant";
   const TOAST_CART = "add-to-cart";
 
-
   try {
-    // showProgress(TOAST_MAIN, "Preparing your product…");
-    // ---------------------------------------------
-    // 1) Dropbox config + folder/file name
-    // ---------------------------------------------
-    // showProgress(TOAST_MAIN, "Preparing artwork naming…");
+    // Fetch Dropbox configuration
     const dropboxConfig = await getDropboxFileNamingConfig();
     if (!dropboxConfig) throw new Error("Dropbox config failed");
 
-
     const folderTemplate = dropboxConfig?.folderTemplateConfig;
     const fileTemplate = dropboxConfig?.fileNamingTemplateConfig;
-    console.log("-orderconfig", orderConfig)
-    // ---------------------------------------------
-    // 2. Build token map (dynamic, future-proof)
-    // ---------------------------------------------
+
+    // Build token map dynamically based on order config
     const tokenMap = {
       ...getDateTokens(),
       paper_name: orderConfig?.paper?.name,
-      // border_code: orderConfig?.border?.thickness,
       size_w: orderConfig?.size?.width,
       size_h: orderConfig?.size?.height,
       quantity: orderConfig?.quantity,
     };
 
-    // ---------------------------------------------
-    // 3. Resolve folder + file names
-    // ---------------------------------------------
+    // Resolve folder and file names using templates
     const targetFolder = folderTemplate
       ? resolveTemplate(folderTemplate, tokenMap)
       : "default";
@@ -405,85 +389,66 @@ export async function cartHandler(setStatus, orderConfig, total, productId) {
       ? resolveTemplate(fileTemplate, tokenMap).replace(/\//g, "_") // Replace slashes with underscores
       : `file_${Date.now()}`;
 
-    // ---------------------------------------------
-    // 4. Upload images (NO STRUCTURE CHANGE)
-    // ---------------------------------------------
-    // showProgress(TOAST_MAIN, "Uploading artwork…");
+    // Step 4: Upload images (original and cropped) in parallel
     const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
       await uploadAndGetCloudeURl(setStatus, {
         targetFolder,
         fileName,
       });
 
-
     if (!originalImageCloudUrl || !croppedImageCloudUrl) {
       throw new Error("Image upload failed");
     }
-    console.log("-----------originalImageCloudUrl", originalImageCloudUrl)
 
-    // varinat array
+    // Prepare the variant array for runtime variant creation
     const variantsArray = [
       { realBaseSku: "4012500555719", price: Number(total) },
-      // { realBaseSku: "4012500555719", price: 40 },
-      // { realBaseSku: "4012500555719", price: 60 }
+      // Additional variants can be added here if needed
     ];
 
-
-
-
-    // showProgress(TOAST_VARIANT, "Creating runtime variant…");
+    // Step 5: Create runtime variant
     const runtimeResult = await createRuntimeVariant({
-      productId: productId,   // Shopify product ID (numeric)
+      productId: productId, // Shopify product ID (numeric)
       dataPrice: Number(total),
       availableQty: orderConfig?.quantity ?? 1,
       variantsArray,
     });
 
-    // console.log("----------")
-
     const GlobalvariantId = extractVariantId(runtimeResult[0], setStatus);
-
-    setStatus(GlobalvariantId);
+    // setStatus(GlobalvariantId);
     const variantId = GlobalvariantId;
+
     if (!variantId) throw new Error("Variant creation failed");
 
-    // const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
-    //   await uploadAndGetCloudeURl(setStatus);
-    // console.log(originalImageCloudUrl, metadata, croppedImageCloudUrl, cropMetadata, "-==========cartDAtaaaa")
-
-
-    // showSuccess(TOAST_VARIANT, "Runtime variant created");
-
-    // showProgress(TOAST_CART, "Adding item to cart…");
-
+    // Step 6: Prepare properties for adding to cart
     const properties = buildImageAttributes({
       originalImageCloudUrl,
       croppedImageCloudUrl,
       metadata,
       cropMetadata,
-      orderConfig
+      orderConfig,
     });
-    console.log("--------properties", properties);
-    // setStatus(JSON.stringify(orderConfig, null, 2));
+
+    // Step 7: Add item to cart with metadata
     await addToCartWithMetadata({
-      variantId: variantId,
+      variantId,
       quantity: orderConfig?.quantity ?? 1,
-      properties
-
+      properties,
+      signal
     });
-    // showSuccess("Item added to cart successfully");
-    // showSuccess(TOAST_MAIN, "Artwork saved & added to cart 🎉");
-    // toast.success('Item added to cart successfully')
 
+    // Success message for cart flow
+    showSuccess(TOAST_MAIN, "Artwork saved & added to cart 🎉");
     return true;
-  }
-  catch (error) {
 
+  } catch (error) {
+    // Handle errors during the cart flow
     console.error("Cart flow failed:", error);
-    throw error; // ⬅️ VERY IMPORTANT
+    showError(TOAST_MAIN, "Cart flow failed", error?.message || "Something went wrong");
+    throw error; // Always re-throw the error to allow for further handling if needed
   }
-
 }
+
 
 function buildImageAttributes({
   originalImageCloudUrl,

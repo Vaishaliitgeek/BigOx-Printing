@@ -78,8 +78,8 @@ async function clearCurrentImage() {
 
 // --- Component ---
 
-const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template }) => {
-  // console.log("---rules", template)
+const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template, ppiThreshold }) => {
+  // console.log("---rules", rules)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,JPEG,PNG, TIFF');
@@ -93,7 +93,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   useEffect(() => {
     const storedAgreement = sessionStorage.getItem("hasAgreed");
     if (storedAgreement === "true") {
-      console.log("----------storedAgreement", storedAgreement)
+      // console.log("----------storedAgreement", storedAgreement)
       setIsChecked(true);
     }
   }, []);
@@ -310,7 +310,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
             className="checkbox-input" // Optional for styling purposes
           />
           <p className="trademark-check-para">
-            I agree and confirm that I have the rights to use the logos, text, or trademarks.
+            {rules?.checkboxMessage || "I confirm that I own the rights to this content or have obtained permission to upload, print, and reproduce it."}
           </p>
         </label>
       </div>)}
@@ -406,14 +406,15 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
               <h3 className="resolution-title">
                 Estimated resolution at common sizes:
               </h3>
-
-              <div className="resolution-grid">
+              {ppiThreshold && <div className="resolution-grid">
                 {Sizes?.slice(0, 4).map((size) => {
                   const { PPI: ppi } = calculatePPI(
                     imageData.width,
                     imageData.height,
                     size.width,
-                    size.height
+                    size.height,
+                    ppiThreshold,
+                    null
                   );
                   // console.log("-------ppi", ppi)
                   // const quality = getQualityLevel(ppi);
@@ -430,12 +431,14 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
 
                   return (
                     <div key={size.id} className="resolution-card">
-                      <p className="resolution-card-size">{size.label}"</p>
+                      {/* <p>{size.label}</p> */}
+                      <p className="resolution-card-size">{size.label}</p>
                       <p className={textClass} style={{ color }} >{Math.round(ppi)}PPI</p>
                     </div>
                   );
                 })}
-              </div>
+              </div>}
+
 
 
               <div className="resolution-note">

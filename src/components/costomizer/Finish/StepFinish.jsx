@@ -35,7 +35,8 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
   const productId = urlParams.get('product_id');
   const Productprice = urlParams.get('price');
 
-
+  const abortController = new AbortController();
+  const signal = abortController.signal;
 
   // console.log("---------productId", productId)
   const rawMats = template?.metaOptions || [];
@@ -359,6 +360,22 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
       [id]: true,
     }));
   };
+
+
+  const abortRequest = () => {
+    // Set loading to false to stop the spinner
+    setIsAddingToCart(false);
+    // To abort the request
+
+    abortController.abort();  // This will cancel the ongoing API request
+
+
+    // Optionally, if you want to abort the cart handler's ongoing operation, you can try to cancel the request or reset the status:
+    // (Depending on how you are making the request, you could use abort controllers or other methods)
+    toast.info("Cart addition cancelled!");
+    setStatus("Cancelled");
+  };
+
 
   return (
     <div className="containerr">
@@ -766,7 +783,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
                 setIsAddingToCart(true);
 
                 try {
-                  await cartHandler(setStatus, orderConfig, total, productId);
+                  await cartHandler(setStatus, orderConfig, total, productId, signal);
 
                   toast.success("Item added to cart successfully 🎉");
                   // window.location.reload();
@@ -783,7 +800,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
               }}
             >
               {isAddingToCart ? (
-                <span className="loader-spinner" />
+                <span className="loader-spinner"></span>
               ) : (
                 <>
                   <span className="cartIcon"><IoCartOutline /></span>
@@ -794,8 +811,23 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
           </div>
+          {/* <div className="loading-overlay" style={{ display: isAddingToCart ? "flex" : "none" }}>
+            <div className="loader">
+              <div className="spinner"></div>
+              <span>Adding to cart...</span>
+            </div>
+          </div> */}
 
-
+          <div id="overlay-1" class="loading-overlay" style={{ display: isAddingToCart ? "flex" : "none" }}>
+            <div class="loader-style-1">
+              {/* <!-- Cross Icon --> */}
+              <span class="close-overlay" onClick={abortRequest}>✖</span>
+              <div class="spinner-1"></div>
+              <div class="loader-text-1">Adding to cart...</div>
+              <div class="loader-subtext">{status}</div>
+              <div class="loader-subtext">Calculating final price, please wait a moment…</div>
+            </div>
+          </div>
 
           {/* <p className="shipping-note">Free shipping on orders over $100</p> */}
         </div>

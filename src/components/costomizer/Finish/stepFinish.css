@@ -635,3 +635,105 @@
   color: #777;
   padding: 14px 12px;
 }
+
+
+/* Overlay - full screen with subtle blur */
+/* Loading Overlay Styles */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(160 149 149 / 25%);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+.loading-overlay.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Style 1: Modern Gradient Spinner */
+.loader-style-1 {
+  background: white;
+  padding: 40px 50px;
+  border-radius: 24px;
+  width: 13rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.spinner-1 {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f0f0f0;
+  border-top: 6px solid #d51c1c;
+  border-right: 6px solid rgb(253 249 238);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-text-1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.loader-subtext {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Style for the cross icon to close the overlay */
+.close-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #494141;
+
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  transition: all 0.3s;
+}
+
+.close-overlay:hover {
+  color: #f44336;
+  /* Red color on hover */
+}

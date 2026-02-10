@@ -8,11 +8,11 @@
  * 4) Finish / Summary
  */
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useState, useCallback, use, useRef, useMemo } from "react";
 import "./App.css";
 
 // Data (defaults)
-import { PRINT_SIZES, PAPERS } from "./pages/printData";
+import { PRINT_SIZES, PAPERS, setPPiThreshold, getCropDimensionsInOriginalPixels, calculatePPI, getQualityInfoByPPI } from "./pages/printData";
 
 // API / services
 import { getTemplateFromDb, getValidationRules } from "./services/services.js";
@@ -27,7 +27,7 @@ import Paper from "./components/costomizer/Paper/Paper";
 import StepFinish from "./components/costomizer/finish/StepFinish.jsx";
 import Lamination from "./components/costomizer/Lamination/lamination.jsx"
 import Mounting from "./components/costomizer/Mounting//Mounting.jsx"
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 
 // import {
 //   getCommerceRulesCustomerDiscounts,
@@ -35,6 +35,8 @@ import { ToastContainer } from "react-toastify";
 //   getCommerceRulesQuantityAndLimits,
 // } from '../../../services/services';
 import { getCommerceRulesCustomerDiscounts, getCommerceRulesQuantityAndDiscounts, getCommerceRulesQuantityAndLimits } from "./services/services.js";
+import { cropToBlob } from "./components/costomizer/CropAndPosition/helper.js";
+import { saveCurrentImage } from "./services/indexDb.js";
 /**
  * Step constants make the code more readable than using raw numbers everywhere.
  */
@@ -65,7 +67,6 @@ const MIN_STEP = STEPS.UPLOAD;
 const MAX_STEP = STEPS.FINISH;
 
 function App(props) {
-  console.log("---props", props)
 
   const [appSteps, setAppSteps] = useState(STEPS);
   const [commerceRules, setCommerceRules] = useState({
@@ -79,16 +80,13 @@ function App(props) {
 
   const urlParams = new URLSearchParams(window.location.search);
   const productId = urlParams.get('product_id');
-
+  const [ppiThreshold, setPpiThreshold] = useState(300); // Default threshold
   // -----------------------------
   // Stepper / navigation state
   // -----------------------------
   const [currentStep, setCurrentStep] = useState(STEPS.UPLOAD);
 
-  // -----------------------------
-  // Product configuration state
-  // -----------------------------
-  const [selectedSizeId, setSelectedSizeId] = useState(PRINT_SIZES?.[0]?.id);
+
   const [selectedPaperId, setSelectedPaperId] = useState(PAPERS?.[0]?.id);
 
   // Finish-step options
@@ -104,8 +102,23 @@ function App(props) {
 
   // If you plan to use sizeOptions later, keep it.
   // Otherwise, remove it to reduce unused state.
-  const [sizeOptions, setSizeOptions] = useState([]);
+  // const [sizeOptions, setSizeOptions] = useState([]);
   const [isValideOptions, setIsValideOption] = useState({ "borderOption": true, "metaOptions": true });
+
+
+
+
+  const sizeOptions = useMemo(() => {
+    return (template?.sizeOptions || [])
+      .filter((size) => size.status === true)
+      .map((size) => ({
+        ...size,
+        w: size.width,
+        h: size.height,
+        id: size.dimensionText,
+        price: size.priceDeltaMinor,
+      }));
+  }, [template?.sizeOptions]);
 
   // Handle Order data
   const [orderConfig, setOrderConfig] = useState({
@@ -119,10 +132,21 @@ function App(props) {
     quantity: 1,
   });
 
+  const [selectedSizeId, setSelectedSizeId] = useState(orderConfig?.size?.id ?? null); // Changed to null initially
 
+  const imgRef = useRef(null);
+  const [imageData, setImageData] = useState(null); //vv
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [rotation, setRotation] = useState(orderConfig?.rotation ?? false);
+
+
+
+  useEffect(() => {
+    console.log("completedCrop", completedCrop)
+  }, [completedCrop])
 
   function updateStepsWithValideData(template) {
-    console.log("------------template", template)
+    // console.log("------------template", template)
     if (!template) return;
     let currentStep = 1;
     const stepMapping = {};
@@ -161,7 +185,8 @@ function App(props) {
     try {
       const fetchedRules = await getValidationRules();
       setRules(fetchedRules);
-      console.log("Validation rules:", fetchedRules);
+      setPpiThreshold(fetchedRules?.ppiThreshold);
+      // console.log("Validation rules:", fetchedRules);
     } catch (error) {
       console.error("Failed to load validation rules:", error);
       setRules(null); // safe fallback
@@ -244,11 +269,12 @@ function App(props) {
   // -----------------------------
   /**
    * Jump to a specific step safely.
-   * Prevents going out of range.
+   * Prevents going out of range.   
    */
   const goToStep = useCallback((step) => {
     if (step < MIN_STEP || step > MAX_STEP) return;
-    setCurrentStep(step);
+    onDownload({ goNext: false, completedCrop, step });
+    // setCurrentStep(step);
   }, []);
 
   /**
@@ -259,6 +285,7 @@ function App(props) {
     // window.history.back();
     setCurrentStep((prev) => Math.max(MIN_STEP, prev - 1));
     // navigate(-1)
+    // onDownload();
   }, []);
 
   const goBack = useCallback(() => {
@@ -279,7 +306,13 @@ function App(props) {
   // const handleNext = useCallback(() => {
   //   setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   // }, []);
+
+  // New function just for updating config
+  const updateOrderConfig = useCallback((payload = {}) => {
+    setOrderConfig((prev) => ({ ...prev, ...payload }));
+  }, []);
   const handleNext = useCallback((payload = {}) => {
+    // onDownload();
     window.scrollTo(0, 0);
     setOrderConfig((prev) => ({
       ...prev,
@@ -289,7 +322,7 @@ function App(props) {
     setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
   }, []);
 
-  console.log("=======ord", orderConfig)
+  // console.log("=======ord", orderConfig)
   // -----------------------------
   // Render
   // -----------------------------
@@ -298,6 +331,119 @@ function App(props) {
     const customerRes = getCommerceRulesCustomerDiscounts();
     const quantityRes = getCommerceRulesQuantityAndDiscounts();
   }, []);
+
+  const sizeAvailability = useMemo(() => {
+    if (!completedCrop || !imageData) {
+      return sizeOptions.map(item => ({ ...item, disabled: false, ppi: 0 }));
+    }
+
+    const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+      completedCrop,
+      imgRef,
+      imageData
+    );
+
+    return sizeOptions.map((item) => {
+      const res = calculatePPI(cropWpx, cropHpx, item.w, item.h, ppiThreshold, rotation);
+      const ppi = res?.PPI ?? 0;
+      const disabled = ppi < 300;
+      const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
+
+      return {
+        ...item,
+        ppi,
+        disabled,
+        color: quality?.color
+      };
+    });
+  }, [completedCrop, imageData, sizeOptions, rotation, rules]);
+
+  const selectedSize = useMemo(
+    () => sizeAvailability.find((s) => s.id === selectedSizeId) ?? sizeAvailability[0],
+    [selectedSizeId, sizeAvailability]
+  );
+
+  async function onDownload({ goNext = true, step }) {
+    try {
+      const img = imgRef.current;
+
+      if (!img) {
+        toast.error("Please upload an image first");
+        return;
+      }
+      console.log("getting completedCrop", completedCrop);
+      if (!completedCrop) {
+        toast.error("Please select a crop area first");
+        return;
+      }
+
+      // Check if all sizes are disabled
+      const hasAvailableSize = sizeAvailability.some(s => !s.disabled);
+      if (!hasAvailableSize) {
+        toast.error("Please choose a high quality image. Current image resolution is too low for any print size.");
+        return;
+      }
+
+      // Check if selected size is disabled
+      const currentSize = sizeAvailability.find(s => s.id === selectedSizeId);
+      if (currentSize?.disabled) {
+        toast.error("Selected size is not available. Please choose a different size or upload a higher quality image.");
+        return;
+      }
+
+      const blob = await cropToBlob(img, completedCrop, "image/png");
+      console.log("blob", blob)
+
+      const finalImageUrl = URL.createObjectURL(blob);
+
+      const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+        completedCrop,
+        imgRef,
+        imageData
+      );
+
+      const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+      const resdata = calculatePPI(imageData?.width, imageData?.height, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+
+
+      // handleNext({
+      //   size: {
+      //     id: selectedSize.id,
+      //     label: selectedSize.id,
+      //     width: selectedSize.w,
+      //     height: selectedSize.h,
+      //     price: selectedSize.price,
+      //   },
+      //   crop: completedCrop,
+      //   cropPixels: { width: cropWpx, height: cropHpx },
+      //   croppedPpi: res.PPI,
+      //   originalPpi: resdata.PPI,
+      //   croppedPpiValid: res.isValid,
+      //   finalImageUrl,
+      //   rotation,
+      //   isCropping: isCropping,
+      // });
+
+      const ff = await saveCurrentImage({
+        url: finalImageUrl,
+        width: cropWpx,
+        height: cropHpx,
+        blob,
+        type: "image/png",
+      });
+
+      console.log('ff', ff)
+      if (goNext) {
+        handleNext()
+      }
+      else {
+        setCurrentStep(step);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message ?? "Failed to export crop");
+    }
+  }
 
   return (
     <div className="Appcontainer">
@@ -309,6 +455,7 @@ function App(props) {
         onBack={goBack}
         onClose={handleClose}
         appSteps={appSteps}
+        onDownload={onDownload}
         onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />
 
@@ -320,6 +467,7 @@ function App(props) {
           template={template}
           firstLoad={firstLoad}
           setFirstLoad={setFirstLoad}
+          ppiThreshold={ppiThreshold}
         />
       )}
 
@@ -330,6 +478,15 @@ function App(props) {
           rules={rules}
           template={template}
           orderConfig={orderConfig}
+          updateOrderConfig={updateOrderConfig} // NEW
+          currentStep={currentStep}
+          ppiThreshold={ppiThreshold}
+          onDownload={onDownload}
+          {...{
+            imgRef, imageData, setImageData, completedCrop, setCompletedCrop, rotation, setRotation,
+            sizeAvailability, selectedSize, selectedSizeId, setSelectedSizeId
+          }
+          }
         />
       )}
 
@@ -340,6 +497,7 @@ function App(props) {
           rules={rules}
           template={template}
           orderConfig={orderConfig}
+          updateOrderConfig={updateOrderConfig} // NEW
         />
       )}
       {currentStep === appSteps.laminationOptions && (
@@ -349,6 +507,7 @@ function App(props) {
           rules={rules}
           template={template}
           orderConfig={orderConfig}
+          updateOrderConfig={updateOrderConfig} // NEW
         />
       )}
       {currentStep === appSteps.mountingOptions && (
@@ -358,6 +517,7 @@ function App(props) {
           rules={rules}
           template={template}
           orderConfig={orderConfig}
+          updateOrderConfig={updateOrderConfig} // NEW
         />
       )}
 
@@ -378,6 +538,7 @@ function App(props) {
           commerceRules={commerceRules}
           rulesLoading={rulesLoading}
           rulesError={rulesError}
+          updateOrderConfig={updateOrderConfig} // NEW
         />
       )}
 

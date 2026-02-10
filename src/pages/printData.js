@@ -111,10 +111,15 @@ export const getCropDimensionsInOriginalPixels = (completedCrop, imgRef, imageDa
 };
 
 
-function toInches(imagePx, threshold = 300) {
+export const setPPiThreshold = (ppi) => {
+  return ppi;
+}
+
+function toInches(imagePx, ppiThreshold) {
+  // console.log("----------ppiThreshold--", ppiThreshold)
   imagePx = Number(imagePx);
-  threshold = Number(threshold);
-  const imageInches = Math.floor(imagePx / threshold);
+  ppiThreshold = Number(ppiThreshold);
+  const imageInches = Math.floor(imagePx / ppiThreshold);
   return imageInches;
 }
 
@@ -124,11 +129,14 @@ export function calculatePPI(
   imageHeight,
   printWidth,
   printHeight,
+  ppiThreshold,
   isRotated = false,
 ) {
-  console.log("isRotated==========", isRotated)
-  const imageWidthInches = toInches(imageWidth);
-  const imageHeightInches = toInches(imageHeight);
+  // console.log("isRotated==========", isRotated)
+  // console.log("isRotateddimensionss==========", imageWidth, imageHeight, printWidth, printHeight, ppiThreshold)
+
+  const imageWidthInches = toInches(imageWidth, ppiThreshold);
+  const imageHeightInches = toInches(imageHeight, ppiThreshold);
   const PPI = Math.min(imageHeightInches, imageWidthInches);
 
 

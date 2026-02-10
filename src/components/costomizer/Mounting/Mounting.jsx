@@ -26,7 +26,7 @@ const NO_MOUNTING_OPTION = {
 };
 
 
-const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
+const Mounting = ({ handleBack, handleNext, template, orderConfig, updateOrderConfig }) => {
     console.log("-orderconfig", orderConfig)
 
     const [imageSrc, setImageSrc] = useState(null);
@@ -108,6 +108,25 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
             [id]: true,
         }));
     };
+
+    // Auto-update config when selection changes
+    useEffect(() => {
+        if (!selectedMounting) return;
+
+        updateOrderConfig({
+            mounting: {
+                id: selectedMounting.isFrontendOnly
+                    ? null
+                    : selectedMounting._id,
+                name: selectedMounting.optionName,
+                substrateType: selectedMounting.substrateType || null,
+                thickness: selectedMounting.thickness || null,
+                price: selectedMounting.priceDeltaMinor || 0,
+                notes: selectedMounting.AdditionalNotes,
+                isNone: selectedMounting.isFrontendOnly === true,
+            },
+        });
+    }, [selectedMountingId, selectedMounting, updateOrderConfig]);
 
 
 
@@ -315,19 +334,7 @@ const Mounting = ({ handleBack, handleNext, template, orderConfig }) => {
                                 onClick={() => {
                                     // if (!selectedMounting) return;
 
-                                    handleNext({
-                                        mounting: {
-                                            id: selectedMounting.isFrontendOnly
-                                                ? null
-                                                : selectedMounting._id,
-                                            name: selectedMounting.optionName,
-                                            substrateType: selectedMounting.substrateType || null,
-                                            thickness: selectedMounting.thickness || null,
-                                            price: selectedMounting.priceDeltaMinor || 0,
-                                            notes: selectedMounting.AdditionalNotes,
-                                            isNone: selectedMounting.isFrontendOnly === true,
-                                        },
-                                    });
+                                    handleNext();
                                 }}
                             >
                                 Continue
