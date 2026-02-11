@@ -339,3 +339,11 @@ div:empty {
     }
 
 }
+
+.stepClickable {
+    cursor: pointer;
+}
+
+.stepDisabled {
+    cursor: default;
+}

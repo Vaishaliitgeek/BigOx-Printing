@@ -18,13 +18,14 @@ export async function addToCartWithMetadata({
   variantId,
   quantity = 1,
   properties,
+  signal
 }) {
   try {
     const response = await apiConnecter("POST", `/cart/add.js`, null, null, {
       id: variantId,
       quantity,
       properties,
-    });
+    }, signal);
     console.log("Added with metadata:", response.data);
     return response.data;
   } catch (error) {
@@ -132,7 +133,7 @@ export async function getLaminationOptions() {
       null,
       { shop }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting Lamination options:", err.message);
@@ -151,7 +152,7 @@ export async function getTemplateFromDb(productId) {
 
       { shop, productId: `gid://shopify/Product/${productId}` }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result[0];
   } catch (err) {
     console.error("Error while getting Lamination options:", err.message);
@@ -167,7 +168,7 @@ export async function getCommerceRulesQuantityAndLimits() {
       null,
       { shop }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting  quantity and discounts:", err.message);
@@ -183,7 +184,7 @@ export async function getCommerseRule() {
       null,
       { shop }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting Lamination options:", err.message);
@@ -212,7 +213,12 @@ export async function uploadImageOnDropBox({ data, fileName, targetFolder }) {
     throw err;
   }
 }
+
+let dropboxConfigCache = null;
 export async function getDropboxFileNamingConfig(data) {
+  if (dropboxConfigCache) {
+    return dropboxConfigCache;
+  }
   try {
     const res = await apiConnecter(
       "get",
@@ -221,10 +227,12 @@ export async function getDropboxFileNamingConfig(data) {
       null,
       { shop }
     );
-    console.log(res.data.result);
-    return res.data.result;
+    ////console.log(res.data.result);
+    dropboxConfigCache = res.data.result; // Cache the result
+    return dropboxConfigCache;
   } catch (err) {
     console.error("Error while uploading image on dropbox:", err.message);
+    throw err;
   }
 }
 
@@ -239,7 +247,7 @@ export async function getCommerceRulesQuantityAndDiscounts() {
       null,
       { shop }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting  quantity and discounts:", err.message);
@@ -256,7 +264,7 @@ export async function getCommerceRulesCustomerDiscounts() {
       null,
       { shop }
     );
-    console.log(res.data.result);
+    //console.log(res.data.result);
     return res.data.result;
   } catch (err) {
     console.error("Error while getting  quantity and discounts:", err.message);

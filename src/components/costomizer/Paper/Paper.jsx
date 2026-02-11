@@ -6,7 +6,7 @@ import { getDeltaAmount } from '../../../utils/PercentFormatter';
 
 // --- Component ---
 
-const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
+const Paper = ({ handleBack, handleNext, template, orderConfig, updateOrderConfig }) => {
   const urlParams = new URLSearchParams(window.location.search);
   const Productprice = urlParams.get('price');
   // only show those paper whose status is true 
@@ -70,6 +70,22 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
     setTruncatedDescriptions(newTruncated);
   }, [PAPERS]);
 
+  // Auto-update config when selection changes
+  useEffect(() => {
+    if (!selectedPaper) return;
+
+    updateOrderConfig({
+      paper: {
+        id: selectedPaper._id,
+        name: selectedPaper.paperName,
+        finish: selectedPaper.finish,
+        weight: selectedPaper.weight,
+        priceDeltaMinor: selectedPaper.priceDeltaMinor,
+        thumbnailUrl: selectedPaper.thumbnailUrl,
+        additionalNotes: selectedPaper.AdditionalNotes,
+      },
+    });
+  }, [selectedPaperId, selectedPaper, updateOrderConfig]);
 
   return (
     <div className="editor-page">
@@ -232,7 +248,8 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
 
                       +{Math.abs(paper.priceDeltaMinor)}
                       {paper.priceDeltaMinor > 0 ? '%' : ''}
-                      <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(Productprice, paper.priceDeltaMinor)})</span>
+                      <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(orderConfig?.size?.price, paper.priceDeltaMinor)})</span>
+
                     </span>
                   </div>
 
@@ -251,17 +268,7 @@ const Paper = ({ handleBack, handleNext, template, orderConfig }) => {
                 className="footer-btn footer-btn-primary"
                 disabled={!selectedPaper}
                 onClick={() =>
-                  handleNext({
-                    paper: {
-                      id: selectedPaper._id,
-                      name: selectedPaper.paperName,
-                      finish: selectedPaper.finish,
-                      weight: selectedPaper.weight,
-                      priceDeltaMinor: selectedPaper.priceDeltaMinor,
-                      thumbnailUrl: selectedPaper.thumbnailUrl,
-                      additionalNotes: selectedPaper.AdditionalNotes,
-                    },
-                  })}
+                  handleNext()}
               >
                 Continue
               </button>

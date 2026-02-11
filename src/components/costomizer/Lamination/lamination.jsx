@@ -20,7 +20,7 @@ const NO_LAMINATION_OPTION = {
 };
 
 
-const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
+const Lamination = ({ handleBack, handleNext, template, orderConfig, updateOrderConfig }) => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const Productprice = urlParams.get('price');
@@ -102,7 +102,26 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
         );
     }, [selectedLaminationId, laminationData]);
 
-    console.log("----slectedlamination", selectedLamination)
+    // console.log("----slectedlamination", selectedLamination)
+
+
+    // Auto-update config when selection changes
+    useEffect(() => {
+        if (!selectedLamination) return;
+
+        updateOrderConfig({
+            lamination: {
+                id: selectedLamination.isFrontendOnly
+                    ? null
+                    : selectedLamination._id,
+                name: selectedLamination.optionName,
+                finish: selectedLamination.finish || null,
+                priceDeltaMinor: selectedLamination.priceDeltaMinor || 0,
+                notes: selectedLamination.durabilityAndCleaningNotes,
+                isNone: selectedLamination.isFrontendOnly === true,
+            },
+        });
+    }, [selectedLaminationId, selectedLamination, updateOrderConfig]);
 
     return (
         <div className="editor-page">
@@ -267,7 +286,8 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                                 >
                                                     +{Math.abs(Lamination.priceDeltaMinor)}
                                                     {Lamination.priceDeltaMinor > 0 ? ' %' : ''}
-                                                    <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(Productprice, Lamination.priceDeltaMinor)})</span>
+                                                    <span style={{ marginLeft: '2px' }}> (${getDeltaAmount(orderConfig?.size?.price, Lamination.priceDeltaMinor)})</span>
+
                                                 </span>
 
                                             </div>
@@ -292,18 +312,7 @@ const Lamination = ({ handleBack, handleNext, template, orderConfig }) => {
                                 disabled={!laminationData.length}
                                 onClick={() => {
                                     // if (!selectedLamination) return;
-                                    handleNext({
-                                        lamination: {
-                                            id: selectedLamination.isFrontendOnly
-                                                ? null
-                                                : selectedLamination._id,
-                                            name: selectedLamination.optionName,
-                                            finish: selectedLamination.finish || null,
-                                            priceDeltaMinor: selectedLamination.priceDeltaMinor || 0,
-                                            notes: selectedLamination.durabilityAndCleaningNotes,
-                                            isNone: selectedLamination.isFrontendOnly === true,
-                                        },
-                                    })
+                                    handleNext()
                                 }
                                 }
 

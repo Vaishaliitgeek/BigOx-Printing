@@ -13,17 +13,17 @@ import { calculatePPI, getCropDimensionsInOriginalPixels, getQualityInfoByPPI } 
 
 
 
-export default function App({ handleBack, handleNext, template, rules, orderConfig }) {
+export default function App({ currentStep, handleBack, handleNext, template, rules, orderConfig, updateOrderConfig, ppiThreshold, onDownload, imgRef, imageData, setImageData, completedCrop, setCompletedCrop, rotation, setRotation, sizeAvailability, selectedSize, selectedSizeId, setSelectedSizeId }) {
   const fileInputRef = useRef(null);
-  const imgRef = useRef(null);
+  // const imgRef = useRef(null);
+  // const [imageData, setImageData] = useState(null); //vv
+  // const [completedCrop, setCompletedCrop] = useState(null);
+  // const [rotation, setRotation] = useState(orderConfig?.rotation ?? false);
 
   const [imageSrc, setImageSrc] = useState("/sample.jpg");
-  const [selectedSizeId, setSelectedSizeId] = useState(orderConfig?.size?.id ?? null); // Changed to null initially
-  const [rotation, setRotation] = useState(orderConfig?.rotation ?? false);
-  const [imageData, setImageData] = useState(null);
+  // const [selectedSizeId, setSelectedSizeId] = useState(orderConfig?.size?.id ?? null); // Changed to null initially
 
   const [crop, setCrop] = useState();
-  const [completedCrop, setCompletedCrop] = useState(null);
   const [cropCoords, setCropCoords] = useState(null);
   const [displayDims, setDisplayDims] = useState({ w: 0, h: 0 });
   const [cropHeightPx, setCropHeightPx] = useState(260);
@@ -36,7 +36,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   // Restore rotation and selected size on mount (if coming back)
   useEffect(() => {
     if (orderConfig) {
-      console.log("----orderConfig", orderConfig)
+      // console.log("----orderConfig", orderConfig)
       if (orderConfig.rotation !== undefined) {
         setRotation(!!orderConfig.rotation);
       }
@@ -48,9 +48,6 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   }, [orderConfig]);
 
 
-  useEffect(() => {
-    console.log("CURRENT selectedSizeId after update:", selectedSizeId);
-  }, [selectedSizeId]);
 
 
   const handleRotate = () => {
@@ -118,31 +115,31 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
   }, [template?.sizeOptions]);
 
   // Calculate which sizes are available based on current crop
-  const sizeAvailability = useMemo(() => {
-    if (!completedCrop || !imageData) {
-      return sizeOptions.map(item => ({ ...item, disabled: false, ppi: 0 }));
-    }
+  // const sizeAvailability = useMemo(() => {
+  //   if (!completedCrop || !imageData) {
+  //     return sizeOptions.map(item => ({ ...item, disabled: false, ppi: 0 }));
+  //   }
 
-    const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
-      completedCrop,
-      imgRef,
-      imageData
-    );
+  //   const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+  //     completedCrop,
+  //     imgRef,
+  //     imageData
+  //   );
 
-    return sizeOptions.map((item) => {
-      const res = calculatePPI(cropWpx, cropHpx, item.w, item.h, rotation);
-      const ppi = res?.PPI ?? 0;
-      const disabled = ppi < 300;
-      const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
+  //   return sizeOptions.map((item) => {
+  //     const res = calculatePPI(cropWpx, cropHpx, item.w, item.h, ppiThreshold, rotation);
+  //     const ppi = res?.PPI ?? 0;
+  //     const disabled = ppi < 300;
+  //     const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
 
-      return {
-        ...item,
-        ppi,
-        disabled,
-        color: quality?.color
-      };
-    });
-  }, [completedCrop, imageData, sizeOptions, rotation, rules]);
+  //     return {
+  //       ...item,
+  //       ppi,
+  //       disabled,
+  //       color: quality?.color
+  //     };
+  //   });
+  // }, [completedCrop, imageData, sizeOptions, rotation, rules]);
 
   // Auto-select first available size
   useEffect(() => {
@@ -169,10 +166,10 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     }
   }, [completedCrop, selectedSizeId, sizeAvailability]);
 
-  const selectedSize = useMemo(
-    () => sizeAvailability.find((s) => s.id === selectedSizeId) ?? sizeAvailability[0],
-    [selectedSizeId, sizeAvailability]
-  );
+  // const selectedSize = useMemo(
+  //   () => sizeAvailability.find((s) => s.id === selectedSizeId) ?? sizeAvailability[0],
+  //   [selectedSizeId, sizeAvailability]
+  // );
 
   const aspect = rotation
     ? selectedSize?.h / selectedSize?.w
@@ -183,6 +180,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     return Math.min(displayDims.h, displayDims.w / aspect);
   }, [displayDims, aspect]);
 
+
   function onImageLoad(e) {
     const img = e.currentTarget;
     imgRef.current = img;
@@ -191,6 +189,8 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     setDisplayDims({ w, h });
 
     if (orderConfig?.crop && orderConfig.crop.width > 0 && orderConfig.crop.height > 0) {
+
+      console.log("---orderconfig storeee h")
       // Restore exact saved crop (pixel-based, matches original image)
       const savedCrop = {
         ...orderConfig.crop,
@@ -202,6 +202,8 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
       setIsCropping(true);
       hasRestoredCrop.current = true; // ✅ Mark that we just restored
     } else {
+
+      console.log("---orderconfig storeee nahi h")
       // First-time or no saved crop → initial centered full-fit
       const initialH = Math.min(heightMax || h, h);
       setCropHeightPx(initialH);
@@ -228,7 +230,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     const h = clamp(cropHeightPx, 40, heightMax);
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
     setCrop(newCrop);
-    setCompletedCrop(newCrop); // ✅ Also update completedCrop
+    // setCompletedCrop(newCrop); // ✅ Also update completedCrop
   }, [aspect, heightMax]);
 
   // ... rest of your code remains the same ...
@@ -259,76 +261,80 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
     }, 60);
   }
 
-  async function onDownload() {
-    try {
-      const img = imgRef.current;
+  // async function onDownload() {
+  //   try {
+  //     const img = imgRef.current;
 
-      if (!img) {
-        toast.error("Please upload an image first");
-        return;
-      }
+  //     if (!img) {
+  //       // toast.error("Please upload an image first");
+  //       return;
+  //     }
 
-      if (!completedCrop) {
-        toast.error("Please select a crop area first");
-        return;
-      }
+  //     if (!completedCrop) {
+  //       toast.error("Please select a crop area first");
+  //       return;
+  //     }
 
-      // Check if all sizes are disabled
-      const hasAvailableSize = sizeAvailability.some(s => !s.disabled);
-      if (!hasAvailableSize) {
-        toast.error("Please choose a high quality image. Current image resolution is too low for any print size.");
-        return;
-      }
+  //     // Check if all sizes are disabled
+  //     const hasAvailableSize = sizeAvailability.some(s => !s.disabled);
+  //     if (!hasAvailableSize) {
+  //       toast.error("Please choose a high quality image. Current image resolution is too low for any print size.");
+  //       return;
+  //     }
 
-      // Check if selected size is disabled
-      const currentSize = sizeAvailability.find(s => s.id === selectedSizeId);
-      if (currentSize?.disabled) {
-        toast.error("Selected size is not available. Please choose a different size or upload a higher quality image.");
-        return;
-      }
+  //     // Check if selected size is disabled
+  //     const currentSize = sizeAvailability.find(s => s.id === selectedSizeId);
+  //     if (currentSize?.disabled) {
+  //       toast.error("Selected size is not available. Please choose a different size or upload a higher quality image.");
+  //       return;
+  //     }
 
-      const blob = await cropToBlob(img, completedCrop, "image/png");
-      const finalImageUrl = URL.createObjectURL(blob);
+  //     const blob = await cropToBlob(img, completedCrop, "image/png");
+  //     const finalImageUrl = URL.createObjectURL(blob);
 
-      const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
-        completedCrop,
-        imgRef,
-        imageData
-      );
+  //     const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+  //       completedCrop,
+  //       imgRef,
+  //       imageData
+  //     );
 
-      const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, rotation);
-      const resdata = calculatePPI(imageData?.width, imageData?.height, selectedSize.w, selectedSize.h, rotation);
+  //     const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+  //     const resdata = calculatePPI(imageData?.width, imageData?.height, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+  //     handleNext()
+  //     // handleNext({
+  //     //   size: {
+  //     //     id: selectedSize.id,
+  //     //     label: selectedSize.id,
+  //     //     width: selectedSize.w,
+  //     //     height: selectedSize.h,
+  //     //     price: selectedSize.price,
+  //     //   },
+  //     //   crop: completedCrop,
+  //     //   cropPixels: { width: cropWpx, height: cropHpx },
+  //     //   croppedPpi: res.PPI,
+  //     //   originalPpi: resdata.PPI,
+  //     //   croppedPpiValid: res.isValid,
+  //     //   finalImageUrl,
+  //     //   rotation,
+  //     //   isCropping: isCropping,
+  //     // });
 
-      handleNext({
-        size: {
-          id: selectedSize.id,
-          label: selectedSize.id,
-          width: selectedSize.w,
-          height: selectedSize.h,
-          price: selectedSize.price,
-        },
-        crop: completedCrop,
-        cropPixels: { width: cropWpx, height: cropHpx },
-        croppedPpi: res.PPI,
-        originalPpi: resdata.PPI,
-        croppedPpiValid: res.isValid,
-        finalImageUrl,
-        rotation,
-        isCropping: isCropping,
-      });
+  //     await saveCurrentImage({
+  //       url: finalImageUrl,
+  //       width: cropWpx,
+  //       height: cropHpx,
+  //       blob,
+  //       type: "image/png",
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err?.message ?? "Failed to export crop");
+  //   }
+  // }
 
-      await saveCurrentImage({
-        url: finalImageUrl,
-        width: cropWpx,
-        height: cropHpx,
-        blob,
-        type: "image/png",
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error(err?.message ?? "Failed to export crop");
-    }
-  }
+
+
+
 
   useEffect(() => {
     (async () => {
@@ -342,7 +348,45 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
         console.error("Error loading image from IndexedDB:", err);
       }
     })();
+
   }, []);
+
+  // ✅ AUTO-UPDATE: Only update when completedCrop is actually ready
+  useEffect(() => {
+    if (!selectedSize || !completedCrop || !imageData) return;
+    // onDownload();
+    // Add a small delay to ensure completedCrop has fully updated
+    const timeoutId = setTimeout(() => {
+      const { cropWpx, cropHpx } = getCropDimensionsInOriginalPixels(
+        completedCrop,
+        imgRef,
+        imageData
+      );
+
+      const res = calculatePPI(cropWpx, cropHpx, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+      const resdata = calculatePPI(imageData?.width, imageData?.height, selectedSize.w, selectedSize.h, ppiThreshold, rotation);
+
+      updateOrderConfig({
+        size: {
+          id: selectedSize.id,
+          label: selectedSize.id,
+          width: selectedSize.w,
+          height: selectedSize.h,
+          price: selectedSize.price,
+        },
+        crop: completedCrop,
+        cropPixels: { width: cropWpx, height: cropHpx },
+        croppedPpi: res.PPI,
+        originalPpi: resdata.PPI,
+        croppedPpiValid: res.isValid,
+        rotation,
+        isCropping: isCropping,
+      });
+    }, 100); // Small delay to ensure crop has completed
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedSize, completedCrop, rotation, isCropping, imageData, updateOrderConfig, currentStep]);
+
 
   return (
     <div className="page">
@@ -448,7 +492,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
           <div className="editorSizeGrid">
             {[...sizeAvailability]
               .sort((a, b) => Number(a.disabled) - Number(b.disabled))
-              .map(({ id, w, h, price, ppi, disabled, color }) => {
+              .map(({ id, label, w, h, price, ppi, disabled, color }) => {
                 return (
                   <button
                     key={id}
@@ -466,7 +510,10 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
                     }
                     title={disabled ? "Minimum 150 PPI required for this size" : ""}
                   >
-                    <div className="editor-size-card-size">{id}"</div>
+                    <div className="size-label-box">
+                      <div className="editor-size-card-size">{label}</div>
+                      <div className="editor-size-card-size">{id}"</div>
+                    </div>
                     <div className="editor-size-card-price">{`$${price.toFixed(2)}` ?? "N/A"}</div>
                     <div
                       className="editor-size-card-ppi"
@@ -517,7 +564,7 @@ export default function App({ handleBack, handleNext, template, rules, orderConf
 
               <button
                 className="footer-btn footer-btn-primary"
-                onClick={() => onDownload()}
+                onClick={() => onDownload({ completedCrop })}
                 // disabled={!isCropping || !selectedSizeId}
                 disabled={!selectedSizeId}
 

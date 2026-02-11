@@ -85,6 +85,10 @@ export function resolveQuantityDiscount(quantity, quantityRules = []) {
 // Main Order Pricing Calculator
 // ==============================
 
+// ==============================
+// Main Order Pricing Calculator
+// ==============================
+
 export function calculateOrderPrice({
     orderConfig,
     customerDiscountRules = [],
@@ -104,76 +108,48 @@ export function calculateOrderPrice({
         tags = [],
     } = orderConfig;
 
-    // ------------------------------
-    // 1️⃣ Retail price × quantity FIRST
-    // ------------------------------
-    const basePrice = Productprice * quantity;
+    // 1️⃣ Size price as the base (used for all calculations)
+    const sizeBasePrice = (size?.price || 0) * quantity;
 
-    // This is the ONLY base for percentage calculations
-    let orderPrice = basePrice;
+    // Start with the base price
+    let orderPrice = sizeBasePrice;
 
-    // ------------------------------
-    // 2️⃣ Percentage add-ons
-    // (ALWAYS calculated on basePrice)
-    // ------------------------------
+    // 2️⃣ Percentage add-ons (BASED ON SIZE PRICE)
     if (paper?.priceDeltaMinor) {
-        orderPrice += calculatePercentage(
-            basePrice,
-            paper.priceDeltaMinor
-        );
+        orderPrice += calculatePercentage(sizeBasePrice, paper.priceDeltaMinor);
     }
 
     if (lamination?.priceDeltaMinor) {
-        orderPrice += calculatePercentage(
-            basePrice,
-            lamination.priceDeltaMinor
-        );
+        orderPrice += calculatePercentage(sizeBasePrice, lamination.priceDeltaMinor);
     }
 
     if (border?.priceDeltaMinor) {
-        orderPrice += calculatePercentage(
-            basePrice,
-            border.priceDeltaMinor
-        );
+        orderPrice += calculatePercentage(sizeBasePrice, border.priceDeltaMinor);
     }
 
-    // ------------------------------
-    // 3️⃣ Flat add-ons (per unit × quantity)
-    // ------------------------------
-    if (size?.price) orderPrice += size.price * quantity;
+    // 3️⃣ Flat add-ons (e.g., mounting, mat)
     if (mounting?.price) orderPrice += mounting.price * quantity;
     if (mat?.price) orderPrice += mat.price * quantity;
 
-    // ------------------------------
     // 4️⃣ Quantity discount
-    // ------------------------------
     const quantityDiscountPercent = resolveQuantityDiscount(
         quantity,
         quantityDiscountRules
     );
 
     if (quantityDiscountPercent > 0) {
-        orderPrice -= calculatePercentage(
-            orderPrice,
-            quantityDiscountPercent
-        );
+        orderPrice -= calculatePercentage(orderPrice, quantityDiscountPercent);
     }
 
-    // ------------------------------
-    // 5️⃣ Customer / Tier discount LAST
-    // ------------------------------
+    // 5️⃣ Customer discount (LAST)
     const customerDiscountPercent = resolveCustomerDiscount(
         tags,
         customerDiscountRules
     );
 
     if (customerDiscountPercent > 0) {
-        orderPrice -= calculatePercentage(
-            orderPrice,
-            customerDiscountPercent
-        );
+        orderPrice -= calculatePercentage(orderPrice, customerDiscountPercent);
     }
 
     return roundPrice(orderPrice);
 }
-

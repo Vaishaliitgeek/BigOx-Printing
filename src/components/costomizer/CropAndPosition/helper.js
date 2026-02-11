@@ -63,7 +63,7 @@ export async function cropToBlob(
     );
   });
 }
-
+   
 export const getQualityClass = (quality) => {
   switch (quality) {
     case "green":

@@ -10,7 +10,7 @@ import { IoCartOutline } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 import { toast } from 'react-toastify';
 
-
+import { getDeltaAmount } from '../../../utils/PercentFormatter';
 
 const NO_BORDER_OPTION = {
   _id: "no-border",
@@ -35,7 +35,8 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
   const productId = urlParams.get('product_id');
   const Productprice = urlParams.get('price');
 
-
+  const abortController = new AbortController();
+  const signal = abortController.signal;
 
   // console.log("---------productId", productId)
   const rawMats = template?.metaOptions || [];
@@ -52,6 +53,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
   const [activeTab, setActiveTab] = useState("Mat");
   const [activeMat, setActiveMat] = useState(NO_Mat_OPTION);
 
+
   // api discount data
   // const [quantityAndLimits, setquantityAndLimits] = useState([]);
   // const [customerDiscountRules, setCustomerDiscountRules] = useState([]);
@@ -62,7 +64,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
 
-  const [status, setStatus] = useState("start");
+  const [apistatus, setStatus] = useState("Processing");
   const [borderPx, setBorderPx] = useState(0);
 
 
@@ -360,6 +362,23 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
     }));
   };
 
+
+  const abortRequest = () => {
+    // Set loading to false to stop the spinner
+    setIsAddingToCart(false);
+    // To abort the request
+
+    abortController.abort();  // This will cancel the ongoing API request
+
+
+    // Optionally, if you want to abort the cart handler's ongoing operation, you can try to cancel the request or reset the status:
+    // (Depending on how you are making the request, you could use abort controllers or other methods)
+    toast.info("Cart addition cancelled!");
+    setStatus("Cancelled");
+  };
+
+
+
   return (
     <div className="containerr">
       <div className="preview-section">
@@ -648,12 +667,12 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
             <div className="breakdown-row">
 
               {/* <span className="breakdown-label">Base price ({orderConfig?.size?.label || "16×20\""})</span> */}
-              <span className="breakdown-label">Base price </span>
+              <span className="breakdown-label">Base price  {orderConfig?.size?.label ? `(${orderConfig?.size?.label})` : ''}</span>
 
-              <span className="breakdown-value">${Number(percentBasePrice).toFixed(2)}</span>
+              <span className="breakdown-value">${orderConfig?.size?.price}</span>
             </div>
             {/* size */}
-            {hasSizeOptions && orderConfig?.size?.label && (
+            {/* {hasSizeOptions && orderConfig?.size?.label && (
 
               <div className="breakdown-row">
 
@@ -663,13 +682,14 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
             )
 
-            }
+            } */}
 
             {hasPaperOptions && (
 
               <div className="breakdown-row">
                 <span className="breakdown-label">Paper upgrade {orderConfig?.paper?.name ? `(${orderConfig?.paper?.name})` : ''} </span>
-                <span className="breakdown-value"> {formatPercentWithPrice(orderConfig?.paper?.priceDeltaMinor)}</span>
+                <span className="breakdown-value">+ {orderConfig?.paper?.priceDeltaMinor}%  (${getDeltaAmount(orderConfig?.size?.price, orderConfig?.paper?.priceDeltaMinor)})</span>
+
               </div>
             )
 
@@ -688,7 +708,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
               <div className="breakdown-row">
 
                 <span className="breakdown-label">Lamination  {orderConfig?.lamination?.name ? `(${orderConfig?.lamination?.name})` : ''}</span>
-                <span className="breakdown-value"> {formatPercentWithPrice(orderConfig?.lamination?.priceDeltaMinor)}</span>
+                <span className="breakdown-value">+{orderConfig?.lamination?.priceDeltaMinor}% (${getDeltaAmount(orderConfig?.size?.price, orderConfig?.lamination?.priceDeltaMinor)})</span>
               </div>
 
             )}
@@ -705,7 +725,8 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
                   Border   {orderConfig?.border?.thickness ? `("${orderConfig?.border?.thickness}")` : ''}
                 </span>
 
-                <span className="breakdown-value">  {formatPercentWithPrice(orderConfig?.border?.priceDeltaMinor)}</span>
+                <span className="breakdown-value"> +{orderConfig?.border?.priceDeltaMinor || 0}% (${getDeltaAmount(orderConfig?.size?.price, orderConfig?.border?.priceDeltaMinor)})</span>
+
               </div>
 
             )}
@@ -765,17 +786,47 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
                 setCartError(null);
                 setIsAddingToCart(true);
 
-                try {
-                  await cartHandler(setStatus, orderConfig, total, productId);
+                const toastId = toast.loading("Starting cart flow…", {
+                  autoClose: false,
+                  closeButton: true,
+                });
 
-                  toast.success("Item added to cart successfully 🎉");
+                const updateToast = (message, type = "info", isLoading = true) => {
+                  toast.update(toastId, {
+                    render: message,
+                    type,
+                    isLoading,
+                    autoClose: isLoading ? false : 5000,
+                  });
+                };
+
+                try {
+
+                  // toast.loading(`Status: ${apistatus}`);
+
+
+                  await cartHandler(setStatus, orderConfig, total, productId, signal, updateToast);
+
+                  toast.update(toastId, {
+                    render: "Successfully added to cart! 🎉",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 4000,
+                  });
+                  // toast.success("Item added to cart successfully 🎉");
                   // window.location.reload();
                   window.location.href = "https://www.bigoxprinting.com/cart";
 
                 } catch (err) {
-                  toast.error(
-                    err?.response?.data?.message || err?.message || "Something went wrong. Please try again."
-                  );
+                  toast.update(toastId, {
+                    render: err.message || "Failed to add to cart",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 6000,
+                  });
+                  // toast.error(
+                  //   err?.response?.data?.message || err?.message || "Something went wrong. Please try again."
+                  // );
                   setCartError(err);
                 } finally {
                   setIsAddingToCart(false);
@@ -783,7 +834,8 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
               }}
             >
               {isAddingToCart ? (
-                <span className="loader-spinner" />
+                // <span className="loader-spinner"></span>
+                <span>Adding To Cart....</span>
               ) : (
                 <>
                   <span className="cartIcon"><IoCartOutline /></span>
@@ -794,13 +846,27 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
 
           </div>
+          {/* <div className="loading-overlay" style={{ display: isAddingToCart ? "flex" : "none" }}>
+            <div className="loader">
+              <div className="spinner"></div>
+              <span>Adding to cart...</span>
+            </div>
+          </div> */}
 
-
+          {/* <div id="overlay-1" class="loading-overlay" style={{ display: isAddingToCart ? "flex" : "none" }}>
+            <div class="loader-style-1">
+              <span class="close-overlay" onClick={abortRequest}>✖</span>
+              <div class="spinner-1"></div>
+              <div class="loader-text-1">Adding to cart...</div>
+              <div class="loader-subtext">{status}</div>
+              <div class="loader-subtext">Calculating final price, please wait a moment…</div>
+            </div>
+          </div> */}
 
           {/* <p className="shipping-note">Free shipping on orders over $100</p> */}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
