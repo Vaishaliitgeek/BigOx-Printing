@@ -12,4 +12,3 @@ export const getDeltaAmount = (basePrice, percent) => {
 
     return delta.toFixed(2); // 2 decimal rounding
 };
-

@@ -819,7 +819,7 @@ const StepFinish = ({ template, orderConfig, setOrderConfig, handleBack, custome
 
                 } catch (err) {
                   toast.update(toastId, {
-                    render: err.message || "Failed to add to cart",
+                    render: err?.response?.data?.message || err.message || "Failed to add to cart",
                     type: "error",
                     isLoading: false,
                     autoClose: 6000,

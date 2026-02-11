@@ -43,8 +43,6 @@ function openDB() {
   });
 }
 
-
-
 async function saveCurrentImage(imageData) {
   const db = await openDB();
   const tx = db.transaction(STORE_NAME, "readwrite");
@@ -78,11 +76,10 @@ async function clearCurrentImage() {
   });
 }
 
-
-
 // --- Component ---
 
-const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template, ppiThreshold, updateOrderConfig }) => {
+const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template, ppiThreshold,updateOrderConfig }) => {
+  // console.log("---rules", rules)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
   const [allowedTypes, setAllowedTypes] = useState('JPG ,JPEG,PNG, TIFF');
@@ -91,17 +88,35 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   const [recommendedPPI, setRecommendedPPI] = useState(0);
 
   const Sizes = template?.sizeOptions;
-
+  // console.log("-------Sizes", Sizes)
   // Load agreement status from sessionStorage on mount (only once)
   useEffect(() => {
     const storedAgreement = sessionStorage.getItem("hasAgreed");
     if (storedAgreement === "true") {
+      // console.log("----------storedAgreement", storedAgreement)
       setIsChecked(true);
     }
   }, []);
+  // // Load image from IndexedDB on mount
+  // useEffect(() => {
+  //   (async () => {
+  //     if (firstLoad == false) return;
+  //     try {
+  //       const saved = await loadCurrentImage();
+  //       if (saved) {
 
+  //         setImageData(saved);
+  //         onImageUpload?.(saved.url, saved.width, saved.height);
+  //         setFirstLoad(false);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error loading image from IndexedDB:", err);
+  //     }
+  //   })();
+  // }, [onImageUpload]);
 
-  // Load image from IndexedDB only if firstLoad is true (prevent loading on subsequent renders)
+  // Load image from IndexedDB on mount or whenever navigating back to the upload step
+  // Load image from IndexedDB on mount or when navigating back to the upload step
   useEffect(() => {
     const loadImage = async () => {
       try {
@@ -116,19 +131,24 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
     };
 
     if (firstLoad) {
-      loadImage();
+      loadImage();  // Load image only once when app first loads or if firstLoad flag is true
     }
-  }, [onImageUpload, firstLoad]);
+  }, [onImageUpload, firstLoad]);  // Re-run when firstLoad changes
+
+
 
   const handleFileSelect = (e) => {
-    setFirstLoad(true); // Set first load to true, to allow loading the new image
+    setFirstLoad(true);
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
+      // console.log("---------img", img)
       img.onload = async () => {
+
+
         const validation = validateImageFile(
           file,
           img.width,
@@ -140,9 +160,14 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
           toast.warning(validation.message, {
             toastId: "image-upload-warning", // prevents duplicate toasts
           });
+          // setUploadError(validation?.message);
+          // console.log("-----uplll", uploadError)
+          // alert(validation.message); // or Polaris Toast
           e.target.value = ""; // reset file input
           return;
         }
+
+
 
         const url = event.target.result;
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
@@ -158,10 +183,12 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
           isSample: false,
         };
 
-        // Clear previous image from IndexedDB
+        // setImageData(imageObj);
+
         try {
           await clearCurrentImage();
-          await saveCurrentImage(imageObj); // Save the new image to IndexedDB
+          await saveCurrentImage(imageObj);
+
           // After saveCurrentImage(...)
           updateOrderConfig({
             crop: null,
@@ -173,20 +200,20 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
         } catch (err) {
           console.error("Error saving image to IndexedDB:", err);
         }
-
         setImageData(imageObj);
         onImageUpload?.(url, img.width, img.height);
+        // onImageUpload?.(url, img.width, img.height);
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   };
-
   const handleChangeImage = async () => {
     setImageData(null);
     onImageUpload?.("", 0, 0);
+    // setIsChecked(false);
     try {
-      await clearCurrentImage(); // Clear the image from IndexedDB when removing it
+      await clearCurrentImage();
     } catch (err) {
       console.error("Error clearing image from IndexedDB:", err);
     }
@@ -279,36 +306,37 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
   // }, [isChecked]);
   return (
     <div className="step-upload">
-      {/* Agreement checkbox */}
-      {!imageData && (
-        <div className="trademark-container">
-          <label htmlFor="trademark-check" className="bg-trade">
-            <input
-              type="checkbox"
-              checked={isChecked}
-              id="trademark-check"
-              name="trademark-check"
-              required
-              onChange={handleCheckboxChange}
-              className="checkbox-input"
-            />
-            <p className="trademark-check-para">
-              {rules?.checkboxMessage || "I confirm that I own the rights to this content or have obtained permission to upload, print, and reproduce it."}
-            </p>
-          </label>
-        </div>
-      )}
 
-      {/* Upload Section */}
-      <div className={`step-upload-header ${!isChecked ? "disabled" : ""}`}>
+      {!imageData && (<div className="trademark-container">
+
+        <label htmlFor="trademark-check" className="bg-trade">
+
+          <input
+            type="checkbox"
+            checked={isChecked}
+            id="trademark-check"
+            name="trademark-check"
+            required
+            onChange={handleCheckboxChange}
+            className="checkbox-input" // Optional for styling purposes
+          />
+          <p className="trademark-check-para">
+            {rules?.checkboxMessage || "I confirm that I own the rights to this content or have obtained permission to upload, print, and reproduce it."}
+          </p>
+        </label>
+      </div>)}
+      <div className={`step-upload-header  ${!isChecked ? "disabled" : ""}`}>
         <h2 className="step-upload-title">Upload Your Image</h2>
         <p className="">
-          {allowedTypes} up to {rules?.fileConstraints?.maxFileSizeMB} MB. We'll check the resolution for your chosen size.
+          {allowedTypes} up to {rules?.fileConstraints?.maxFileSizeMB} MB. We'll check the resolution for your
+          chosen size.
         </p>
       </div>
 
+
+
       {!imageData && (
-        <div className={`step-upload-upload-section ${!isChecked ? "disabled" : ""}`}>
+        <div className={`step-upload-upload-section ${!isChecked ? "disabled" : ""}`} >
           <div className="upload-dropzone">
             <div className="upload-content">
               <div className="upload-circle-icon">
@@ -318,30 +346,41 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
               </div>
               <div>
                 <p className="upload-text">
-                  Drag and drop your image here or <span>browse</span>
+                  Drag and drop your image here or  <span>browse
+
+                  </span>
                 </p>
-                <p className="upload-subtext">{allowedTypes} Max {rules?.fileConstraints?.maxFileSizeMB} MB</p>
+                <p className="upload-subtext">{allowedTypes}  Max {rules?.fileConstraints?.maxFileSizeMB} MB</p>
               </div>
             </div>
+
+            {/* File input element */}
             <input
               ref={fileInputRef}
               type="file"
+              // accept=".jpg,.jpeg,.png,.tif,.tiff"
               accept={allowedTypes}
               onChange={handleFileSelect}
               className="upload-input-hidden"
             />
           </div>
         </div>
+
       )}
 
-      {/* Image Preview and Resolution */}
+
+
+      {/* IF IMAGE → SHOW PREVIEW & RESOLUTION GRID */}
       {imageData && (
         <>
           <div className="step-upload-result-section">
+            {/* File bar */}
             <div className="upload-file-bar">
               <div className="upload-file-left">
                 <div className="upload-file-icon">
+                  {/* <div className="upload-file-icon-inner" /> */}
                   <FaRegFileImage />
+                  {/* <img src={FileIcon} alt="fileicon" /> */}
                 </div>
                 <div className="upload-file-text">
                   <p className="upload-file-name">{imageData.name}</p>
@@ -360,57 +399,110 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
               </button>
             </div>
 
+            {/* Image preview */}
             <div className="upload-success-preview">
-              <img src={imageData.url} alt="Uploaded" className="upload-success-img" />
+              <img
+                src={imageData.url}
+                alt="Uploaded"
+                className="upload-success-img"
+              />
             </div>
+            {uploadError && (
+              <p className="upload-error-text">{uploadError}</p>
+            )}
 
-            {/* Resolution Estimate */}
+
+            {/* Resolution estimate */}
             <div className="resolution-section">
-              <h3 className="resolution-title">Estimated resolution at common sizes:</h3>
-              {ppiThreshold && (
-                <div className="resolution-grid">
-                  {Sizes?.slice(0, 4).map((size) => {
-                    const { PPI: ppi } = calculatePPI(
-                      imageData.width,
-                      imageData.height,
-                      size.width,
-                      size.height,
-                      ppiThreshold,
-                      null
-                    );
-                    const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
-                    const color = quality?.color;
-                    const textClass = `quality-text`;
+              <h3 className="resolution-title">
+                Estimated resolution at common sizes:
+              </h3>
+              {ppiThreshold && <div className="resolution-grid">
+                {Sizes?.slice(0, 4).map((size) => {
+                  const { PPI: ppi } = calculatePPI(
+                    imageData.width,
+                    imageData.height,
+                    size.width,
+                    size.height,
+                    ppiThreshold,
+                    null
+                  );
+                  // console.log("-------ppi", ppi)
+                  // const quality = getQualityLevel(ppi);
+                  const quality = getQualityInfoByPPI(ppi, rules?.ppiBandColors);
+                  // console.log("-quality", quality)
+                  // const colorKey = getQualityColor(quality);
+                  //  // "green" | "orange" | "red" | "gray"
+                  const color = quality?.color;
+                  // console.log("--------colorKey", colorKey)
 
-                    return (
-                      <div key={size.id} className="resolution-card">
-                        <p className="resolution-card-size">{size.label}</p>
-                        <p className={textClass} style={{ color }}>
-                          {Math.round(ppi)}PPI
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                  // const textClass = `quality-text quality-text-${colorKey}`;
+                  const textClass = `quality-text `;
+
+
+                  return (
+                    <div key={size.id} className="resolution-card">
+                      {/* <p>{size.label}</p> */}
+                      <p className="resolution-card-size">{size.label}</p>
+                      <p className={textClass} style={{ color }} >{Math.round(ppi)}PPI</p>
+                    </div>
+                  );
+                })}
+              </div>}
+
+
+
               <div className="resolution-note">
                 <p>
-                  <span className="resolution-note-strong">We recommend ≥{recommendedPPI} PPI</span> for best print quality.
+                  <span className="resolution-note-strong">
+                    We recommend ≥{ppiThreshold} PPI
+                  </span>{" "}
+                  for best print quality. You'll be able to select appropriate
+                  sizes in the next step.
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Footer button */}
+          {/* <div className="step-upload-footer">
+            <button type="button" className="btn-continue" onClick={() => handleNext()}>
+              CONTINUE TO SIZE &amp; CROP
+            </button>
+          </div> */}
           <div className="step-upload-footer">
             <button
               type="button"
               className="btn-continue"
               disabled={!imageData}
-              onClick={() => handleNext()}
+              onClick={() => {
+                handleNext();
+                // const sizeForPpi = Sizes?.[0] || PRINT_SIZES?.[0]; // baseline size
+                // const res = sizeForPpi
+                //   ? calculatePPI(
+                //     imageData?.width,
+                //     imageData?.height,
+                //     sizeForPpi.width,
+                //     sizeForPpi.height
+                //   )
+                //   : { PPI: null };
+
+                // handleNext({
+                //   originalPpi: res?.PPI ?? null,
+                //   originalMeta: {
+                //     width: imageData?.width,
+                //     height: imageData?.height,
+                //     size: imageData?.size,
+                //     name: imageData?.name,
+                //     type: imageData?.type,
+                //   },
+                // });
+              }}
             >
               CONTINUE TO SIZE &amp; CROP
             </button>
           </div>
+
         </>
       )}
     </div>
@@ -418,5 +510,3 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
 };
 
 export default StepUpload;
-
-

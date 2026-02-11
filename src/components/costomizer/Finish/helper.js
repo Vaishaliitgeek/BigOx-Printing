@@ -403,7 +403,10 @@ export async function cartHandler(setStatus, orderConfig, total, productId, sign
     // Prepare the variant array for runtime variant creation
     updateToast("Creating dynamic product variant…");
     const variantsArray = [
-      { realBaseSku: "4012500555719", price: Number(total) },
+      {
+        realBaseSku: `4012500555719${Date.now()}`, price: Number(total),
+        quantity: orderConfig?.quantity ?? 1,
+      },
       // Additional variants can be added here if needed
     ];
 

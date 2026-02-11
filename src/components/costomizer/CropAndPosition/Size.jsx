@@ -189,8 +189,6 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
     setDisplayDims({ w, h });
 
     if (orderConfig?.crop && orderConfig.crop.width > 0 && orderConfig.crop.height > 0) {
-
-      console.log("---orderconfig storeee h")
       // Restore exact saved crop (pixel-based, matches original image)
       const savedCrop = {
         ...orderConfig.crop,
@@ -202,8 +200,6 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
       setIsCropping(true);
       hasRestoredCrop.current = true; // ✅ Mark that we just restored
     } else {
-
-      console.log("---orderconfig storeee nahi h")
       // First-time or no saved crop → initial centered full-fit
       const initialH = Math.min(heightMax || h, h);
       setCropHeightPx(initialH);
@@ -332,10 +328,6 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
   //   }
   // }
 
-
-
-
-
   useEffect(() => {
     (async () => {
       try {
@@ -388,6 +380,9 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
   }, [selectedSize, completedCrop, rotation, isCropping, imageData, updateOrderConfig, currentStep]);
 
 
+  useEffect(() => {
+    // onDownload();
+  }, [currentStep])
   return (
     <div className="page">
       <main className="content-paper">
