@@ -78,7 +78,7 @@ async function clearCurrentImage() {
 
 // --- Component ---
 
-const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template, ppiThreshold,updateOrderConfig }) => {
+const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules, template, ppiThreshold, updateOrderConfig }) => {
   // console.log("---rules", rules)
   const fileInputRef = useRef(null);
   const [imageData, setImageData] = useState(null); // { url, width, height, size, ... }
@@ -182,6 +182,7 @@ const StepUpload = ({ onImageUpload, handleNext, setFirstLoad, firstLoad, rules,
           lastModified: file.lastModified,
           isSample: false,
         };
+        console.log("-----imageObj", imageObj)
 
         // setImageData(imageObj);
 

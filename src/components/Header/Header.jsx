@@ -12,9 +12,11 @@ const MASTER_STEPS = [
     { key: "FINISH", number: 6, label: "Finish" },
 ];
 
-const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps, onDownload }) => {
+const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps, onDownload, setMaxReachedStep, maxReachedStep }) => {
     // Responsive (updates on resize)
     const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 1024);
+
+
 
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth <= 1024);
@@ -26,7 +28,6 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps, onDow
      * Highest step ever reached in current session of this component.
      * This is the key to "don't uncheck when previewing older steps".
      */
-    const [maxReachedStep, setMaxReachedStep] = useState(currentStep);
 
     useEffect(() => {
         setMaxReachedStep((prev) => Math.max(prev, currentStep));
@@ -114,7 +115,7 @@ const Header = ({ currentStep = 2, onBack, onClose, onStepClick, appSteps, onDow
                                         <div
                                             className={`${styles.step} ${isClickable ? styles.stepClickable : styles.stepDisabled}`}
                                             onClick={() => {
-                                                if (currentStep == 2) {
+                                                if (currentStep == 2 && step.number != 1) {
 
                                                     onDownload({ goNext: false, step: step.number })
                                                 }

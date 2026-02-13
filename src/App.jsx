@@ -69,6 +69,7 @@ const MAX_STEP = STEPS.FINISH;
 function App(props) {
 
   const [appSteps, setAppSteps] = useState(STEPS);
+
   const [commerceRules, setCommerceRules] = useState({
     customerDiscountRules: [],
     quantityDiscountRules: [],
@@ -85,6 +86,7 @@ function App(props) {
   // Stepper / navigation state
   // -----------------------------
   const [currentStep, setCurrentStep] = useState(STEPS.UPLOAD);
+  const [maxReachedStep, setMaxReachedStep] = useState(currentStep);
 
 
   const [selectedPaperId, setSelectedPaperId] = useState(PAPERS?.[0]?.id);
@@ -329,6 +331,7 @@ function App(props) {
     if (step < MIN_STEP || step > MAX_STEP) return;
     // onDownload({ goNext: false, completedCrop, step });
     setCurrentStep(step);
+    setMaxReachedStep((p) => Math.max(p, step));
   }, []);
 
   /**
@@ -352,6 +355,7 @@ function App(props) {
    */
   const handleClose = useCallback(() => {
     setCurrentStep(STEPS.UPLOAD);
+    setMaxReachedStep(STEPS.UPLOAD);
   }, []);
 
   /**
@@ -373,7 +377,11 @@ function App(props) {
       ...payload,
     }));
 
-    setCurrentStep((prev) => Math.min(MAX_STEP, prev + 1));
+    setCurrentStep((prev) => {
+      const next = Math.min(MAX_STEP, prev + 1);
+      setMaxReachedStep((p) => Math.max(p, next));   // update max
+      return next;
+    });
   }, []);
 
   // console.log("=======ord", orderConfig)
@@ -510,6 +518,8 @@ function App(props) {
         onClose={handleClose}
         appSteps={appSteps}
         onDownload={onDownload}
+        maxReachedStep={maxReachedStep}
+        setMaxReachedStep={setMaxReachedStep}
         onStepClick={goToStep} // enables clicking step indicators for testing only remove in future
       />
 

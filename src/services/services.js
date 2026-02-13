@@ -16,16 +16,17 @@ export const shop = "ytkwkd-h0.myshopify.com";
 
 export async function addToCartWithMetadata({
   variantId,
-  quantity = 1,
+  quantity,
   properties,
-  signal
 }) {
+
+  alert('quantity ' + '' + quantity)
   try {
     const response = await apiConnecter("POST", `/cart/add.js`, null, null, {
       id: variantId,
       quantity,
       properties,
-    }, signal);
+    });
     console.log("Added with metadata:", response.data);
     return response.data;
   } catch (error) {
@@ -207,7 +208,7 @@ export async function uploadImageOnDropBox({ data, fileName, targetFolder }) {
       { shop }
     );
 
-    return res.data.result.dropboxUrl;
+    return res.data.result;
   } catch (err) {
     console.error("Error while uploading image on dropbox:", err.message);
     throw err;

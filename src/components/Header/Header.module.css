@@ -171,6 +171,10 @@ div:empty {
     .backTextDesktop {
         display: none;
     }
+
+    .closeButton {
+        margin-top: 0 !important;
+    }
 }
 
 @media (max-width: 550px) {
@@ -189,9 +193,7 @@ div:empty {
         margin-top: 0;
     }
 
-    .closeButton {
-        margin-top: 0;
-    }
+
 }
 
 @media (max-width: 350px) {

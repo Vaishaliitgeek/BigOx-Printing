@@ -282,9 +282,30 @@
 }
 
 .editor-size-card-size {
-  font-weight: 600;
-  color: #111827;
+  /* font-weight: 600;
+  color: #0f192c;
+  font-size: 10px; */
   /* gray-900 */
+  font-weight: 600;
+  font-size: 17px;
+  color: #111;
+}
+
+.editor-size-card-size-label {
+
+  font-size: 15px;
+  color: #555;
+  display: flex;
+  gap: 12px;
+
+
+
+  /* font-weight: 600;
+  font-size: 14px;
+  color: #111827; */
+
+  width: 300px;
+
 }
 
 .editor-size-card-price {

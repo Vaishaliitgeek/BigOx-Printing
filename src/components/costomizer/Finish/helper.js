@@ -142,12 +142,12 @@ async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
     const originalImageFormData = new FormData();
     originalImageFormData.append("image", originalImageFile);
 
-    const originalImageCloudUrl = await uploadImageOnDropBox({
+    const { dropboxUrl: originalImageCloudUrl, dropboxPath } = await uploadImageOnDropBox({
       data: originalImageFormData,
       ...dropboxMeta,
     });
 
-    console.log("-------ourl", originalImageCloudUrl)
+    console.log("-------ourl", originalImageCloudUrl, dropboxPath)
     // showSuccess(
     //   toastKey,
     //   isCroped
@@ -155,7 +155,7 @@ async function uploadFileMaker(originalImage, isCroped, dropboxMeta = {}) {
     //     : "Original image uploaded successfully"
     // );
 
-    return { originalImageCloudUrl, metadata };
+    return { originalImageCloudUrl, metadata, dropboxPath };
   }
   catch (error) {
     console.log("-errorrr", error)
@@ -182,13 +182,24 @@ async function uploadAndGetCloudeURl(setStatus, dropboxMeta = {}) {
       )
     ];
 
+
+    const CroppedFilename = `${dropboxMeta.fileName}_cropped`;
+
+
     const [originalData, croppedData] = await Promise.all(uploadPromises);
+
+    console.log("--------------------------croppedData", croppedData)
+    console.log("--------------------------originalData", originalData)
+
 
     return {
       originalImageCloudUrl: originalData.originalImageCloudUrl,
       croppedImageCloudUrl: croppedData.originalImageCloudUrl,
+      originalImagePath: originalData.dropboxPath,
+      croppedImagePath: croppedData.dropboxPath,
       metadata: originalData.metadata,
-      cropMetadata: croppedData.metadata
+      cropMetadata: croppedData.metadata,
+      CroppedFilename
     };
   } catch (error) {
     showError("cart-flow", "Image processing failed");
@@ -387,15 +398,18 @@ export async function cartHandler(setStatus, orderConfig, total, productId, sign
     const fileName = fileTemplate
       ? resolveTemplate(fileTemplate, tokenMap).replace(/\//g, "_") // Replace slashes with underscores
       : `file_${Date.now()}`;
-
+    console.log("----------fileName", fileName)
     // Step 4: Upload images (original and cropped) in parallel
     updateToast("Uploading original & cropped images… (may take a while)");
-    const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata } =
+    const { originalImageCloudUrl, croppedImageCloudUrl, metadata, cropMetadata, CroppedFilename, croppedImagePath, originalImagePath } =
       await uploadAndGetCloudeURl(setStatus, {
         targetFolder,
         fileName,
       });
 
+
+    console.log("---------path of imagess", croppedImagePath, originalImagePath)
+    // console.log("-------------------------------getfile", fileName)
     if (!originalImageCloudUrl || !croppedImageCloudUrl) {
       throw new Error("Image upload failed");
     }
@@ -404,8 +418,10 @@ export async function cartHandler(setStatus, orderConfig, total, productId, sign
     updateToast("Creating dynamic product variant…");
     const variantsArray = [
       {
-        realBaseSku: `4012500555719${Date.now()}`, price: Number(total),
+        realBaseSku: `4012500555719${Date.now()}`,
+        price: Number(total),
         quantity: orderConfig?.quantity ?? 1,
+        CroppedFilename
       },
       // Additional variants can be added here if needed
     ];
@@ -431,6 +447,9 @@ export async function cartHandler(setStatus, orderConfig, total, productId, sign
       metadata,
       cropMetadata,
       orderConfig,
+      croppedImagePath,
+      originalImagePath
+
     });
 
     // Step 7: Add item to cart with metadata
@@ -439,7 +458,7 @@ export async function cartHandler(setStatus, orderConfig, total, productId, sign
       variantId,
       quantity: orderConfig?.quantity ?? 1,
       properties,
-      signal
+
     });
 
     // Success message for cart flow
@@ -461,7 +480,9 @@ function buildImageAttributes({
   croppedImageCloudUrl,
   metadata,
   cropMetadata,
-  orderConfig
+  orderConfig,
+  croppedImagePath,
+  originalImagePath
 }) {
   const props = {};
 
@@ -474,6 +495,9 @@ function buildImageAttributes({
   // ---- Preview / images ----
   add("_Preview Image", croppedImageCloudUrl);
   add("_Original Image URL", originalImageCloudUrl);
+  add("_Preview Image Path", croppedImagePath);
+  add("_Original Image Path", originalImagePath);
+
   // add("Tags", "runtimeVariant");
 
 

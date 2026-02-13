@@ -226,7 +226,7 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
     const h = clamp(cropHeightPx, 40, heightMax);
     const newCrop = makeCenteredCropPx(displayDims.w, displayDims.h, aspect, h);
     setCrop(newCrop);
-    // setCompletedCrop(newCrop); // ✅ Also update completedCrop
+    setCompletedCrop(newCrop); // ✅ Also update completedCrop
   }, [aspect, heightMax]);
 
   // ... rest of your code remains the same ...
@@ -506,7 +506,7 @@ export default function App({ currentStep, handleBack, handleNext, template, rul
                     title={disabled ? "Minimum 150 PPI required for this size" : ""}
                   >
                     <div className="size-label-box">
-                      <div className="editor-size-card-size">{label}</div>
+                      <div className="editor-size-card-size-label">{label}</div>
                       <div className="editor-size-card-size">{id}"</div>
                     </div>
                     <div className="editor-size-card-price">{`$${price.toFixed(2)}` ?? "N/A"}</div>

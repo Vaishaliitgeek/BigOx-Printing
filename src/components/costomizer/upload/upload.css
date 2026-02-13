@@ -306,16 +306,6 @@
   }
 }
 
-@media (max-width: 768px) {
-
-  .upload-text {
-    font-size: 15px;
-  }
-
-  .bg-trade {
-    gap: 20px;
-  }
-}
 
 .resolution-card {
   background-color: #ffffff;
@@ -448,4 +438,19 @@
   width: 18px;
   height: 18px;
   margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+
+  .upload-text {
+    font-size: 15px;
+  }
+
+  .bg-trade {
+    gap: 4px;
+  }
+
+  .trademark-check-para {
+    font-size: 10px;
+  }
 }
